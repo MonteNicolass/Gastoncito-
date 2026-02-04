@@ -56,7 +56,7 @@ export default function EstadoPage() {
     setIsSubmitting(true)
     try {
       await addLifeEntry({
-        text: note || `Estado: ${mood}/5`,
+        text: note || `Estado: ${mood}/10`,
         domain: 'mental',
         meta: { mood_score: mood }
       })
@@ -90,7 +90,7 @@ export default function EstadoPage() {
                           Promedio 7 días
                         </span>
                         <span className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                          {trends.avg7.average}/5
+                          {trends.avg7.average}/10
                         </span>
                       </div>
                     )}
@@ -100,7 +100,7 @@ export default function EstadoPage() {
                           Promedio 30 días
                         </span>
                         <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                          {trends.avg30.average}/5
+                          {trends.avg30.average}/10
                         </span>
                       </div>
                     )}
@@ -177,16 +177,16 @@ export default function EstadoPage() {
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 text-center">
               ¿Cómo te sientes hoy?
             </h2>
-            <div className="flex justify-center gap-3">
-              {[1, 2, 3, 4, 5].map((score) => (
+            <div className="grid grid-cols-5 gap-2">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => (
                 <button
                   key={score}
                   data-testid={`mood-btn-${score}`}
                   onClick={() => setMood(score)}
                   className={`
-                    w-16 h-16 rounded-2xl font-bold text-xl transition-all
+                    h-14 rounded-xl font-bold text-lg transition-all
                     ${mood === score
-                      ? 'bg-blue-600 text-white scale-110 shadow-lg'
+                      ? 'bg-blue-600 text-white scale-105 shadow-lg'
                       : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                     }
                   `}
@@ -196,7 +196,7 @@ export default function EstadoPage() {
               ))}
             </div>
             <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center">
-              1 = Muy mal · 5 = Excelente
+              1 = Muy mal · 10 = Excelente
             </p>
           </div>
 

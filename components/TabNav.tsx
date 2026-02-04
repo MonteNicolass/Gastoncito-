@@ -17,25 +17,25 @@ export default function TabNav() {
     { name: 'Chat', path: '/chat', icon: '💬', subs: [] },
     {
       name: 'Money',
-      path: '/money/movimientos',
+      path: '/money',
       icon: '💰',
       subs: [
-        { name: 'Movs', path: '/money/movimientos', icon: '📊' },
-        { name: 'Insights', path: '/money/insights', icon: '💡' },
+        { name: 'Movimientos', path: '/money/movimientos', icon: '📊' },
         { name: 'Billeteras', path: '/money/billeteras', icon: '💳' },
         { name: 'Presupuestos', path: '/money/presupuestos', icon: '🎯' },
         { name: 'Suscripciones', path: '/money/suscripciones', icon: '🔄' },
+        { name: 'Insights', path: '/money/insights', icon: '💡' },
       ],
     },
     {
       name: 'Mental',
-      path: '/mental/estado',
+      path: '/mental',
       icon: '🧠',
       subs: [
         { name: 'Estado', path: '/mental/estado', icon: '📊' },
-        { name: 'Insights', path: '/mental/insights', icon: '💡' },
         { name: 'Diario', path: '/mental/diario', icon: '📔' },
         { name: 'Objetivos', path: '/mental/objetivos', icon: '🎯' },
+        { name: 'Insights', path: '/mental/insights', icon: '💡' },
       ],
     },
     {
@@ -43,21 +43,16 @@ export default function TabNav() {
       path: '/fisico',
       icon: '💪',
       subs: [
+        { name: 'Hábitos', path: '/fisico/habitos', icon: '✅' },
         { name: 'Salud', path: '/fisico/salud', icon: '❤️' },
         { name: 'Entrenos', path: '/fisico/entrenos', icon: '🏋️' },
-        { name: 'Hábitos', path: '/fisico/habitos', icon: '✅' },
       ],
     },
     {
       name: 'Más',
       path: '/mas',
       icon: '⋯',
-      subs: [
-        { name: 'Reglas', path: '/mas/reglas', icon: '⚙️' },
-        { name: 'Categorías', path: '/mas/categorias', icon: '🏷️' },
-        { name: 'Backup', path: '/mas/backup', icon: '💾' },
-        { name: 'Settings', path: '/mas/settings', icon: '⚙️' },
-      ],
+      subs: [],
     },
   ];
 

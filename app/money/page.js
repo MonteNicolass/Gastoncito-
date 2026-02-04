@@ -20,10 +20,9 @@ export default function MoneyPage() {
         <Card className="overflow-hidden">
           <ListRow label="Movimientos" href="/money/movimientos" />
           <ListRow label="Billeteras" href="/money/billeteras" />
+          <ListRow label="Presupuestos" href="/money/presupuestos" />
           <ListRow label="Suscripciones" href="/money/suscripciones" />
           <ListRow label="Insights" href="/money/insights" />
-          <ListRow label="Presupuestos" href="/money/presupuestos" />
-          <ListRow label="Reportes" href="/money/reportes" />
         </Card>
 
         <div className="space-y-2">
