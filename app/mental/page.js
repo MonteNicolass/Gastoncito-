@@ -13,8 +13,8 @@ export default function MentalPage() {
         <Card className="overflow-hidden">
           <ListRow label="Estado" href="/mental/estado" />
           <ListRow label="Diario" href="/mental/diario" />
-          <ListRow label="Insights" href="/mental/insights" />
           <ListRow label="Objetivos" href="/mental/objetivos" />
+          <ListRow label="Insights" href="/mental/insights" />
         </Card>
       </div>
     </div>
