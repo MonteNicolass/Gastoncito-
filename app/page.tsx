@@ -86,7 +86,7 @@ export default function Home() {
     },
     {
       name: 'Notas',
-      path: '/mental/diario',
+      path: '/notas',
       icon: '📔',
       desc: `${stats.notesCount} notas guardadas`,
       color: 'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800'
