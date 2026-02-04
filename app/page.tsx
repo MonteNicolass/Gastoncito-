@@ -63,7 +63,7 @@ export default function Home() {
     },
     {
       name: 'Money',
-      path: '/money/movimientos',
+      path: '/money',
       icon: '💰',
       desc: `${stats.moneyCount} movs este mes • $${stats.moneyTotal.toLocaleString()}`,
       stat: `Total: $${stats.walletsTotal.toLocaleString()}`,
@@ -71,7 +71,7 @@ export default function Home() {
     },
     {
       name: 'Mental',
-      path: '/mental/estado',
+      path: '/mental',
       icon: '🧠',
       desc: stats.mentalCount > 0 ? `${stats.mentalCount} registros` : 'Sin registros',
       stat: stats.mentalAvg > 0 ? `Promedio: ${stats.mentalAvg}/10` : '',
