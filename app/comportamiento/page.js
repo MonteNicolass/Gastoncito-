@@ -69,12 +69,12 @@ export default function ComportamientoPage() {
       <TopBar title="Comportamiento" />
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        <div className="space-y-2">
+        <div className="space-y-2 mb-2">
           <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1">
             Alertas tempranas
           </h3>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 px-1">
-            Patrones detectados automáticamente. No son diagnósticos, solo observaciones.
+            Patrones detectados en tus últimos días. No son diagnósticos, solo observaciones.
           </p>
         </div>
 
@@ -255,13 +255,13 @@ export default function ComportamientoPage() {
 
         {/* Sin detecciones */}
         {!hasDetections && (
-          <Card className="p-6 text-center">
+          <Card className="p-8 text-center">
             <div className="text-4xl mb-3">✅</div>
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
-              Todo en orden
+              Todo bien
             </h3>
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              No se detectaron patrones de comportamiento inusuales.
+              No se detectaron patrones inusuales en tus datos recientes
             </p>
           </Card>
         )}

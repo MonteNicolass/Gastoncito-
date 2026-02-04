@@ -64,12 +64,12 @@ export default function InsightsPage() {
       <TopBar title="Insights Cruzados" />
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        <div className="space-y-2">
+        <div className="space-y-2 mb-2">
           <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1">
-            Cruces entre secciones (últimos 30 días)
+            Cruces entre áreas
           </h3>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 px-1">
-            Relaciones entre tu estado mental, gastos y actividad física
+            Relaciones entre tu estado, gastos y actividad (últimos 30 días)
           </p>
         </div>
 
@@ -204,13 +204,13 @@ export default function InsightsPage() {
 
         {/* Sin datos suficientes */}
         {!hasInsights && (
-          <Card className="p-6 text-center">
+          <Card className="p-8 text-center">
             <div className="text-4xl mb-3">📊</div>
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
-              Sin datos suficientes
+              Faltan datos para cruzar
             </h3>
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Necesitas registrar tu estado mental, gastos y ejercicio regularmente para ver cruces.
+              Registrá estado, gastos y ejercicio para ver patrones
             </p>
           </Card>
         )}
@@ -219,12 +219,11 @@ export default function InsightsPage() {
         <Card className="p-4 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
           <div className="space-y-2">
             <h4 className="text-xs font-semibold text-blue-900 dark:text-blue-300">
-              ¿Qué son los insights cruzados?
+              ¿Qué son estos cruces?
             </h4>
             <p className="text-xs text-blue-800 dark:text-blue-400 leading-relaxed">
-              Los insights cruzados muestran relaciones entre diferentes áreas de tu vida.
-              No son diagnósticos ni recomendaciones, solo patrones observados en tus datos
-              para que tengas mayor conciencia de cómo se relacionan tus hábitos.
+              Muestran cómo se relacionan tus hábitos, estado y gastos. No son diagnósticos
+              ni consejos, solo patrones en tus datos para que tengas más conciencia.
             </p>
           </div>
         </Card>

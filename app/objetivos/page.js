@@ -115,14 +115,18 @@ export default function ObjetivosPage() {
           Nuevo objetivo
         </Button>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1">
             Mis objetivos
           </h2>
           {goals.length === 0 ? (
-            <Card className="p-6 text-center">
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                No hay objetivos registrados.
+            <Card className="p-8 text-center">
+              <div className="text-3xl mb-3">🎯</div>
+              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                Sin objetivos aún
+              </p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Creá tu primer objetivo arriba
               </p>
             </Card>
           ) : (

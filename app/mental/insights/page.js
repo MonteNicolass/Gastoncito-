@@ -58,12 +58,12 @@ export default function MentalInsightsPage() {
       <TopBar title="Insights" backHref="/mental" />
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        <div className="space-y-2">
+        <div className="space-y-2 mb-2">
           <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1">
-            Cruces de datos (últimos 30 días)
+            Cruces de datos
           </h3>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 px-1">
-            Relaciones entre tu estado mental, gastos y hábitos
+            Relaciones entre tu estado, gastos y hábitos (últimos 30 días)
           </p>
         </div>
 
@@ -151,12 +151,13 @@ export default function MentalInsightsPage() {
 
         {/* Sin datos suficientes */}
         {!insights.spendingByMood && !insights.moodByExercise && (
-          <Card className="p-6 text-center">
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              No hay suficientes datos para mostrar cruces.
+          <Card className="p-8 text-center">
+            <div className="text-3xl mb-3">📊</div>
+            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              Faltan datos para cruzar
             </p>
-            <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-2">
-              Necesitas registrar tu estado mental, gastos y ejercicio regularmente para ver patrones.
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              Registrá estado, gastos y ejercicio para ver patrones
             </p>
           </Card>
         )}
@@ -165,11 +166,11 @@ export default function MentalInsightsPage() {
         <Card className="p-4 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
           <div className="space-y-2">
             <h4 className="text-xs font-semibold text-blue-900 dark:text-blue-300">
-              ¿Qué son los insights?
+              ¿Qué son estos datos?
             </h4>
             <p className="text-xs text-blue-800 dark:text-blue-400 leading-relaxed">
-              Los insights muestran patrones y relaciones entre tus datos. No son consejos,
-              solo información para que veas cómo se relacionan tus hábitos, gastos y estado mental.
+              Muestran patrones entre tu estado, gastos y hábitos. No son consejos,
+              solo información para que tengas más conciencia de cómo se relacionan.
             </p>
           </div>
         </Card>

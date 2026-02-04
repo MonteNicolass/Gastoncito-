@@ -86,14 +86,18 @@ export default function NotasPage() {
         </Card>
 
         {/* Lista de notas */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1">
             Mis notas
           </h2>
           {notes.length === 0 ? (
-            <Card className="p-6 text-center">
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                No hay notas guardadas.
+            <Card className="p-8 text-center">
+              <div className="text-3xl mb-3">📄</div>
+              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                Sin notas aún
+              </p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Guardá tu primera nota arriba
               </p>
             </Card>
           ) : (
