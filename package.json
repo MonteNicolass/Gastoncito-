@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:smoke": "playwright test",
-    "test:smoke:ui": "playwright test --ui"
+    "test:smoke": "npm run build && playwright test",
+    "test:smoke:ui": "npm run build && playwright test --ui"
   },
   "dependencies": {
     "next": "^16.1.6",

@@ -3,22 +3,45 @@
 @tailwind utilities;
 
 :root {
-	--bg: 255 255 255; /* rgb as three numbers for use with tailwind/alpha if needed */
-	--text: 15 23 42;
-	--muted: 113 113 122;
+	--bg: 250 250 250; /* zinc-50 */
+	--text: 24 24 27; /* zinc-900 */
+	--muted: 113 113 122; /* zinc-500 */
 }
 
 .dark {
-	--bg: 7 10 14;
-	--text: 226 238 248;
-	--muted: 148 163 184;
+	--bg: 9 9 11; /* zinc-950 */
+	--text: 250 250 250; /* zinc-50 */
+	--muted: 161 161 170; /* zinc-400 */
+}
+
+html {
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 html, body {
 	background-color: rgb(var(--bg));
 	color: rgb(var(--text));
+	min-height: 100vh;
 }
 
-/* small utility to hide native scrollbar on webkit browsers */
+body {
+	padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* iOS safe area support */
+.pb-safe {
+	padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* Smooth scrolling */
+@media (prefers-reduced-motion: no-preference) {
+	html {
+		scroll-behavior: smooth;
+	}
+}
+
+/* Small utility to hide native scrollbar on webkit browsers */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }

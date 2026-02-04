@@ -1,25 +1,20 @@
+import './globals.css'
+import AppShell from '@/components/ui/AppShell'
+import BottomTabs from '@/components/ui/BottomTabs'
+
 export default function RootLayout({ children }) {
   return (
     <html lang="es">
-      <body
-        style={{
-          margin: 0,
-          padding: 0,
-          height: '100vh',
-          width: '100vw',
-          overflow: 'hidden'
-        }}
-      >
-        <div
-          style={{
-            height: '100vh',
-            width: '100vw',
-            display: 'flex',
-            flexDirection: 'column'
-          }}
-        >
-          {children}
-        </div>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+      </head>
+      <body>
+        <AppShell>
+          <div className="pb-24">
+            {children}
+          </div>
+          <BottomTabs />
+        </AppShell>
       </body>
     </html>
   )

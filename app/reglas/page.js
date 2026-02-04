@@ -11,6 +11,11 @@ import {
   recategorizeAllMovimientos
 } from '@/lib/storage'
 import { seedPredefinedCategories } from '@/lib/seed-categories'
+import TopBar from '@/components/ui/TopBar'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
+import Input from '@/components/ui/Input'
+import Select from '@/components/ui/Select'
 
 export default function ReglasPage() {
   const [rules, setRules] = useState([])
@@ -117,70 +122,60 @@ export default function ReglasPage() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 pb-20">
-      <header className="border-b border-stone-200 bg-white px-4 py-3 sticky top-0">
-        <h1 className="text-sm font-bold">Reglas de Categorización</h1>
-        <p className="text-xs text-stone-500">Configuración avanzada de matching</p>
-      </header>
+    <div className="flex flex-col min-h-screen">
+      <TopBar title="Reglas" />
 
-      <div className="p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {/* Botón de re-categorización */}
-        <button
+        <Button
           onClick={handleRecategorize}
           disabled={isRecategorizing}
           data-testid="recategorize-btn"
-          className="w-full rounded-lg bg-stone-800 px-4 py-3 text-sm font-semibold text-white hover:bg-stone-700 disabled:opacity-50"
+          variant="secondary"
+          size="lg"
+          className="w-full"
         >
-          {isRecategorizing ? '⏳ Re-categorizando...' : '🔄 Re-categorizar todos los movimientos'}
-        </button>
+          {isRecategorizing ? '⏳ Re-categorizando...' : '🔄 Re-categorizar todos'}
+        </Button>
 
         {/* Formulario */}
-        <form onSubmit={handleSubmit} className="rounded-lg border border-stone-200 bg-white p-4 space-y-3">
-          <div>
-            <label className="text-xs text-stone-600 block mb-1">Nombre de la regla</label>
-            <input
-              type="text"
+        <Card className="p-4">
+          <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">
+            {editingId ? 'Editar regla' : 'Nueva regla'}
+          </h2>
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <Input
+              label="Nombre de la regla"
               value={form.nombre}
               onChange={(e) => setForm({ ...form, nombre: e.target.value })}
               placeholder="ej: Uber → Transporte"
               data-testid="rule-name-input"
-              className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm outline-none focus:border-stone-400"
             />
-          </div>
 
-          <div>
-            <label className="text-xs text-stone-600 block mb-1">Tipo de match</label>
-            <select
+            <Select
+              label="Tipo de match"
               value={form.match_type}
               onChange={(e) => setForm({ ...form, match_type: e.target.value })}
               data-testid="rule-match-type-select"
-              className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm outline-none focus:border-stone-400"
             >
               <option value="includes">Contiene</option>
               <option value="startsWith">Empieza con</option>
               <option value="regex">Expresión regular</option>
-            </select>
-          </div>
+            </Select>
 
-          <div>
-            <label className="text-xs text-stone-600 block mb-1">Patrón</label>
-            <input
-              type="text"
+            <Input
+              label="Patrón"
               value={form.pattern}
               onChange={(e) => setForm({ ...form, pattern: e.target.value })}
               placeholder="ej: uber"
               data-testid="rule-pattern-input"
-              className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm outline-none focus:border-stone-400"
             />
-          </div>
 
-          <div>
-            <label className="text-xs text-stone-600 block mb-1">Categoría</label>
-            <select
+            <Select
+              label="Categoría"
               value={form.category_id || ''}
               onChange={(e) => setForm({ ...form, category_id: parseInt(e.target.value) })}
               data-testid="rule-category-select"
-              className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm outline-none focus:border-stone-400"
             >
               <option value="">Seleccionar...</option>
               {categorias.map((cat) => (
@@ -188,101 +183,120 @@ export default function ReglasPage() {
                   {cat.nombre}
                 </option>
               ))}
-            </select>
-          </div>
+            </Select>
 
-          <div>
-            <label className="text-xs text-stone-600 block mb-1">Prioridad</label>
-            <input
-              type="number"
-              value={form.priority}
-              onChange={(e) => setForm({ ...form, priority: parseInt(e.target.value) || 50 })}
-              placeholder="50"
-              data-testid="rule-priority-input"
-              className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm outline-none focus:border-stone-400"
-            />
-            <p className="text-xs text-stone-400 mt-1">Mayor número = mayor prioridad</p>
-          </div>
+            <div>
+              <Input
+                label="Prioridad"
+                type="number"
+                value={form.priority}
+                onChange={(e) => setForm({ ...form, priority: parseInt(e.target.value) || 50 })}
+                placeholder="50"
+                data-testid="rule-priority-input"
+              />
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5">Mayor número = mayor prioridad</p>
+            </div>
 
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={form.enabled}
-              onChange={(e) => setForm({ ...form, enabled: e.target.checked })}
-              data-testid="rule-enabled-checkbox"
-              className="rounded"
-            />
-            <label className="text-xs text-stone-600">Regla activa</label>
-          </div>
+            <div className="flex items-center justify-between py-2">
+              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Regla activa</label>
+              <input
+                type="checkbox"
+                checked={form.enabled}
+                onChange={(e) => setForm({ ...form, enabled: e.target.checked })}
+                data-testid="rule-enabled-checkbox"
+                className="w-5 h-5 rounded text-blue-600 focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
 
-          <div className="flex gap-2">
-            {editingId && (
-              <button
-                type="button"
-                onClick={() => {
-                  setEditingId(null)
-                  resetForm()
-                }}
-                className="flex-1 rounded-lg border border-stone-200 px-4 py-2 text-sm font-semibold text-stone-900 hover:bg-stone-50"
+            <div className="flex gap-2 pt-2">
+              {editingId && (
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setEditingId(null)
+                    resetForm()
+                  }}
+                  variant="ghost"
+                  className="flex-1"
+                >
+                  Cancelar
+                </Button>
+              )}
+              <Button
+                type="submit"
+                data-testid="rule-submit-btn"
+                variant="primary"
+                className="flex-1"
               >
-                Cancelar
-              </button>
-            )}
-            <button
-              type="submit"
-              data-testid="rule-submit-btn"
-              className="flex-1 rounded-lg bg-stone-800 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-700"
-            >
-              {editingId ? 'Actualizar' : 'Agregar'} regla
-            </button>
-          </div>
-        </form>
+                {editingId ? 'Actualizar' : 'Agregar'} regla
+              </Button>
+            </div>
+          </form>
+        </Card>
 
         {/* Lista de reglas */}
-        {rules.length === 0 ? (
-          <div className="rounded-lg border border-stone-200 bg-white p-4 text-center text-sm text-stone-500">
-            No hay reglas configuradas.
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {rules.map((rule) => (
-              <div
+        <div className="space-y-2">
+          <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1">
+            Reglas configuradas
+          </h2>
+          {rules.length === 0 ? (
+            <Card className="p-6 text-center">
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                No hay reglas configuradas.
+              </p>
+            </Card>
+          ) : (
+            rules.map((rule) => (
+              <Card
                 key={rule.id}
-                className={`rounded-lg border ${rule.enabled ? 'border-stone-200' : 'border-stone-100 bg-stone-50'} bg-white p-3`}
+                className={`p-4 ${!rule.enabled ? 'opacity-60' : ''}`}
               >
                 <div className="flex justify-between items-start gap-3">
-                  <div className="flex-1">
-                    <div className="text-sm font-semibold">{rule.nombre}</div>
-                    <div className="text-xs text-stone-500 mt-1">
-                      <span className="font-mono bg-stone-100 px-1 rounded">{rule.match_type}</span>
-                      {' → '}
-                      <span className="font-mono">{rule.pattern}</span>
-                      {' → '}
-                      <span className="font-semibold">{getCategoryName(rule.category_id)}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+                      {rule.nombre}
                     </div>
-                    <div className="text-xs text-stone-400 mt-1">
-                      Prioridad: {rule.priority} • {rule.enabled ? '✅ Activa' : '❌ Inactiva'}
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-mono bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                        {rule.match_type}
+                      </span>
+                      <span className="text-xs text-zinc-500 dark:text-zinc-400">→</span>
+                      <span className="text-xs font-mono text-zinc-700 dark:text-zinc-300">
+                        {rule.pattern}
+                      </span>
+                      <span className="text-xs text-zinc-500 dark:text-zinc-400">→</span>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
+                        {getCategoryName(rule.category_id)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 mt-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+                      <span>Prioridad: {rule.priority}</span>
+                      <span>•</span>
+                      <span>{rule.enabled ? '✅ Activa' : '❌ Inactiva'}</span>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <button
+                  <div className="flex flex-col gap-1 flex-shrink-0">
+                    <Button
                       onClick={() => handleEdit(rule)}
-                      className="text-xs text-stone-600 hover:text-stone-800 font-semibold"
+                      variant="ghost"
+                      size="sm"
                     >
                       Editar
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => handleDelete(rule.id)}
-                      className="text-xs text-red-600 hover:text-red-700 font-semibold"
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-600 hover:text-red-700 dark:text-red-400"
                     >
                       Eliminar
-                    </button>
+                    </Button>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              </Card>
+            ))
+          )}
+        </div>
       </div>
     </div>
   )

@@ -2,6 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { initDB, exportMovimientosJSON, exportMovimientosCSV, exportBackupJSON, importBackupJSON, clearAll, getSettings, setSetting } from '@/lib/storage'
+import TopBar from '@/components/ui/TopBar'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
+import ListRow from '@/components/ui/ListRow'
+import Switch from '@/components/ui/Switch'
 
 export default function MasPage() {
   const [confirmMode, setConfirmMode] = useState(false)
@@ -91,99 +96,116 @@ export default function MasPage() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 pb-20">
-      <header className="border-b border-stone-200 bg-white px-4 py-3 sticky top-0">
-        <h1 className="text-sm font-bold">Más</h1>
-        <p className="text-xs text-stone-500">Configuración y datos</p>
-      </header>
+    <div className="flex flex-col min-h-screen">
+      <TopBar title="Más" />
 
-      <div className="p-4 space-y-4">
-        <div className="rounded-lg border border-stone-200 bg-white p-4">
-          <h2 className="text-sm font-semibold mb-3">Configuración</h2>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <div>
-                <div className="text-sm font-medium">Modo confirmación</div>
-                <div className="text-xs text-stone-500">Pedir confirmación antes de guardar</div>
-              </div>
-              <button
-                onClick={handleToggleConfirm}
-                className={`text-xs px-4 py-2 rounded-full border transition-colors ${
-                  confirmMode
-                    ? 'bg-stone-800 text-white border-stone-800'
-                    : 'border-stone-300 text-stone-600 hover:bg-stone-100'
-                }`}
-              >
-                {confirmMode ? 'ON' : 'OFF'}
-              </button>
-            </div>
-
-            <div className="flex justify-between items-center">
-              <div>
-                <div className="text-sm font-medium">Permitir análisis con IA</div>
-                <div className="text-xs text-stone-500">Habilita análisis automático de gastos</div>
-              </div>
-              <button
-                onClick={handleToggleAI}
-                className={`text-xs px-4 py-2 rounded-full border transition-colors ${
-                  allowAI
-                    ? 'bg-stone-800 text-white border-stone-800'
-                    : 'border-stone-300 text-stone-600 hover:bg-stone-100'
-                }`}
-              >
-                {allowAI ? 'ON' : 'OFF'}
-              </button>
-            </div>
-          </div>
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        {/* Navegación a otras secciones */}
+        <div className="space-y-2">
+          <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1">
+            Secciones
+          </h2>
+          <Card className="overflow-hidden">
+            <ListRow label="Budgets" href="/budgets" />
+            <ListRow label="Objetivos" href="/objetivos" />
+            <ListRow label="Crypto" href="/crypto" />
+            <ListRow label="Notas" href="/notas" />
+            <ListRow label="Comportamiento" href="/comportamiento" />
+            <ListRow label="Money" href="/money" />
+          </Card>
         </div>
 
-        <div className="rounded-lg border border-stone-200 bg-white p-4">
-          <h2 className="text-sm font-semibold mb-3">Exportar movimientos</h2>
-          <div className="space-y-2">
-            <button
+        {/* Configuración */}
+        <div className="space-y-2">
+          <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1">
+            Configuración
+          </h2>
+          <Card className="p-4 space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Modo confirmación</div>
+                <div className="text-xs text-zinc-500 dark:text-zinc-400">Pedir confirmación antes de guardar</div>
+              </div>
+              <Switch checked={confirmMode} onChange={handleToggleConfirm} />
+            </div>
+
+            <div className="h-px bg-zinc-200 dark:bg-zinc-800" />
+
+            <div className="flex justify-between items-center">
+              <div>
+                <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Análisis con IA</div>
+                <div className="text-xs text-zinc-500 dark:text-zinc-400">Habilita análisis automático</div>
+              </div>
+              <Switch checked={allowAI} onChange={handleToggleAI} />
+            </div>
+          </Card>
+        </div>
+
+        {/* Exportar movimientos */}
+        <div className="space-y-2">
+          <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1">
+            Exportar movimientos
+          </h2>
+          <Card className="p-4 space-y-2">
+            <Button
               onClick={handleExportJSON}
-              className="w-full rounded-lg border border-stone-200 px-4 py-2 text-sm font-semibold text-stone-900 hover:bg-stone-50"
+              variant="ghost"
+              className="w-full justify-start"
             >
-              Exportar JSON
-            </button>
-            <button
+              📄 Exportar JSON
+            </Button>
+            <Button
               onClick={handleExportCSV}
-              className="w-full rounded-lg border border-stone-200 px-4 py-2 text-sm font-semibold text-stone-900 hover:bg-stone-50"
+              variant="ghost"
+              className="w-full justify-start"
             >
-              Exportar CSV
-            </button>
-          </div>
+              📊 Exportar CSV
+            </Button>
+          </Card>
         </div>
 
-        <div className="rounded-lg border border-stone-200 bg-white p-4">
-          <h2 className="text-sm font-semibold mb-3">Backup completo</h2>
-          <p className="text-xs text-stone-500 mb-3">
-            Incluye movimientos, saldos, configuración, objetivos, reglas, crypto y más.
-          </p>
-          <div className="space-y-2">
-            <button
-              onClick={handleExportBackup}
-              className="w-full rounded-lg bg-stone-800 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-700"
-            >
-              Exportar backup
-            </button>
-            <button
-              onClick={handleImportBackup}
-              className="w-full rounded-lg border border-stone-200 px-4 py-2 text-sm font-semibold text-stone-900 hover:bg-stone-50"
-            >
-              Importar backup
-            </button>
-          </div>
+        {/* Backup completo */}
+        <div className="space-y-2">
+          <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1">
+            Backup completo
+          </h2>
+          <Card className="p-4">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
+              Incluye movimientos, saldos, configuración, objetivos, reglas, crypto y más.
+            </p>
+            <div className="space-y-2">
+              <Button
+                onClick={handleExportBackup}
+                variant="primary"
+                className="w-full"
+              >
+                Exportar backup
+              </Button>
+              <Button
+                onClick={handleImportBackup}
+                variant="secondary"
+                className="w-full"
+              >
+                Importar backup
+              </Button>
+            </div>
+          </Card>
         </div>
 
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <h2 className="text-sm font-semibold text-red-900 mb-3">Zona peligrosa</h2>
-          <button
-            onClick={handleClearAll}
-            className="w-full rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
-          >
-            Eliminar todos los datos
-          </button>
+        {/* Zona peligrosa */}
+        <div className="space-y-2">
+          <h2 className="text-sm font-semibold text-red-600 dark:text-red-400 px-1">
+            Zona peligrosa
+          </h2>
+          <Card className="p-4 bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900">
+            <Button
+              onClick={handleClearAll}
+              variant="danger"
+              className="w-full"
+            >
+              Eliminar todos los datos
+            </Button>
+          </Card>
         </div>
       </div>
     </div>

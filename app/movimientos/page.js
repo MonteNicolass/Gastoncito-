@@ -2,6 +2,11 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { initDB, getMovimientos, deleteMovimiento, updateMovimiento, getCategorias } from '@/lib/storage'
+import TopBar from '@/components/ui/TopBar'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
+import Input from '@/components/ui/Input'
+import Select from '@/components/ui/Select'
 
 const vibrate = (pattern) => {
   if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -126,164 +131,174 @@ export default function MovimientosPage() {
   const hasActiveFilters = filterType !== 'all' || filterWallet !== 'all' || filterCategory !== 'all'
 
   return (
-    <div className="min-h-screen bg-stone-50 pb-20">
-      <header className="border-b border-stone-200 bg-white px-4 py-3 sticky top-0">
-        <h1 className="text-sm font-bold">Movimientos</h1>
-        <p className="text-xs text-stone-500">
-          {filtered.length} de {movimientos.length} registros
-        </p>
-      </header>
-
-      <div className="p-4 space-y-3">
-        <div className="rounded-lg border border-stone-200 bg-white p-3">
-          <div className="space-y-2">
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm outline-none focus:border-stone-400"
-            >
-              <option value="all">Tipo: Todos</option>
-              <option value="gasto">Gasto</option>
-              <option value="ingreso">Ingreso</option>
-              <option value="movimiento">Movimiento</option>
-            </select>
-
-            <select
-              value={filterWallet}
-              onChange={(e) => setFilterWallet(e.target.value)}
-              className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm outline-none focus:border-stone-400"
-            >
-              <option value="all">Billetera: Todas</option>
-              {wallets.map((w) => (
-                <option key={w} value={w}>
-                  {w}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
-              className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm outline-none focus:border-stone-400"
-            >
-              <option value="all">Categoría: Todas</option>
-              {categories.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-
-            {hasActiveFilters && (
-              <button
-                onClick={clearFilters}
-                className="w-full rounded-lg bg-stone-800 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-700"
-              >
-                Limpiar filtros
-              </button>
-            )}
+    <div className="flex flex-col min-h-screen">
+      <TopBar
+        title="Movimientos"
+        action={
+          <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+            {filtered.length} de {movimientos.length}
           </div>
+        }
+      />
+
+      {/* Filtros */}
+      <div className="px-4 py-3 space-y-2 border-b border-zinc-200/50 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-950/50">
+        <div className="grid grid-cols-3 gap-2">
+          <Select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            className="text-xs py-2"
+          >
+            <option value="all">Todos</option>
+            <option value="gasto">Gastos</option>
+            <option value="ingreso">Ingresos</option>
+            <option value="movimiento">Movimientos</option>
+          </Select>
+
+          <Select
+            value={filterWallet}
+            onChange={(e) => setFilterWallet(e.target.value)}
+            className="text-xs py-2"
+          >
+            <option value="all">Billeteras</option>
+            {wallets.map((w) => (
+              <option key={w} value={w}>
+                {w}
+              </option>
+            ))}
+          </Select>
+
+          <Select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            className="text-xs py-2"
+          >
+            <option value="all">Categorías</option>
+            {categories.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </Select>
         </div>
 
+        {hasActiveFilters && (
+          <button
+            onClick={clearFilters}
+            className="text-xs text-blue-600 dark:text-blue-400 font-medium"
+          >
+            Limpiar filtros
+          </button>
+        )}
+      </div>
+
+      {/* Lista */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
         {filtered.length === 0 ? (
-          <div className="rounded-lg border border-stone-200 bg-white p-4 text-center text-sm text-stone-500">
-            {movimientos.length === 0
-              ? 'Todavía no hay movimientos.'
-              : 'No hay movimientos con estos filtros.'}
-          </div>
+          <Card className="p-6 text-center">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              {movimientos.length === 0
+                ? 'No hay movimientos registrados.'
+                : 'No hay movimientos con estos filtros.'}
+            </p>
+          </Card>
         ) : (
           filtered.map((mov) => (
-            <div
+            <Card
               key={mov.id}
-              className="rounded-lg border border-stone-200 bg-white p-3 cursor-pointer hover:bg-stone-50"
+              className="p-4 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors active:scale-[0.99]"
               onClick={() => handleEdit(mov)}
               data-testid="movimiento-item"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-stone-900">
+                  <div className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
                     {formatAmount(mov.monto)}
                   </div>
-                  <div className="text-xs text-stone-600 mt-1">
+                  <div className="text-sm text-zinc-600 dark:text-zinc-400 mt-0.5 truncate">
                     {mov.motivo || '—'}
                   </div>
-                  <div className="text-xs text-stone-400 mt-1">
-                    {mov.tipo === 'movimiento'
-                      ? `${mov.origen} → ${mov.destino}`
-                      : mov.metodo}
-                    {(getCategoryName(mov.category_id) || mov.categoria) && ` • ${getCategoryName(mov.category_id) || mov.categoria || 'Sin categoría'}`}
+                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                      {mov.tipo === 'movimiento'
+                        ? `${mov.origen} → ${mov.destino}`
+                        : mov.metodo}
+                    </span>
+                    {(getCategoryName(mov.category_id) || mov.categoria) && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
+                        {getCategoryName(mov.category_id) || mov.categoria}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <div className="text-xs px-2 py-1 rounded bg-stone-100 text-stone-600">
+                  <div className="inline-flex items-center px-2 py-1 rounded-lg text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
                     {mov.tipo}
                   </div>
-                  <div className="text-xs text-stone-400 mt-1">
+                  <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
                     {mov.fecha}
                   </div>
                 </div>
               </div>
-              <div className="mt-2">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleDelete(mov.id)
-                  }}
-                  className="text-xs text-red-600 hover:text-red-700 font-semibold"
-                >
-                  Eliminar
-                </button>
-              </div>
-            </div>
+            </Card>
           ))
         )}
       </div>
 
+      {/* Modal de edición */}
       {editModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-sm w-full p-4">
-            <h2 className="text-sm font-bold mb-3">Editar movimiento</h2>
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs text-stone-600 block mb-1">Monto</label>
-                <input
-                  type="number"
-                  value={editForm.monto}
-                  onChange={(e) => setEditForm({ ...editForm, monto: e.target.value })}
-                  className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm outline-none focus:border-stone-400"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-stone-600 block mb-1">Billetera</label>
-                <input
-                  type="text"
-                  value={editForm.metodo}
-                  onChange={(e) => setEditForm({ ...editForm, metodo: e.target.value })}
-                  className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm outline-none focus:border-stone-400"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-stone-600 block mb-1">Descripción</label>
-                <input
-                  type="text"
-                  value={editForm.motivo}
-                  onChange={(e) => setEditForm({ ...editForm, motivo: e.target.value })}
-                  className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm outline-none focus:border-stone-400"
-                />
-              </div>
-              <div className="flex gap-2">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm">
+          <div className="w-full max-w-[420px] bg-white dark:bg-zinc-900 rounded-t-3xl shadow-xl animate-slide-up">
+            <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Editar</h3>
                 <button
                   onClick={handleCloseModal}
-                  className="flex-1 rounded-lg border border-stone-200 px-4 py-2 text-sm font-semibold text-stone-900 hover:bg-stone-50"
+                  className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
                 >
-                  Cancelar
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
-                <button
+              </div>
+            </div>
+
+            <div className="p-4 space-y-3">
+              <Input
+                label="Monto"
+                type="number"
+                value={editForm.monto}
+                onChange={(e) => setEditForm({ ...editForm, monto: e.target.value })}
+              />
+              <Input
+                label="Billetera"
+                value={editForm.metodo}
+                onChange={(e) => setEditForm({ ...editForm, metodo: e.target.value })}
+              />
+              <Input
+                label="Descripción"
+                value={editForm.motivo}
+                onChange={(e) => setEditForm({ ...editForm, motivo: e.target.value })}
+              />
+
+              <div className="flex gap-2 pt-2">
+                <Button
+                  onClick={() => {
+                    handleDelete(editModal.id)
+                    handleCloseModal()
+                  }}
+                  variant="danger"
+                  className="flex-1"
+                >
+                  Eliminar
+                </Button>
+                <Button
                   onClick={handleSaveEdit}
-                  className="flex-1 rounded-lg bg-stone-800 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-700"
+                  variant="primary"
+                  className="flex-1"
                 >
                   Guardar
-                </button>
+                </Button>
               </div>
             </div>
           </div>
