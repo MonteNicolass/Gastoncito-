@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+	--bg: 255 255 255; /* rgb as three numbers for use with tailwind/alpha if needed */
+	--text: 15 23 42;
+	--muted: 113 113 122;
+}
+
+.dark {
+	--bg: 7 10 14;
+	--text: 226 238 248;
+	--muted: 148 163 184;
+}
+
+html, body {
+	background-color: rgb(var(--bg));
+	color: rgb(var(--text));
+}
+
+/* small utility to hide native scrollbar on webkit browsers */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
