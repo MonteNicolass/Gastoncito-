@@ -39,7 +39,7 @@ export default function DiarioMentalPage() {
 
   const getMoodBadge = (entry) => {
     if (entry.meta && entry.meta.mood_score) {
-      return `Estado: ${entry.meta.mood_score}/5`
+      return `Estado: ${entry.meta.mood_score}/10`
     }
     return null
   }

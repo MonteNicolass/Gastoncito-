@@ -120,7 +120,7 @@ export default function MentalInsightsPage() {
                   Días con ejercicio
                 </span>
                 <span className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                  {insights.moodByExercise.avgWithExercise}/5
+                  {insights.moodByExercise.avgWithExercise}/10
                 </span>
               </div>
               <div className="flex justify-between items-baseline">
@@ -128,7 +128,7 @@ export default function MentalInsightsPage() {
                   Días sin ejercicio
                 </span>
                 <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                  {insights.moodByExercise.avgWithoutExercise}/5
+                  {insights.moodByExercise.avgWithoutExercise}/10
                 </span>
               </div>
               <div className="h-px bg-zinc-200 dark:bg-zinc-800" />

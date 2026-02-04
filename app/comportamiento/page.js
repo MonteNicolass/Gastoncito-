@@ -1,215 +1,220 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { initDB, getBehavioralGoals, addBehavioralGoal, deleteBehavioralGoal, getMovimientos } from '@/lib/storage'
+import { useRouter } from 'next/navigation'
+import { initDB, getMovimientos, getLifeEntries } from '@/lib/storage'
+import { getAllBehaviorInsights } from '@/lib/insights/behaviorInsights'
+import TopBar from '@/components/ui/TopBar'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
 
 export default function ComportamientoPage() {
-  const [goals, setGoals] = useState([])
-  const [movimientos, setMovimientos] = useState([])
-  const [name, setName] = useState('')
-  const [type, setType] = useState('category')
-  const [target, setTarget] = useState('')
-  const [limit, setLimit] = useState('')
-  const [period, setPeriod] = useState('month')
+  const router = useRouter()
+  const [loading, setLoading] = useState(true)
+  const [insights, setInsights] = useState(null)
 
   useEffect(() => {
-    const load = async () => {
-      await initDB()
-      const goalsData = await getBehavioralGoals()
-      const movs = await getMovimientos()
-      setGoals(goalsData)
-      setMovimientos(movs)
-    }
-    load()
+    loadInsights()
   }, [])
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (!name.trim() || !target.trim() || !limit) return
+  async function loadInsights() {
+    try {
+      await initDB()
+      const movimientos = await getMovimientos()
+      const lifeEntries = await getLifeEntries()
 
-    await addBehavioralGoal({
-      name: name.trim(),
-      type,
-      target: target.trim(),
-      limit: parseFloat(limit),
-      period,
-    })
-
-    setName('')
-    setTarget('')
-    setLimit('')
-
-    const goalsData = await getBehavioralGoals()
-    setGoals(goalsData)
-  }
-
-  const handleDelete = async (id) => {
-    if (!confirm('¿Eliminar este objetivo?')) return
-    await deleteBehavioralGoal(id)
-    const goalsData = await getBehavioralGoals()
-    setGoals(goalsData)
-  }
-
-  const evaluateGoal = (goal) => {
-    const now = new Date()
-    let startDate
-
-    if (goal.period === 'month') {
-      startDate = new Date(now.getFullYear(), now.getMonth(), 1)
-    } else {
-      const dayOfWeek = now.getDay()
-      const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1
-      startDate = new Date(now)
-      startDate.setDate(now.getDate() - diff)
-      startDate.setHours(0, 0, 0, 0)
-    }
-
-    const startDateStr = startDate.toISOString().split('T')[0]
-
-    if (goal.type === 'category') {
-      const filtered = movimientos.filter(
-        (m) => m.tipo === 'gasto' && m.categoria === goal.target && m.fecha >= startDateStr
-      )
-      const total = filtered.reduce((sum, m) => sum + m.monto, 0)
-      return { current: total, limit: goal.limit, exceeded: total > goal.limit }
-    } else {
-      const filtered = movimientos.filter(
-        (m) =>
-          m.fecha >= startDateStr &&
-          (m.metodo === goal.target || m.origen === goal.target || m.destino === goal.target)
-      )
-      const count = filtered.length
-      return { current: count, limit: goal.limit, exceeded: count > goal.limit }
+      const detected = getAllBehaviorInsights(movimientos, lifeEntries)
+      setInsights(detected)
+    } catch (error) {
+      console.error('Error loading insights:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const formatAmount = (n) => {
-    return new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: 'ARS',
-      minimumFractionDigits: 0,
-    }).format(n)
+  const hasDetections = insights && Object.values(insights).some(i => i && i.detected)
+
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <TopBar title="Comportamiento" />
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+          <Card className="p-4 animate-pulse">
+            <div className="h-24 bg-zinc-200 dark:bg-zinc-800 rounded" />
+          </Card>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 pb-20">
-      <header className="border-b border-stone-200 bg-white px-4 py-3 sticky top-0">
-        <h1 className="text-sm font-bold">Objetivos de Comportamiento</h1>
-        <p className="text-xs text-stone-500">Límites de gasto o uso</p>
-      </header>
+    <div className="flex flex-col min-h-screen">
+      <TopBar title="Comportamiento" />
 
-      <div className="p-4 space-y-4">
-        <form onSubmit={handleSubmit} className="rounded-lg border border-stone-200 bg-white p-4 space-y-3">
-          <div>
-            <label className="text-xs text-stone-600 block mb-1">Nombre del objetivo</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="ej: Menos delivery"
-              className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm outline-none focus:border-stone-400"
-            />
-          </div>
-          <div>
-            <label className="text-xs text-stone-600 block mb-1">Tipo</label>
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm outline-none focus:border-stone-400"
-            >
-              <option value="category">Categoría</option>
-              <option value="wallet">Billetera</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-xs text-stone-600 block mb-1">
-              {type === 'category' ? 'Categoría' : 'Billetera'}
-            </label>
-            <input
-              type="text"
-              value={target}
-              onChange={(e) => setTarget(e.target.value)}
-              placeholder={type === 'category' ? 'ej: comida' : 'ej: mercado pago'}
-              className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm outline-none focus:border-stone-400"
-            />
-          </div>
-          <div>
-            <label className="text-xs text-stone-600 block mb-1">
-              {type === 'category' ? 'Límite de gasto' : 'Límite de usos'}
-            </label>
-            <input
-              type="number"
-              value={limit}
-              onChange={(e) => setLimit(e.target.value)}
-              placeholder={type === 'category' ? 'ej: 50000' : 'ej: 5'}
-              className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm outline-none focus:border-stone-400"
-            />
-          </div>
-          <div>
-            <label className="text-xs text-stone-600 block mb-1">Período</label>
-            <select
-              value={period}
-              onChange={(e) => setPeriod(e.target.value)}
-              className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm outline-none focus:border-stone-400"
-            >
-              <option value="month">Mes</option>
-              <option value="week">Semana</option>
-            </select>
-          </div>
-          <button
-            type="submit"
-            className="w-full rounded-lg bg-stone-800 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-700"
-          >
-            Agregar objetivo
-          </button>
-        </form>
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1">
+            Detección temprana
+          </h3>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 px-1">
+            Patrones identificados en tu comportamiento. No son consejos, solo observaciones.
+          </p>
+        </div>
 
-        {goals.length === 0 ? (
-          <div className="rounded-lg border border-stone-200 bg-white p-4 text-center text-sm text-stone-500">
-            No hay objetivos configurados.
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {goals.map((goal) => {
-              const evaluation = evaluateGoal(goal)
-              return (
-                <div key={goal.id} className="rounded-lg border border-stone-200 bg-white p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h3 className="text-sm font-semibold">{goal.name}</h3>
-                      <p className="text-xs text-stone-500 mt-1">
-                        {goal.type === 'category' ? 'Categoría' : 'Billetera'}: {goal.target}
-                      </p>
-                      <p className="text-xs text-stone-500">
-                        Período: {goal.period === 'month' ? 'Mensual' : 'Semanal'}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => handleDelete(goal.id)}
-                      className="text-xs text-red-600 hover:text-red-700 font-semibold"
-                    >
-                      Eliminar
-                    </button>
-                  </div>
-                  <div className="flex justify-between items-center mt-2">
-                    <span className="text-sm text-stone-600">
-                      {goal.type === 'category'
-                        ? `${formatAmount(evaluation.current)} / ${formatAmount(evaluation.limit)}`
-                        : `${evaluation.current} usos / ${evaluation.limit} usos`}
-                    </span>
-                    <span
-                      className={`text-xs px-2 py-1 rounded font-semibold ${
-                        evaluation.exceeded ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
-                      }`}
-                    >
-                      {evaluation.exceeded ? 'EXCEDIDO' : 'OK'}
-                    </span>
-                  </div>
+        {/* Gasto Excesivo */}
+        {insights?.excessiveSpending?.detected && (
+          <Card className="p-4 border-l-4 border-orange-500">
+            <div className="space-y-2">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-orange-800 dark:text-orange-300 mb-1">
+                    ⚠️ Gasto elevado detectado
+                  </h3>
+                  <p className="text-sm text-zinc-700 dark:text-zinc-300">
+                    {insights.excessiveSpending.message}
+                  </p>
                 </div>
-              )
-            })}
-          </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div>
+                  <span className="text-zinc-500 dark:text-zinc-400">Día máximo:</span>
+                  <span className="block font-semibold text-zinc-900 dark:text-zinc-100">
+                    ${insights.excessiveSpending.maxDaily.toLocaleString()}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-zinc-500 dark:text-zinc-400">Promedio diario:</span>
+                  <span className="block font-semibold text-zinc-900 dark:text-zinc-100">
+                    ${insights.excessiveSpending.averageDaily.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </Card>
         )}
+
+        {/* Racha estado bajo */}
+        {insights?.lowMoodStreak?.detected && (
+          <Card className="p-4 border-l-4 border-purple-500">
+            <div className="space-y-2">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-purple-800 dark:text-purple-300 mb-1">
+                    💭 Racha de estado bajo
+                  </h3>
+                  <p className="text-sm text-zinc-700 dark:text-zinc-300">
+                    {insights.lowMoodStreak.message}
+                  </p>
+                </div>
+              </div>
+              <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                Días consecutivos con estado mental ≤4/10
+              </div>
+              <Button
+                onClick={() => router.push('/mental/estado')}
+                variant="ghost"
+                size="sm"
+                className="w-full"
+              >
+                Registrar estado actual
+              </Button>
+            </div>
+          </Card>
+        )}
+
+        {/* Inactividad */}
+        {insights?.inactivity?.detected && (
+          <Card className="p-4 border-l-4 border-blue-500">
+            <div className="space-y-2">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-1">
+                    🏃 Sin actividad física
+                  </h3>
+                  <p className="text-sm text-zinc-700 dark:text-zinc-300">
+                    {insights.inactivity.message}
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={() => router.push('/fisico/habitos')}
+                variant="ghost"
+                size="sm"
+                className="w-full"
+              >
+                Registrar ejercicio
+              </Button>
+            </div>
+          </Card>
+        )}
+
+        {/* Delivery frecuente */}
+        {insights?.frequentDelivery?.detected && (
+          <Card className="p-4 border-l-4 border-red-500">
+            <div className="space-y-2">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-red-800 dark:text-red-300 mb-1">
+                    🛵 Delivery frecuente
+                  </h3>
+                  <p className="text-sm text-zinc-700 dark:text-zinc-300">
+                    {insights.frequentDelivery.message}
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div>
+                  <span className="text-zinc-500 dark:text-zinc-400">Total gastado:</span>
+                  <span className="block font-semibold text-zinc-900 dark:text-zinc-100">
+                    ${insights.frequentDelivery.deliveryTotal.toLocaleString()}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-zinc-500 dark:text-zinc-400">Promedio/pedido:</span>
+                  <span className="block font-semibold text-zinc-900 dark:text-zinc-100">
+                    ${insights.frequentDelivery.averagePerOrder.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Sin detecciones */}
+        {!hasDetections && (
+          <Card className="p-6 text-center">
+            <div className="text-4xl mb-3">✅</div>
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
+              Todo en orden
+            </h3>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              No se detectaron patrones de comportamiento inusuales.
+            </p>
+          </Card>
+        )}
+
+        {/* Explicación */}
+        <Card className="p-4 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+          <div className="space-y-2">
+            <h4 className="text-xs font-semibold text-blue-900 dark:text-blue-300">
+              ¿Qué es la detección temprana?
+            </h4>
+            <p className="text-xs text-blue-800 dark:text-blue-400 leading-relaxed">
+              Esta sección identifica patrones automáticamente basándose en umbrales simples.
+              No son diagnósticos ni recomendaciones, solo observaciones sobre tus datos para que
+              estés informado.
+            </p>
+          </div>
+        </Card>
+
+        {/* Link a reglas */}
+        <Button
+          onClick={() => router.push('/mas/reglas')}
+          variant="secondary"
+          className="w-full"
+        >
+          Configurar reglas de categorización
+        </Button>
       </div>
     </div>
   )
