@@ -16,16 +16,36 @@ export default function TabNav() {
   const tabs = [
     { name: 'Chat', path: '/chat', icon: '💬', subs: [] },
     {
-      name: 'Economía',
-      path: '/movimientos',
+      name: 'Money',
+      path: '/money/movimientos',
       icon: '💰',
       subs: [
-        { name: 'Movs', path: '/movimientos', icon: '📊' },
-        { name: 'Money', path: '/money', icon: '💰' },
-        { name: 'Objetivos', path: '/objetivos', icon: '🎯' },
-        { name: 'Comportamiento', path: '/comportamiento', icon: '📈' },
-        { name: 'Budgets', path: '/budgets', icon: '💳' },
-        { name: 'Crypto', path: '/crypto', icon: '₿' },
+        { name: 'Movs', path: '/money/movimientos', icon: '📊' },
+        { name: 'Insights', path: '/money/insights', icon: '💡' },
+        { name: 'Billeteras', path: '/money/billeteras', icon: '💳' },
+        { name: 'Presupuestos', path: '/money/presupuestos', icon: '🎯' },
+        { name: 'Suscripciones', path: '/money/suscripciones', icon: '🔄' },
+      ],
+    },
+    {
+      name: 'Mental',
+      path: '/mental/estado',
+      icon: '🧠',
+      subs: [
+        { name: 'Estado', path: '/mental/estado', icon: '📊' },
+        { name: 'Insights', path: '/mental/insights', icon: '💡' },
+        { name: 'Diario', path: '/mental/diario', icon: '📔' },
+        { name: 'Objetivos', path: '/mental/objetivos', icon: '🎯' },
+      ],
+    },
+    {
+      name: 'Físico',
+      path: '/fisico',
+      icon: '💪',
+      subs: [
+        { name: 'Salud', path: '/fisico/salud', icon: '❤️' },
+        { name: 'Entrenos', path: '/fisico/entrenos', icon: '🏋️' },
+        { name: 'Hábitos', path: '/fisico/habitos', icon: '✅' },
       ],
     },
     {
@@ -33,7 +53,10 @@ export default function TabNav() {
       path: '/mas',
       icon: '⋯',
       subs: [
-        { name: 'Reglas', path: '/reglas', icon: '⚙️' },
+        { name: 'Reglas', path: '/mas/reglas', icon: '⚙️' },
+        { name: 'Categorías', path: '/mas/categorias', icon: '🏷️' },
+        { name: 'Backup', path: '/mas/backup', icon: '💾' },
+        { name: 'Settings', path: '/mas/settings', icon: '⚙️' },
       ],
     },
   ];
