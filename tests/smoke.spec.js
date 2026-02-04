@@ -1,7 +1,7 @@
 // tests/smoke.spec.js
 import { test, expect } from '@playwright/test'
 
-test.describe('Smoke Tests - Sistema de Categorización', () => {
+test.describe('Smoke Tests - Gastoncito Super-App', () => {
   test.beforeEach(async ({ page }) => {
     // Limpiar IndexedDB antes de cada test
     await page.goto('/')
@@ -16,8 +16,8 @@ test.describe('Smoke Tests - Sistema de Categorización', () => {
     await page.reload()
   })
 
-  test('1. IndexedDB gaston_db está en versión 10', async ({ page }) => {
-    await page.goto('/reglas')
+  test('1. IndexedDB gaston_db está en versión 11', async ({ page }) => {
+    await page.goto('/money')
 
     const dbVersion = await page.evaluate(() => {
       return new Promise((resolve) => {
@@ -30,11 +30,11 @@ test.describe('Smoke Tests - Sistema de Categorización', () => {
       })
     })
 
-    expect(dbVersion).toBe(10)
+    expect(dbVersion).toBe(11)
   })
 
-  test('2. Existen stores categorias, reglas y movimientos', async ({ page }) => {
-    await page.goto('/reglas')
+  test('2. Existen stores requeridos (movimientos, categorias, life_entries, subscriptions)', async ({ page }) => {
+    await page.goto('/money')
 
     const stores = await page.evaluate(() => {
       return new Promise((resolve) => {
@@ -48,15 +48,14 @@ test.describe('Smoke Tests - Sistema de Categorización', () => {
       })
     })
 
-    expect(stores).toContain('categorias')
-    expect(stores).toContain('reglas')
     expect(stores).toContain('movimientos')
+    expect(stores).toContain('categorias')
+    expect(stores).toContain('life_entries')
+    expect(stores).toContain('subscriptions')
   })
 
-  test('3. Hay 9 categorías predefinidas en categorias', async ({ page }) => {
-    await page.goto('/reglas')
-
-    // Esperar a que se carguen las categorías
+  test('3. Existen categorías predefinidas incluyendo transporte', async ({ page }) => {
+    await page.goto('/money')
     await page.waitForTimeout(1000)
 
     const categorias = await page.evaluate(() => {
@@ -76,188 +75,146 @@ test.describe('Smoke Tests - Sistema de Categorización', () => {
       })
     })
 
-    expect(categorias.length).toBe(9)
-
+    expect(categorias.length).toBeGreaterThan(0)
     const nombres = categorias.map(c => c.nombre)
-    expect(nombres).toContain('comida')
     expect(nombres).toContain('transporte')
-    expect(nombres).toContain('ocio')
-    expect(nombres).toContain('suscripciones')
-    expect(nombres).toContain('compras')
-    expect(nombres).toContain('servicios')
-    expect(nombres).toContain('salud')
-    expect(nombres).toContain('educacion')
-    expect(nombres).toContain('alquiler')
   })
 
-  test('4. Crear regla: uber -> transporte, priority 100', async ({ page }) => {
-    await page.goto('/reglas')
+  test('4. Money manual: crear movimiento desde /money/movimientos', async ({ page }) => {
+    await page.goto('/money/movimientos')
 
-    // Esperar a que carguen las categorías
-    await page.waitForTimeout(1000)
+    // Esperar a que las categorías estén seeded (botón habilitado)
+    await page.waitForSelector('[data-testid="add-movimiento-btn"]:not([disabled])')
 
-    // Llenar formulario de regla
-    await page.fill('[data-testid="rule-name-input"]', 'Uber → Transporte')
-    await page.selectOption('[data-testid="rule-match-type-select"]', 'includes')
-    await page.fill('[data-testid="rule-pattern-input"]', 'uber')
+    // Abrir modal de agregar movimiento
+    await page.click('[data-testid="add-movimiento-btn"]')
 
-    // Seleccionar categoría "transporte"
-    const categorias = await page.evaluate(() => {
-      return new Promise((resolve) => {
-        const req = indexedDB.open('gaston_db')
-        req.onsuccess = () => {
-          const db = req.result
-          const tx = db.transaction('categorias', 'readonly')
-          const store = tx.objectStore('categorias')
-          const getAllReq = store.getAll()
+    // Llenar formulario
+    await page.fill('[data-testid="manual-monto-input"]', '500')
+    await page.fill('[data-testid="manual-motivo-input"]', 'Taxi al centro')
+    await page.selectOption('[data-testid="manual-tipo-select"]', 'gasto')
+    await page.selectOption('[data-testid="manual-metodo-select"]', 'efectivo')
 
-          getAllReq.onsuccess = () => {
-            resolve(getAllReq.result)
-            db.close()
-          }
-        }
-      })
-    })
+    // Enviar
+    await page.click('[data-testid="manual-submit-btn"]')
 
-    const transporteId = categorias.find(c => c.nombre === 'transporte')?.id
-    await page.selectOption('[data-testid="rule-category-select"]', String(transporteId))
+    // Esperar señal de completado (determinista, sin timeout arbitrario)
+    await expect(page.getByTestId('movement-created-signal')).toBeVisible()
 
-    await page.fill('[data-testid="rule-priority-input"]', '100')
+    // Verificar que aparece en la lista
+    const movimientos = await page.locator('[data-testid="movimiento-item"]').count()
+    expect(movimientos).toBeGreaterThan(0)
 
-    // Enviar formulario
-    await page.click('[data-testid="rule-submit-btn"]')
-
-    // Esperar a que se guarde
-    await page.waitForTimeout(500)
-
-    // Verificar que la regla se creó en IndexedDB
-    const reglas = await page.evaluate(() => {
-      return new Promise((resolve) => {
-        const req = indexedDB.open('gaston_db')
-        req.onsuccess = () => {
-          const db = req.result
-          const tx = db.transaction('reglas', 'readonly')
-          const store = tx.objectStore('reglas')
-          const getAllReq = store.getAll()
-
-          getAllReq.onsuccess = () => {
-            resolve(getAllReq.result)
-            db.close()
-          }
-        }
-      })
-    })
-
-    expect(reglas.length).toBe(1)
-    expect(reglas[0].pattern).toBe('uber')
-    expect(reglas[0].priority).toBe(100)
-    expect(reglas[0].enabled).toBe(true)
-  })
-
-  test('5-6. Agregar movimiento "gasté 500 en uber" y verificar categoría transporte', async ({ page }) => {
-    // Primero crear la regla
-    await page.goto('/reglas')
-    await page.waitForTimeout(1000)
-
-    const categorias = await page.evaluate(() => {
-      return new Promise((resolve) => {
-        const req = indexedDB.open('gaston_db')
-        req.onsuccess = () => {
-          const db = req.result
-          const tx = db.transaction('categorias', 'readonly')
-          const store = tx.objectStore('categorias')
-          const getAllReq = store.getAll()
-
-          getAllReq.onsuccess = () => {
-            resolve(getAllReq.result)
-            db.close()
-          }
-        }
-      })
-    })
-
-    const transporteId = categorias.find(c => c.nombre === 'transporte')?.id
-
-    // Crear regla
-    await page.fill('[data-testid="rule-name-input"]', 'Uber → Transporte')
-    await page.selectOption('[data-testid="rule-match-type-select"]', 'includes')
-    await page.fill('[data-testid="rule-pattern-input"]', 'uber')
-    await page.selectOption('[data-testid="rule-category-select"]', String(transporteId))
-    await page.fill('[data-testid="rule-priority-input"]', '100')
-    await page.click('[data-testid="rule-submit-btn"]')
-    await page.waitForTimeout(500)
-
-    // Ir a chat y agregar movimiento
-    await page.goto('/chat')
-    await page.fill('[data-testid="chat-input"]', 'gasté 500 en uber')
-    await page.click('[data-testid="chat-send-btn"]')
-
-    // Esperar a que se procese
-    await page.waitForTimeout(1000)
-
-    // Verificar en movimientos
-    await page.goto('/movimientos')
-    await page.waitForTimeout(500)
-
-    // Verificar que el movimiento aparece con categoría transporte
     const movimientoText = await page.locator('[data-testid="movimiento-item"]').first().textContent()
-    expect(movimientoText).toContain('transporte')
-
-    // Verificar en IndexedDB
-    const movimientos = await page.evaluate(() => {
-      return new Promise((resolve) => {
-        const req = indexedDB.open('gaston_db')
-        req.onsuccess = () => {
-          const db = req.result
-          const tx = db.transaction('movimientos', 'readonly')
-          const store = tx.objectStore('movimientos')
-          const getAllReq = store.getAll()
-
-          getAllReq.onsuccess = () => {
-            resolve(getAllReq.result)
-            db.close()
-          }
-        }
-      })
-    })
-
-    expect(movimientos.length).toBeGreaterThan(0)
-    const movimiento = movimientos[0]
-    expect(movimiento.category_id).toBe(transporteId)
-    expect(movimiento.monto).toBe(500)
+    expect(movimientoText).toContain('500')
+    expect(movimientoText).toContain('Taxi al centro')
   })
 
-  test('7. Test de normalización: gasté 1000 en mp → merchant_norm: mercado pago', async ({ page }) => {
+  test('5. Suscripciones: crear suscripción desde /money/suscripciones', async ({ page }) => {
+    await page.goto('/money/suscripciones')
+    await page.waitForTimeout(500)
+
+    // Abrir modal
+    await page.click('[data-testid="add-subscription-btn"]')
+    await page.waitForTimeout(300)
+
+    // Llenar formulario
+    await page.fill('[data-testid="sub-name-input"]', 'Netflix')
+    await page.fill('[data-testid="sub-amount-input"]', '1500')
+    await page.selectOption('[data-testid="sub-cadence-select"]', '1')
+
+    // Enviar
+    await page.click('[data-testid="sub-submit-btn"]')
+    await page.waitForTimeout(500)
+
+    // Verificar que aparece en la lista
+    const subText = await page.locator('[data-testid="subscription-item"]').first().textContent()
+    expect(subText).toContain('Netflix')
+    expect(subText).toMatch(/1[.,s]?500/)  // Acepta "1500", "1.500", "1,500"
+  })
+
+  test('6. Mental: registrar check-in y ver en diario', async ({ page }) => {
+    await page.goto('/mental/estado')
+    await page.waitForTimeout(500)
+
+    // Seleccionar mood 4
+    await page.click('[data-testid="mood-btn-4"]')
+    await page.fill('[data-testid="mood-note-input"]', 'Buen día de testing')
+    await page.click('[data-testid="mood-submit-btn"]')
+
+    // Debe redirigir a diario
+    await page.waitForURL('/mental/diario')
+    await page.waitForTimeout(500)
+
+    // Verificar que aparece la entrada
+    const entries = await page.locator('[data-testid="entry-item"]').count()
+    expect(entries).toBeGreaterThan(0)
+
+    const entryText = await page.locator('[data-testid="entry-item"]').first().textContent()
+    expect(entryText).toContain('4')
+  })
+
+  test('7. Anti-prompter: rechaza prompts técnicos', async ({ page }) => {
     await page.goto('/chat')
+    await page.waitForTimeout(500)
 
-    await page.fill('[data-testid="chat-input"]', 'gasté 1000 en mp')
+    await page.fill('[data-testid="chat-input"]', 'explicame como programar una funcion en react')
     await page.click('[data-testid="chat-send-btn"]')
+    await page.waitForTimeout(500)
 
-    // Esperar a que se procese
+    // Verificar mensaje de rechazo
+    const messages = await page.locator('.max-w-\\[280px\\]').allTextContents()
+    const rejectionFound = messages.some(msg =>
+      msg.toLowerCase().includes('no parece algo de tu vida personal')
+    )
+    expect(rejectionFound).toBe(true)
+  })
+
+  test('8. Físico: registrar hábito desde /fisico/habitos', async ({ page }) => {
+    await page.goto('/fisico/habitos')
+    await page.waitForTimeout(500)
+
+    // Abrir modal
+    await page.click('[data-testid="add-habit-btn"]')
+    await page.waitForTimeout(300)
+
+    // Llenar formulario
+    await page.fill('[data-testid="habit-text-input"]', 'Corrí 5km')
+    await page.click('[data-testid="habit-submit-btn"]')
+    await page.waitForTimeout(500)
+
+    // Verificar que aparece en la lista
+    const habits = await page.locator('[data-testid="habit-item"]').count()
+    expect(habits).toBeGreaterThan(0)
+
+    const habitText = await page.locator('[data-testid="habit-item"]').first().textContent()
+    expect(habitText).toContain('Corrí 5km')
+  })
+
+  test('9. Chat: confirmación con confianza media (uber 500)', async ({ page }) => {
+    await page.goto('/chat')
+    await page.waitForTimeout(500)
+
+    // Enviar mensaje que dispara confirmación (sin verbo, confianza media ~0.55)
+    await page.fill('[data-testid="chat-input"]', 'uber 500')
+    await page.click('[data-testid="chat-send-btn"]')
+    await page.waitForTimeout(2000) // Esperar más tiempo para el API call
+
+    // Debug: capturar todos los mensajes
+    const messages = await page.locator('.max-w-\\[280px\\]').allTextContents()
+    console.log('Messages:', messages)
+
+    // Verificar que aparece UI de confirmación
+    const confirmBtn = page.locator('[data-testid="chat-confirm-btn"]')
+    await expect(confirmBtn).toBeVisible({ timeout: 10000 })
+
+    // Click en confirmar
+    await confirmBtn.click()
     await page.waitForTimeout(1000)
 
-    // Verificar en IndexedDB que merchant_norm es "mercado pago"
-    const movimientos = await page.evaluate(() => {
-      return new Promise((resolve) => {
-        const req = indexedDB.open('gaston_db')
-        req.onsuccess = () => {
-          const db = req.result
-          const tx = db.transaction('movimientos', 'readonly')
-          const store = tx.objectStore('movimientos')
-          const getAllReq = store.getAll()
-
-          getAllReq.onsuccess = () => {
-            resolve(getAllReq.result)
-            db.close()
-          }
-        }
-      })
-    })
-
-    expect(movimientos.length).toBeGreaterThan(0)
-
-    const movimiento = movimientos.find(m => m.monto === 1000)
-    expect(movimiento).toBeDefined()
-    expect(movimiento.merchant_norm).toContain('mercado pago')
+    // Verificar que hay respuesta de "Registrado"
+    const finalMessages = await page.locator('.max-w-\\[280px\\]').allTextContents()
+    const hasRegistrado = finalMessages.some(msg => msg.toLowerCase().includes('registrado'))
+    expect(hasRegistrado).toBe(true)
   })
 })

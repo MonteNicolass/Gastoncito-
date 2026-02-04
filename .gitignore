@@ -6,4 +6,14 @@ node_modules
 playwright-report
 test-results
 .claude
+# Playwright
+playwright-report/
+test-results/
+
+# Claude local
+.claude/
+.claude/settings.local.json
+
+# Old backups
+*-old.js
 
