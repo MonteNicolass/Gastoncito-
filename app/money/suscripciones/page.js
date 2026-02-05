@@ -1,12 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { initDB, getSubscriptions, addSubscription, deleteSubscription, updateSubscription, getWallets } from '@/lib/storage'
+import { comparePrice, getSubscriptionPriceLastUpdated, checkForPriceChanges } from '@/lib/services/subscription-prices'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
+import { TrendingUp, TrendingDown, Info, AlertTriangle } from 'lucide-react'
 
 const SUBSCRIPTION_PRESETS = [
   { value: 'Netflix', label: 'Netflix' },
@@ -186,6 +188,23 @@ export default function SuscripcionesPage() {
     return sum + monthlyAmount
   }, 0)
 
+  // Price comparisons (memoized)
+  const priceComparisons = useMemo(() => {
+    const comparisons = {}
+    for (const sub of subscriptions) {
+      const comparison = comparePrice(sub.name, sub.amount)
+      if (comparison) {
+        comparisons[sub.id] = comparison
+      }
+    }
+    return comparisons
+  }, [subscriptions])
+
+  // Check for potential price increases
+  const priceAlerts = useMemo(() => {
+    return checkForPriceChanges(subscriptions)
+  }, [subscriptions])
+
   return (
     <div className="flex flex-col min-h-screen">
       <TopBar title="Suscripciones" backHref="/money" />
@@ -203,6 +222,30 @@ export default function SuscripcionesPage() {
             {subscriptions.length} {subscriptions.length === 1 ? 'suscripción' : 'suscripciones'} activas
           </div>
         </Card>
+
+        {/* Price Alerts */}
+        {priceAlerts.length > 0 && (
+          <Card className="p-4 bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-amber-800 dark:text-amber-200 mb-1">
+                  Posibles aumentos detectados
+                </p>
+                <div className="space-y-1">
+                  {priceAlerts.slice(0, 3).map((alert, i) => (
+                    <p key={i} className="text-xs text-amber-700 dark:text-amber-300">
+                      {alert.name}: precio de referencia {formatAmount(alert.referencePrice)} (+{alert.percentIncrease}%)
+                    </p>
+                  ))}
+                </div>
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-2 italic">
+                  Precios estimados, pueden variar
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* Add Button */}
         <Button
@@ -226,7 +269,11 @@ export default function SuscripcionesPage() {
               </p>
             </Card>
           ) : (
-            subscriptions.map((sub) => (
+            subscriptions.map((sub) => {
+              const comparison = priceComparisons[sub.id]
+              const lastUpdated = getSubscriptionPriceLastUpdated(sub.name)
+
+              return (
               <Card
                 key={sub.id}
                 className="p-4"
@@ -237,9 +284,35 @@ export default function SuscripcionesPage() {
                     <div className="text-base font-semibold text-zinc-900 dark:text-zinc-100 truncate">
                       {sub.name}
                     </div>
-                    <div className="text-xl font-bold text-blue-600 dark:text-blue-400 mt-1">
-                      {formatAmount(sub.amount)}
+                    <div className="flex items-baseline gap-2 mt-1">
+                      <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                        {formatAmount(sub.amount)}
+                      </span>
+                      {comparison && comparison.status !== 'same' && (
+                        <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${
+                          comparison.status === 'higher'
+                            ? 'text-amber-600 dark:text-amber-400'
+                            : 'text-emerald-600 dark:text-emerald-400'
+                        }`}>
+                          {comparison.status === 'higher' ? (
+                            <TrendingUp className="w-3 h-3" />
+                          ) : (
+                            <TrendingDown className="w-3 h-3" />
+                          )}
+                          {comparison.percentDiff > 0 ? '+' : ''}{comparison.percentDiff}%
+                        </span>
+                      )}
                     </div>
+                    {/* Reference price line */}
+                    {comparison && (
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <Info className="w-3 h-3 text-zinc-400" />
+                        <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                          Ref: {formatAmount(comparison.referencePrice)}
+                          {lastUpdated && ` · ${lastUpdated}`}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                       <span className="text-xs text-zinc-500 dark:text-zinc-400">
                         {formatCadence(sub.cadence_months)}
@@ -290,7 +363,7 @@ export default function SuscripcionesPage() {
                   </div>
                 </div>
               </Card>
-            ))
+            )})
           )}
         </div>
       </div>
