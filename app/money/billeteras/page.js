@@ -28,8 +28,7 @@ export default function BilleterasPage() {
   const [showModal, setShowModal] = useState(false)
   const [editingWallet, setEditingWallet] = useState(null)
   const [formData, setFormData] = useState({
-    nombre: '',
-    tipo: 'efectivo',
+    proveedor: '',
     saldo: '',
     isPrimary: false,
     isHidden: false
@@ -54,8 +53,7 @@ export default function BilleterasPage() {
     if (wallet) {
       setEditingWallet(wallet)
       setFormData({
-        nombre: wallet.wallet,
-        tipo: wallet.tipo || 'efectivo',
+        proveedor: wallet.wallet,
         saldo: wallet.saldo.toString(),
         isPrimary: wallet.is_primary || false,
         isHidden: wallet.is_hidden || false
@@ -63,8 +61,7 @@ export default function BilleterasPage() {
     } else {
       setEditingWallet(null)
       setFormData({
-        nombre: '',
-        tipo: 'efectivo',
+        proveedor: '',
         saldo: '',
         isPrimary: false,
         isHidden: false
@@ -80,13 +77,12 @@ export default function BilleterasPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!formData.nombre || formData.saldo === '') return
+    if (!formData.proveedor || formData.saldo === '') return
 
     const walletData = {
-      wallet: formData.nombre,
+      wallet: formData.proveedor,
       saldo: parseFloat(formData.saldo),
-      tipo: formData.tipo,
-      proveedor: formData.nombre, // Proveedor = Nombre
+      proveedor: formData.proveedor,
       is_primary: formData.isPrimary,
       is_hidden: formData.isHidden
     }
@@ -183,11 +179,6 @@ export default function BilleterasPage() {
                     <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">
                       {formatAmount(w.saldo)}
                     </div>
-                    {w.tipo && (
-                      <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5 capitalize">
-                        {w.tipo.replace('_', ' ')}
-                      </div>
-                    )}
                   </div>
                   {/* Menú contextual */}
                   <div className="relative flex-shrink-0">
@@ -265,9 +256,9 @@ export default function BilleterasPage() {
 
             <form onSubmit={handleSubmit} className="p-4 space-y-3">
               <Select
-                label="Billetera"
-                value={formData.nombre}
-                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                label="Proveedor"
+                value={formData.proveedor}
+                onChange={(e) => setFormData({ ...formData, proveedor: e.target.value })}
                 required
               >
                 <option value="">Seleccionar...</option>
@@ -276,20 +267,6 @@ export default function BilleterasPage() {
                     {opt.label}
                   </option>
                 ))}
-              </Select>
-
-              <Select
-                label="Tipo"
-                value={formData.tipo}
-                onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
-              >
-                <option value="efectivo">Efectivo</option>
-                <option value="banco">Banco</option>
-                <option value="tarjeta_credito">Tarjeta de crédito</option>
-                <option value="tarjeta_debito">Tarjeta de débito</option>
-                <option value="virtual">Virtual</option>
-                <option value="crypto">Crypto</option>
-                <option value="otro">Otro</option>
               </Select>
 
               <Input

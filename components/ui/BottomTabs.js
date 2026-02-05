@@ -99,18 +99,12 @@ export default function BottomTabs() {
   const tabs = [
     { name: 'Resumen', href: '/vision', emoji: '🏠', key: 'vision' },
     { name: 'Chat', href: '/chat', emoji: '💬', key: 'chat' },
-    { name: 'Hoy', href: '/hoy', emoji: '📅', key: 'hoy' },
-    { name: 'Semana', href: '/semana', emoji: '📆', key: 'semana' },
-    { name: 'Historia', href: '/historia', emoji: '📖', key: 'historia' },
-    { name: 'Eventos', href: '/eventos', emoji: '📋', key: 'eventos' },
-    { name: 'Búsqueda', href: '/busqueda', emoji: '🔍', key: 'busqueda' },
-    { name: 'Herramientas', href: '/herramientas', emoji: '🛠️', key: 'herramientas' },
     { name: 'Mental', href: '/mental', emoji: '🧠', key: 'mental' },
     { name: 'Físico', href: '/fisico', emoji: '💪', key: 'fisico' },
-    { name: 'Money', href: '/money', emoji: '💰', key: 'money' },
-    { name: 'Objetivos', href: '/objetivos', emoji: '🎯', key: 'objetivos' },
     { name: 'Notas', href: '/notas', emoji: '📝', key: 'notas' },
-    { name: 'Insights', href: '/insights', emoji: '📊', key: 'insights' }
+    { name: 'Objetivos', href: '/objetivos', emoji: '🎯', key: 'objetivos' },
+    { name: 'Money', href: '/money', emoji: '💰', key: 'money' },
+    { name: 'Herramientas', href: '/herramientas', emoji: '🛠️', key: 'herramientas' }
   ]
 
   return (

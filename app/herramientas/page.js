@@ -42,6 +42,48 @@ export default function HerramientasPage() {
       description: 'Exportación y análisis',
       href: '/historia',
       available: true
+    },
+    {
+      emoji: '🔍',
+      title: 'Comportamiento',
+      description: 'Patrones y alertas tempranas',
+      href: '/comportamiento',
+      available: true
+    },
+    {
+      emoji: '💡',
+      title: 'Insights',
+      description: 'Cruces entre áreas',
+      href: '/insights',
+      available: true
+    },
+    {
+      emoji: '⚙️',
+      title: 'Configuración',
+      description: 'Ajustes generales',
+      href: '/mas/settings',
+      available: true
+    },
+    {
+      emoji: '📋',
+      title: 'Reglas',
+      description: 'Reglas personalizadas',
+      href: '/mas/reglas',
+      available: true
+    },
+    {
+      emoji: '🏷️',
+      title: 'Categorías',
+      description: 'Gestionar categorías',
+      href: '/mas/categorias',
+      available: true
+    },
+    {
+      emoji: '💾',
+      title: 'Backup & Datos',
+      description: 'Exportar e importar',
+      href: '/mas/backup',
+      available: true
     }
   ]
 
