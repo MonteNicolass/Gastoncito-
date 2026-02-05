@@ -3,10 +3,13 @@
 import { useState, useEffect } from 'react'
 import { initDB, getMovimientos, getCategorias } from '@/lib/storage'
 import { getAllMonthlyInsights } from '@/lib/monthly-insights'
+import { fetchAllRates, getCachedRates, getRatesLastUpdated } from '@/lib/services/market-rates'
+import { arsToUsdBlue, formatUsd } from '@/lib/services/currency-conversion'
+import { compareWithInflation, getCurrentInflation } from '@/lib/services/macro-snapshots'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { BarChart3, TrendingUp } from 'lucide-react'
+import { BarChart3, TrendingUp, DollarSign } from 'lucide-react'
 
 // Helper para obtener presupuestos de localStorage
 function getBudgetsFromLocalStorage() {
@@ -18,9 +21,11 @@ function getBudgetsFromLocalStorage() {
 export default function ResumenMensualPage() {
   const [loading, setLoading] = useState(true)
   const [insights, setInsights] = useState(null)
+  const [rates, setRates] = useState(null)
 
   useEffect(() => {
     loadInsights()
+    loadRates()
   }, [])
 
   async function loadInsights() {
@@ -36,6 +41,15 @@ export default function ResumenMensualPage() {
       console.error('Error loading monthly insights:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function loadRates() {
+    try {
+      const fetchedRates = await fetchAllRates()
+      setRates(fetchedRates)
+    } catch {
+      setRates(getCachedRates())
     }
   }
 
@@ -197,15 +211,29 @@ export default function ResumenMensualPage() {
           <div className="space-y-3">
             <div className="flex justify-between items-baseline">
               <span className="text-sm text-zinc-600 dark:text-zinc-400">Gastos</span>
-              <span className="text-2xl font-bold text-red-600 dark:text-red-400">
-                {formatAmount(summary.totalGastos)}
-              </span>
+              <div className="text-right">
+                <span className="text-2xl font-bold text-red-600 dark:text-red-400">
+                  {formatAmount(summary.totalGastos)}
+                </span>
+                {rates && summary.totalGastos >= 50000 && (
+                  <span className="text-xs text-zinc-400 dark:text-zinc-500 ml-2">
+                    ≈ {formatUsd(arsToUsdBlue(summary.totalGastos))}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="flex justify-between items-baseline">
               <span className="text-sm text-zinc-600 dark:text-zinc-400">Ingresos</span>
-              <span className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {formatAmount(summary.totalIngresos)}
-              </span>
+              <div className="text-right">
+                <span className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  {formatAmount(summary.totalIngresos)}
+                </span>
+                {rates && summary.totalIngresos >= 50000 && (
+                  <span className="text-xs text-zinc-400 dark:text-zinc-500 ml-2">
+                    ≈ {formatUsd(arsToUsdBlue(summary.totalIngresos))}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="h-px bg-blue-200 dark:bg-blue-800" />
             <div className="flex justify-between items-baseline">
@@ -221,6 +249,16 @@ export default function ResumenMensualPage() {
               </span>
             </div>
           </div>
+          {/* USD rate context */}
+          {rates && (
+            <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-blue-200 dark:border-blue-800 text-xs text-zinc-400 dark:text-zinc-500">
+              <DollarSign className="w-3 h-3" />
+              <span>Blue ${rates.blue?.sell?.toLocaleString('es-AR')}</span>
+              {getRatesLastUpdated() && (
+                <span> · {getRatesLastUpdated()}</span>
+              )}
+            </div>
+          )}
         </Card>
 
         {/* Comparación con mes anterior */}
@@ -257,6 +295,19 @@ export default function ResumenMensualPage() {
                 </span>
               </div>
             </div>
+            {/* Inflation context - only when there's a significant spending change */}
+            {(() => {
+              const inflationContext = compareWithInflation(comparison.deltaPercentGastos)
+              if (!inflationContext || Math.abs(comparison.deltaPercentGastos) < 5) return null
+
+              return (
+                <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {inflationContext.context}
+                  </p>
+                </div>
+              )
+            })()}
           </Card>
         )}
 

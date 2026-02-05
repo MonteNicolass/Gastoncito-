@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { initDB, getSubscriptions, addSubscription, deleteSubscription, updateSubscription, getWallets } from '@/lib/storage'
-import { comparePrice, getSubscriptionPriceLastUpdated, checkForPriceChanges } from '@/lib/services/subscription-prices'
+import { comparePrice, getSubscriptionPriceLastUpdated, checkForPriceChanges, calculateRealArsPrice, calculateTotalMonthlyReal, getPricingMethodLabel } from '@/lib/services/subscription-prices'
+import { fetchAllRates, getCachedRates, getRatesLastUpdated } from '@/lib/services/market-rates'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
-import { TrendingUp, TrendingDown, Info, AlertTriangle } from 'lucide-react'
+import { TrendingUp, TrendingDown, Info, AlertTriangle, DollarSign, RefreshCw } from 'lucide-react'
 
 const SUBSCRIPTION_PRESETS = [
   { value: 'Netflix', label: 'Netflix' },
@@ -20,6 +21,10 @@ const SUBSCRIPTION_PRESETS = [
   { value: 'Disney+', label: 'Disney+' },
   { value: 'HBO Max', label: 'HBO Max' },
   { value: 'ChatGPT Plus', label: 'ChatGPT Plus' },
+  { value: 'Claude Pro', label: 'Claude Pro' },
+  { value: 'GitHub Copilot', label: 'GitHub Copilot' },
+  { value: 'Notion', label: 'Notion' },
+  { value: 'Midjourney', label: 'Midjourney' },
   { value: 'otro', label: 'Otro (personalizado)' },
 ]
 
@@ -29,6 +34,8 @@ export default function SuscripcionesPage() {
   const [showModal, setShowModal] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [openMenuId, setOpenMenuId] = useState(null)
+  const [rates, setRates] = useState(null)
+  const [ratesLoading, setRatesLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     customName: '',
@@ -42,7 +49,22 @@ export default function SuscripcionesPage() {
       loadSubscriptions()
       loadWallets()
     })
+    // Load market rates
+    loadRates()
   }, [])
+
+  const loadRates = async () => {
+    setRatesLoading(true)
+    try {
+      const fetchedRates = await fetchAllRates()
+      setRates(fetchedRates)
+    } catch (e) {
+      // Try cached
+      setRates(getCachedRates())
+    } finally {
+      setRatesLoading(false)
+    }
+  }
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -183,10 +205,17 @@ export default function SuscripcionesPage() {
     await loadSubscriptions()
   }
 
+  // Simple total from user amounts
   const totalMonthly = subscriptions.reduce((sum, sub) => {
     const monthlyAmount = sub.amount / sub.cadence_months
     return sum + monthlyAmount
   }, 0)
+
+  // Real total with USD conversions (memoized)
+  const realTotalData = useMemo(() => {
+    if (!rates) return null
+    return calculateTotalMonthlyReal(subscriptions)
+  }, [subscriptions, rates])
 
   // Price comparisons (memoized)
   const priceComparisons = useMemo(() => {
@@ -200,6 +229,18 @@ export default function SuscripcionesPage() {
     return comparisons
   }, [subscriptions])
 
+  // Real ARS prices for USD subs (memoized)
+  const realPrices = useMemo(() => {
+    const prices = {}
+    for (const sub of subscriptions) {
+      const realPrice = calculateRealArsPrice(sub.name, sub.amount)
+      if (realPrice) {
+        prices[sub.id] = realPrice
+      }
+    }
+    return prices
+  }, [subscriptions, rates])
+
   // Check for potential price increases
   const priceAlerts = useMemo(() => {
     return checkForPriceChanges(subscriptions)
@@ -212,15 +253,50 @@ export default function SuscripcionesPage() {
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {/* Summary Card */}
         <Card className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-blue-200 dark:border-blue-800">
-          <div className="text-sm text-zinc-600 dark:text-zinc-400 mb-1">
-            Gasto mensual promedio
+          <div className="flex items-center justify-between mb-1">
+            <div className="text-sm text-zinc-600 dark:text-zinc-400">
+              Gasto mensual estimado
+            </div>
+            {rates && (
+              <button
+                onClick={loadRates}
+                disabled={ratesLoading}
+                className="p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                title="Actualizar cotizaciones"
+              >
+                <RefreshCw className={`w-4 h-4 ${ratesLoading ? 'animate-spin' : ''}`} />
+              </button>
+            )}
           </div>
           <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-            {formatAmount(totalMonthly)}
+            {formatAmount(realTotalData?.totalArs || totalMonthly)}
           </div>
-          <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            {subscriptions.length} {subscriptions.length === 1 ? 'suscripción' : 'suscripciones'} activas
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            <span className="text-xs text-zinc-500 dark:text-zinc-400">
+              {subscriptions.length} {subscriptions.length === 1 ? 'suscripción' : 'suscripciones'} activas
+            </span>
+            {realTotalData?.hasUsdSubs && (
+              <>
+                <span className="text-xs text-zinc-400">•</span>
+                <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                  ≈ ${realTotalData.totalUsdEquiv.toFixed(0)} USD
+                </span>
+              </>
+            )}
           </div>
+          {rates && (
+            <div className="flex items-center gap-1.5 mt-2 text-xs text-zinc-400 dark:text-zinc-500">
+              <DollarSign className="w-3 h-3" />
+              <span>
+                Blue ${rates.blue?.sell?.toLocaleString('es-AR')} · Tarjeta ${rates.tarjeta?.sell?.toLocaleString('es-AR')}
+              </span>
+              {getRatesLastUpdated() && (
+                <span className="text-zinc-300 dark:text-zinc-600">
+                  · {getRatesLastUpdated()}
+                </span>
+              )}
+            </div>
+          )}
         </Card>
 
         {/* Price Alerts */}
@@ -272,6 +348,8 @@ export default function SuscripcionesPage() {
             subscriptions.map((sub) => {
               const comparison = priceComparisons[sub.id]
               const lastUpdated = getSubscriptionPriceLastUpdated(sub.name)
+              const realPrice = realPrices[sub.id]
+              const isUsdSub = realPrice?.currency === 'USD'
 
               return (
               <Card
@@ -281,12 +359,19 @@ export default function SuscripcionesPage() {
               >
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <div className="text-base font-semibold text-zinc-900 dark:text-zinc-100 truncate">
-                      {sub.name}
+                    <div className="flex items-center gap-2">
+                      <span className="text-base font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                        {sub.name}
+                      </span>
+                      {isUsdSub && (
+                        <span className="px-1.5 py-0.5 text-[10px] font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded">
+                          USD
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-baseline gap-2 mt-1">
                       <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
-                        {formatAmount(sub.amount)}
+                        {formatAmount(isUsdSub && realPrice?.arsPrice ? realPrice.arsPrice : sub.amount)}
                       </span>
                       {comparison && comparison.status !== 'same' && (
                         <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${
@@ -303,8 +388,20 @@ export default function SuscripcionesPage() {
                         </span>
                       )}
                     </div>
-                    {/* Reference price line */}
-                    {comparison && (
+                    {/* USD price info */}
+                    {isUsdSub && realPrice?.priceInfo && (
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <DollarSign className="w-3 h-3 text-emerald-500" />
+                        <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                          ${realPrice.usdPrice} USD · {getPricingMethodLabel(realPrice.priceInfo.method)}
+                          {realPrice.priceInfo.taxes && (
+                            <span className="text-zinc-400 dark:text-zinc-500"> ({realPrice.priceInfo.taxes})</span>
+                          )}
+                        </span>
+                      </div>
+                    )}
+                    {/* Reference price line (for ARS subs) */}
+                    {!isUsdSub && comparison && (
                       <div className="flex items-center gap-1.5 mt-1">
                         <Info className="w-3 h-3 text-zinc-400" />
                         <span className="text-xs text-zinc-500 dark:text-zinc-400">

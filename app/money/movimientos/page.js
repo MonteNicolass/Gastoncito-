@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { initDB, getMovimientos, deleteMovimiento, updateMovimiento, getCategorias, addMovimiento, updateSaldo, getWallets } from '@/lib/storage'
 import { seedPredefinedCategories } from '@/lib/seed-categories'
 import { getPresets, savePresets } from '@/lib/quick-presets'
+import { fetchAllRates, getCachedRates } from '@/lib/services/market-rates'
+import { getUsdContext, formatUsd } from '@/lib/services/currency-conversion'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
@@ -11,6 +13,9 @@ import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import Toast from '@/components/ui/Toast'
 import { Receipt, Filter } from 'lucide-react'
+
+// Umbral para mostrar equivalente USD (gastos significativos)
+const USD_DISPLAY_THRESHOLD = 10000
 
 const vibrate = (pattern) => {
   if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -73,6 +78,7 @@ export default function MovimientosPage() {
   const [isCategoriesSeeded, setIsCategoriesSeeded] = useState(false)
   const [lastActionSignal, setLastActionSignal] = useState(null)
   const [toast, setToast] = useState(null)
+  const [rates, setRates] = useState(null)
 
   const loadMovimientos = useCallback(async () => {
     const data = await getMovimientos()
@@ -89,6 +95,13 @@ export default function MovimientosPage() {
       await seedPredefinedCategories()
       setIsCategoriesSeeded(true)
       await loadMovimientos()
+      // Load rates for USD context (silent, non-blocking)
+      try {
+        const fetchedRates = await fetchAllRates()
+        setRates(fetchedRates)
+      } catch {
+        setRates(getCachedRates())
+      }
     }
     init()
   }, [])
@@ -510,8 +523,16 @@ export default function MovimientosPage() {
                   className="flex-1 min-w-0 cursor-pointer"
                   onClick={() => handleEdit(mov)}
                 >
-                  <div className="text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100 tracking-tight">
-                    {formatAmount(mov.monto)}
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100 tracking-tight">
+                      {formatAmount(mov.monto)}
+                    </span>
+                    {/* USD context for significant amounts */}
+                    {rates && mov.monto >= USD_DISPLAY_THRESHOLD && (
+                      <span className="text-xs text-zinc-400 dark:text-zinc-500 font-normal">
+                        {getUsdContext(mov.monto)?.hint}
+                      </span>
+                    )}
                   </div>
                   <div className="text-sm text-zinc-600 dark:text-zinc-400 mt-0.5 truncate">
                     {mov.motivo || '—'}
