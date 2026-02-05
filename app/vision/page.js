@@ -2,11 +2,10 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { initDB, getMovimientos, getLifeEntries, getCategorias, getGoals } from '@/lib/storage'
-import { getAllSilentAlerts } from '@/lib/silent-alerts'
+import { initDB, getMovimientos, getLifeEntries, getCategorias, getGoals, getSubscriptions } from '@/lib/storage'
+import { runAlertEngine, dismissAlert, buildUserContext, getSuggestionIcon, getSuggestionColors, getPrimaryCta } from '@/lib/alerts'
 import { getSpendingByMood, getMoodByExercise, getImpulsiveSpendingByExercise } from '@/lib/insights/crossInsights'
-import { detectAllAnomalies } from '@/lib/anomaly-detection'
-import { evaluateUserRules } from '@/lib/user-rules'
+import { getCachedRates } from '@/lib/services/market-rates'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import ProgressRing from '@/components/ui/ProgressRing'
@@ -20,13 +19,21 @@ import {
   TrendingUp,
   TrendingDown,
   AlertTriangle,
+  AlertCircle,
   Zap,
   Lightbulb,
   ChevronRight,
+  ChevronDown,
   BarChart3,
   Settings,
   Flame,
-  Calendar
+  Calendar,
+  X,
+  Heart,
+  MessageCircle,
+  Bell,
+  HelpCircle,
+  Info
 } from 'lucide-react'
 
 function getBudgetsFromLocalStorage() {
@@ -41,8 +48,10 @@ export default function ResumenPage() {
   const [period, setPeriod] = useState('hoy')
   const [data, setData] = useState(null)
   const [alerts, setAlerts] = useState([])
+  const [suggestions, setSuggestions] = useState([])
   const [crossInsights, setCrossInsights] = useState(null)
   const [showConfigModal, setShowConfigModal] = useState(false)
+  const [expandedAlertId, setExpandedAlertId] = useState(null)
   const [widgetConfig, setWidgetConfig] = useState(() => {
     if (typeof window === 'undefined') return { money: true, mental: true, fisico: true, insights: true, alertas: true, historial: true }
     const saved = localStorage.getItem('resumen_widgets')
@@ -154,10 +163,25 @@ export default function ResumenPage() {
         }
       }
 
-      const anomalies = detectAllAnomalies(movimientos, lifeEntries, categorias, goals)
-      const userRuleAlerts = evaluateUserRules(movimientos, lifeEntries, budgets)
-      const silentAlerts = getAllSilentAlerts(movimientos, lifeEntries, budgets, categorias)
-      const allAlerts = [...anomalies, ...userRuleAlerts, ...silentAlerts].slice(0, 3)
+      // Load subscriptions and rates for alert engine
+      const subscriptions = await getSubscriptions()
+      const rates = getCachedRates()
+
+      // Build user context for proactive suggestions
+      const userContext = await buildUserContext({ lifeEntries, goals })
+
+      // Run the unified alert engine
+      const alertResult = await runAlertEngine({
+        movimientos,
+        lifeEntries,
+        budgets,
+        subscriptions,
+        rates,
+        context: userContext
+      })
+
+      const allAlerts = alertResult.alerts.slice(0, 3)
+      const allSuggestions = alertResult.suggestions
 
       const spendingByMood = getSpendingByMood(movimientos, lifeEntries, 30)
       const moodByExercise = getMoodByExercise(lifeEntries, 30)
@@ -193,6 +217,7 @@ export default function ResumenPage() {
         moneyHealth
       })
       setAlerts(allAlerts)
+      setSuggestions(allSuggestions)
       setCrossInsights({ spendingByMood, moodByExercise, impulsiveByExercise })
     } catch (error) {
       console.error('Error loading data:', error)
@@ -214,6 +239,39 @@ export default function ResumenPage() {
       day: 'numeric',
       month: 'short'
     })
+  }
+
+  const handleDismissAlert = (alertId, e) => {
+    e.stopPropagation()
+    dismissAlert(alertId)
+    setAlerts(prev => prev.filter(a => a.id !== alertId))
+    if (expandedAlertId === alertId) {
+      setExpandedAlertId(null)
+    }
+  }
+
+  const handleSuggestionAction = (action) => {
+    if (!action) return
+
+    if (action.type === 'navigate') {
+      router.push(action.href)
+    } else if (action.type === 'chat_prefill') {
+      localStorage.setItem('chat_prefill', action.text)
+      router.push('/chat')
+    }
+  }
+
+  const getSuggestionIconComponent = (type) => {
+    const icons = {
+      'question': HelpCircle,
+      'warning': AlertTriangle,
+      'insight': Lightbulb,
+      'caring': Heart,
+      'encouraging': Zap,
+      'gentle': MessageCircle,
+      'reminder': Bell
+    }
+    return icons[type] || Info
   }
 
   const globalScore = useMemo(() => {
@@ -368,50 +426,140 @@ export default function ResumenPage() {
           ))}
         </div>
 
+        {/* Proactive Suggestions Section */}
+        {suggestions.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1 flex items-center gap-2">
+              <Lightbulb className="w-3 h-3" />
+              Sugerencias
+            </h3>
+            {suggestions.map((suggestion) => {
+              const colors = getSuggestionColors(suggestion.domain)
+              const IconComponent = getSuggestionIconComponent(suggestion.type)
+              const primaryAction = getPrimaryCta(suggestion)
+
+              return (
+                <div
+                  key={suggestion.id}
+                  className={`p-4 rounded-xl ${colors.bg} border ${colors.border} transition-all`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${colors.bg}`}>
+                      <IconComponent className={`w-4 h-4 ${colors.icon}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-medium ${colors.text}`}>
+                        {suggestion.text}
+                      </p>
+                      {suggestion.subtext && (
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                          {suggestion.subtext}
+                        </p>
+                      )}
+                      {suggestion.actions && suggestion.actions.length > 0 && (
+                        <div className="flex gap-2 mt-3">
+                          {suggestion.actions.map((action, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => handleSuggestionAction(action)}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all active:scale-95 ${
+                                idx === 0
+                                  ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
+                                  : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300'
+                              }`}
+                            >
+                              {action.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
         {/* Alerts Section */}
-        {alerts.length > 0 && (
+        {alerts.length > 0 && widgetConfig.alertas && (
           <div className="space-y-2">
             <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1 flex items-center gap-2">
               <AlertTriangle className="w-3 h-3" />
-              Alertas
+              Alertas activas
             </h3>
-            {alerts.map((alert, i) => {
-              const alertHref = alert.domain === 'money' ? '/money' :
-                               alert.domain === 'mental' ? '/mental' :
-                               alert.domain === 'physical' ? '/fisico' :
+            {alerts.map((alert) => {
+              const isExpanded = expandedAlertId === alert.id
+              const alertHref = alert.type === 'economic' ? '/money' :
+                               alert.type === 'wellness' && alert.subtype?.includes('mental') ? '/mental' :
+                               alert.type === 'wellness' ? '/fisico' :
+                               alert.type === 'macro' ? '/money/insights' :
                                '/comportamiento'
 
               return (
-                <button
-                  key={i}
-                  onClick={() => router.push(alertHref)}
-                  className={`w-full p-3 rounded-xl text-left transition-all active:scale-[0.98] flex items-center gap-3 ${
+                <div
+                  key={alert.id}
+                  className={`rounded-xl overflow-hidden transition-all ${
                     alert.severity === 'high'
-                      ? 'bg-red-500/10 dark:bg-red-500/20 border border-red-200/50 dark:border-red-500/30'
+                      ? 'bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800'
                       : alert.severity === 'medium'
-                      ? 'bg-orange-500/10 dark:bg-orange-500/20 border border-orange-200/50 dark:border-orange-500/30'
-                      : 'bg-yellow-500/10 dark:bg-yellow-500/20 border border-yellow-200/50 dark:border-yellow-500/30'
+                      ? 'bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800'
+                      : 'bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800'
                   }`}
                 >
-                  {alert.severity === 'high' ? (
-                    <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
-                  ) : alert.severity === 'medium' ? (
-                    <Zap className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  ) : (
-                    <Lightbulb className="w-5 h-5 text-yellow-500 flex-shrink-0" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
-                      {alert.title}
-                    </p>
-                    {alert.message && (
+                  {/* Alert Header - Always visible */}
+                  <button
+                    onClick={() => setExpandedAlertId(isExpanded ? null : alert.id)}
+                    className="w-full p-3 text-left flex items-center gap-3"
+                  >
+                    {alert.severity === 'high' ? (
+                      <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                    ) : alert.severity === 'medium' ? (
+                      <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                    ) : (
+                      <Info className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                        {alert.title}
+                      </p>
                       <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
                         {alert.message}
                       </p>
-                    )}
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-zinc-400 flex-shrink-0" />
-                </button>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                      <button
+                        onClick={(e) => handleDismissAlert(alert.id, e)}
+                        className="p-1 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                        aria-label="Descartar"
+                      >
+                        <X className="w-4 h-4 text-zinc-400" />
+                      </button>
+                    </div>
+                  </button>
+
+                  {/* Expanded Content */}
+                  {isExpanded && (
+                    <div className="px-3 pb-3 pt-0">
+                      <div className="pl-8">
+                        {alert.detail && (
+                          <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-3">
+                            {alert.detail}
+                          </p>
+                        )}
+                        {alert.action && (
+                          <button
+                            onClick={() => router.push(alertHref)}
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 transition-all active:scale-95"
+                          >
+                            {alert.action.label}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               )
             })}
           </div>

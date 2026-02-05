@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { initDB, getMovimientos, getCategorias, getSubscriptions, addSubscription } from '@/lib/storage'
-import { getAllAlerts } from '@/lib/alerts'
+import { getAllAlerts } from '@/lib/alerts-legacy'
 import { detectRecurringMovements, isSubscriptionAlreadyExists, formatCadence } from '@/lib/subscription-detector'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'

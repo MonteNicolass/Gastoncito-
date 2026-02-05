@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { initDB, addMovimiento, updateSaldo, addNote, addLifeEntry, deleteMovimiento, deleteLifeEntry, deleteNote } from '@/lib/storage'
+import { getPriorityAlertForChat, actOnAlert } from '@/lib/alerts'
 import TopBar from '@/components/ui/TopBar'
 import Button from '@/components/ui/Button'
 import {
@@ -12,7 +13,10 @@ import {
   Send,
   Check,
   Undo2,
-  Sparkles
+  Sparkles,
+  AlertTriangle,
+  Heart,
+  Bell
 } from 'lucide-react'
 
 // Ejemplos clickeables para el estado inicial
@@ -29,6 +33,7 @@ export default function ChatPage() {
   const [lastAction, setLastAction] = useState(null)
   const [showUndo, setShowUndo] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
+  const [alertContext, setAlertContext] = useState(null)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
   const undoTimerRef = useRef(null)
@@ -42,6 +47,12 @@ export default function ChatPage() {
       if (prefill) {
         setInput(prefill)
         localStorage.removeItem('chat_prefill')
+      }
+
+      // Load priority alert for context
+      const priorityAlert = getPriorityAlertForChat()
+      if (priorityAlert) {
+        setAlertContext(priorityAlert)
       }
     }
 
@@ -392,6 +403,52 @@ export default function ChatPage() {
                 </div>
               </div>
             </div>
+
+            {/* Alert Context Message (when there's an active alert) */}
+            {alertContext && !hasMessages && (
+              <div className="flex gap-3 mt-2">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/20">
+                  {alertContext.severity === 'high' ? (
+                    <AlertTriangle className="w-4 h-4 text-white" />
+                  ) : alertContext.type === 'wellness' ? (
+                    <Heart className="w-4 h-4 text-white" />
+                  ) : (
+                    <Bell className="w-4 h-4 text-white" />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <div className={`rounded-2xl rounded-tl-md px-4 py-3 inline-block max-w-[280px] ${
+                    alertContext.severity === 'high'
+                      ? 'bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800'
+                      : alertContext.severity === 'medium'
+                      ? 'bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800'
+                      : 'bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800'
+                  }`}>
+                    <p className="text-sm text-zinc-900 dark:text-zinc-100 leading-relaxed font-medium">
+                      {alertContext.title}
+                    </p>
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
+                      {alertContext.message}
+                    </p>
+                    {alertContext.action && (
+                      <button
+                        onClick={() => {
+                          if (alertContext.action.type === 'register_mood' || alertContext.action.type === 'register_activity') {
+                            setInput(alertContext.type === 'wellness' && alertContext.subtype?.includes('mental') ? 'Me siento ' : 'Hice ')
+                            inputRef.current?.focus()
+                          }
+                          actOnAlert(alertContext.id)
+                          setAlertContext(null)
+                        }}
+                        className="mt-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 transition-all active:scale-95"
+                      >
+                        {alertContext.action.label}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Example Prompts (only when no messages) */}
             {!hasMessages && (
