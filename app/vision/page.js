@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { initDB, getMovimientos, getLifeEntries, getCategorias, getGoals } from '@/lib/storage'
 import { getAllSilentAlerts } from '@/lib/silent-alerts'
 import { getSpendingByMood, getMoodByExercise, getImpulsiveSpendingByExercise } from '@/lib/insights/crossInsights'
@@ -8,6 +9,8 @@ import { detectAllAnomalies } from '@/lib/anomaly-detection'
 import { evaluateUserRules } from '@/lib/user-rules'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
+import ProgressRing from '@/components/ui/ProgressRing'
+import RecommendationCard from '@/components/ui/RecommendationCard'
 
 function getBudgetsFromLocalStorage() {
   if (typeof window === 'undefined') return []
@@ -16,8 +19,9 @@ function getBudgetsFromLocalStorage() {
 }
 
 export default function ResumenPage() {
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
-  const [period, setPeriod] = useState('hoy') // 'hoy', 'semana', 'mes'
+  const [period, setPeriod] = useState('hoy')
   const [data, setData] = useState(null)
   const [alerts, setAlerts] = useState([])
   const [crossInsights, setCrossInsights] = useState(null)
@@ -48,7 +52,6 @@ export default function ResumenPage() {
       const goals = await getGoals()
       const budgets = getBudgetsFromLocalStorage()
 
-      // Filter by period
       const now = new Date()
       let startDate, previousStartDate, previousEndDate
 
@@ -192,62 +195,138 @@ export default function ResumenPage() {
     })
   }
 
-  // Calcular estado global para payoff
-  const getGlobalStatus = () => {
-    if (!data) return null
+  // Calculate global score (0-100)
+  const globalScore = useMemo(() => {
+    if (!data) return 0
 
     let score = 0
     let factors = 0
 
-    // Mental contribuye
+    // Mental contribuye (0-10 → 0-100)
     if (data.mentalAvg !== null) {
-      score += data.mentalAvg >= 7 ? 2 : data.mentalAvg >= 5 ? 1 : 0
+      score += data.mentalAvg * 10
       factors++
     }
 
-    // Físico contribuye
-    if (data.physicalDays > 0) {
-      score += data.physicalDays >= 3 ? 2 : data.physicalDays >= 1 ? 1 : 0
-      factors++
-    }
+    // Físico contribuye (días activos: 0 = 0%, 3+ = 100%)
+    const physicalScore = Math.min(100, (data.physicalDays / 3) * 100)
+    score += physicalScore
+    factors++
 
-    // Money contribuye (menos gasto = mejor)
-    if (data.gastoDiff !== 0) {
-      score += data.gastoDiff <= 0 ? 2 : data.gastoDiff <= 20 ? 1 : 0
+    // Money contribuye (menos gasto diferencial = mejor)
+    if (data.gastoDiff !== 0 || data.gastoTotal > 0) {
+      const moneyScore = data.gastoDiff <= 0 ? 100 : data.gastoDiff <= 20 ? 70 : data.gastoDiff <= 50 ? 40 : 20
+      score += moneyScore
       factors++
     }
 
     // Objetivos contribuyen
     if (data.goalsProgress !== null) {
-      score += data.goalsProgress >= 50 ? 2 : data.goalsProgress >= 25 ? 1 : 0
+      score += data.goalsProgress
       factors++
     }
 
-    if (factors === 0) return null
+    return factors > 0 ? Math.round(score / factors) : 0
+  }, [data])
 
-    const avg = score / factors
-
-    if (avg >= 1.5) return { text: 'Todo en orden', icon: '✨', color: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' }
-    if (avg >= 1) return { text: 'Vas bien', icon: '✓', color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' }
-    if (avg >= 0.5) return { text: 'Seguí así', icon: '→', color: 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300' }
-    return { text: 'Revisá tus áreas', icon: '!', color: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300' }
+  // Get color based on score
+  const getScoreColor = (score) => {
+    if (score >= 70) return 'green'
+    if (score >= 50) return 'blue'
+    if (score >= 30) return 'orange'
+    return 'zinc'
   }
 
-  const globalStatus = getGlobalStatus()
+  // Get recommendation based on data
+  const getRecommendation = () => {
+    if (!data) return null
+
+    // Physical inactivity
+    if (data.physicalDays === 0) {
+      return {
+        emoji: '💪',
+        title: 'Movete un poco hoy',
+        description: 'No registraste actividad física en este período. Una caminata corta puede mejorar tu energía.',
+        action: () => router.push('/fisico/habitos'),
+        actionLabel: 'Registrar',
+        variant: 'warning'
+      }
+    }
+
+    // Mental low
+    if (data.mentalAvg !== null && data.mentalAvg < 5) {
+      return {
+        emoji: '🧠',
+        title: 'Cuidá tu bienestar',
+        description: 'Tu estado mental está un poco bajo. Tomate un momento para vos.',
+        action: () => router.push('/mental'),
+        actionLabel: 'Ver más',
+        variant: 'info'
+      }
+    }
+
+    // Spending high
+    if (data.gastoDiff > 30) {
+      return {
+        emoji: '💸',
+        title: 'Revisá tus gastos',
+        description: `Gastaste ${data.gastoDiff.toFixed(0)}% más que el período anterior. Vale la pena revisar.`,
+        action: () => router.push('/money/movimientos'),
+        actionLabel: 'Ver gastos',
+        variant: 'warning'
+      }
+    }
+
+    // Goals stalled
+    if (data.activeGoals > 0 && data.goalsProgress !== null && data.goalsProgress < 25) {
+      return {
+        emoji: '🎯',
+        title: 'Tus objetivos esperan',
+        description: 'El progreso está bajo. Un pequeño avance hoy hace la diferencia.',
+        action: () => router.push('/objetivos'),
+        actionLabel: 'Ver objetivos',
+        variant: 'info'
+      }
+    }
+
+    // All good - positive reinforcement
+    if (globalScore >= 70) {
+      return {
+        emoji: '✨',
+        title: 'Vas muy bien',
+        description: 'Mantené este ritmo. Tus áreas están equilibradas.',
+        variant: 'success'
+      }
+    }
+
+    // Default
+    return {
+      emoji: '💡',
+      title: 'Seguí registrando',
+      description: 'Cuanto más registres, mejores insights vas a tener.',
+      action: () => router.push('/chat'),
+      actionLabel: 'Ir al chat',
+      variant: 'default'
+    }
+  }
+
+  const recommendation = getRecommendation()
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen bg-zinc-50 dark:bg-zinc-950">
         <TopBar title="Resumen" />
         <div className="flex-1 flex items-center justify-center">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">Cargando...</p>
+          <div className="animate-pulse">
+            <div className="w-24 h-24 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col min-h-screen pb-24">
+    <div className="flex flex-col min-h-screen pb-24 bg-zinc-50 dark:bg-zinc-950">
       <TopBar
         title="Resumen"
         action={
@@ -265,179 +344,159 @@ export default function ResumenPage() {
       />
 
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
-        {/* Selector de Período */}
-        <div className="flex gap-2 p-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-2xl">
-          <button
-            onClick={() => setPeriod('hoy')}
-            className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all active:scale-95 ${
-              period === 'hoy'
-                ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
-            }`}
-          >
-            Hoy
-          </button>
-          <button
-            onClick={() => setPeriod('semana')}
-            className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all active:scale-95 ${
-              period === 'semana'
-                ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
-            }`}
-          >
-            Semana
-          </button>
-          <button
-            onClick={() => setPeriod('mes')}
-            className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all active:scale-95 ${
-              period === 'mes'
-                ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
-            }`}
-          >
-            Mes
-          </button>
+        {/* Estado General - Hero Section */}
+        <div className="relative bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 dark:from-zinc-800 dark:via-zinc-900 dark:to-black rounded-3xl p-6 overflow-hidden">
+          {/* Glow effect */}
+          <div className="absolute inset-0 opacity-30">
+            <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full blur-3xl ${
+              globalScore >= 70 ? 'bg-emerald-500' :
+              globalScore >= 50 ? 'bg-blue-500' :
+              globalScore >= 30 ? 'bg-orange-500' :
+              'bg-zinc-500'
+            }`} />
+          </div>
+
+          <div className="relative flex flex-col items-center">
+            <div className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-4">
+              Estado General
+            </div>
+
+            <ProgressRing
+              progress={globalScore}
+              size={140}
+              strokeWidth={10}
+              color={getScoreColor(globalScore)}
+              label={globalScore}
+              sublabel="puntos"
+            />
+
+            <div className="mt-4 text-center">
+              <p className="text-lg font-semibold text-white">
+                {globalScore >= 70 ? 'Excelente' :
+                 globalScore >= 50 ? 'Vas bien' :
+                 globalScore >= 30 ? 'Podés mejorar' :
+                 'Necesita atención'}
+              </p>
+              <p className="text-sm text-zinc-400 mt-1">
+                {period === 'hoy' ? 'Hoy' : period === 'semana' ? 'Esta semana' : 'Este mes'}
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Payoff global - estado general */}
-        {globalStatus && (
-          <div className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl ${globalStatus.color}`}>
-            <span className="text-sm">{globalStatus.icon}</span>
-            <span className="text-sm font-semibold">{globalStatus.text}</span>
-          </div>
+        {/* Selector de Período */}
+        <div className="flex gap-2 p-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-2xl">
+          {['hoy', 'semana', 'mes'].map((p) => (
+            <button
+              key={p}
+              onClick={() => setPeriod(p)}
+              className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all active:scale-95 ${
+                period === p
+                  ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+              }`}
+            >
+              {p === 'hoy' ? 'Hoy' : p === 'semana' ? 'Semana' : 'Mes'}
+            </button>
+          ))}
+        </div>
+
+        {/* Recomendación del día */}
+        {recommendation && (
+          <RecommendationCard
+            emoji={recommendation.emoji}
+            title={recommendation.title}
+            description={recommendation.description}
+            action={recommendation.action}
+            actionLabel={recommendation.actionLabel}
+            variant={recommendation.variant}
+          />
         )}
 
-        {/* Cards Resumidas */}
-        <div className="space-y-3">
-          {/* Money Card - Billetera Tech Style */}
+        {/* Mini Cards Grid */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* Money Mini Card */}
           {widgetConfig.money && (
-          <a href="/money" className="block">
-            <Card className="p-5 bg-gradient-to-br from-zinc-900 to-zinc-800 dark:from-zinc-800 dark:to-zinc-900 border-zinc-700 hover:shadow-lg hover:shadow-zinc-900/20 transition-all">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-10 h-10 rounded-2xl bg-zinc-700 flex items-center justify-center">
-                      <span className="text-xl">💳</span>
-                    </div>
-                    <span className="text-sm font-semibold text-zinc-400">Money</span>
-                  </div>
-                  <div className="text-3xl font-bold text-white font-mono tracking-tight mb-1">
-                    {formatAmount(data.gastoTotal)}
-                  </div>
-                  <div className="text-sm text-zinc-500">Gasto total</div>
+            <a href="/money" className="block">
+              <Card className="p-4 bg-gradient-to-br from-zinc-900 to-zinc-800 dark:from-zinc-800 dark:to-zinc-900 border-zinc-700 hover:shadow-lg hover:shadow-emerald-500/10 dark:hover:shadow-emerald-500/20 transition-all group">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg">💳</span>
+                  <span className="text-xs font-semibold text-zinc-400">Money</span>
+                </div>
+                <div className="text-xl font-bold text-white font-mono tracking-tight">
+                  {formatAmount(data.gastoTotal)}
                 </div>
                 {data.gastoDiff !== 0 && (
-                  <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
-                    data.gastoDiff > 0
-                      ? 'bg-red-500/20 text-red-400'
-                      : 'bg-emerald-500/20 text-emerald-400'
+                  <div className={`text-xs mt-1 font-medium ${
+                    data.gastoDiff > 0 ? 'text-red-400' : 'text-emerald-400'
                   }`}>
-                    {data.gastoDiff > 0 ? '+' : ''}{data.gastoDiff.toFixed(0)}%
+                    {data.gastoDiff > 0 ? '↑' : '↓'} {Math.abs(data.gastoDiff).toFixed(0)}%
                   </div>
                 )}
-              </div>
-            </Card>
-          </a>
+              </Card>
+            </a>
           )}
 
-          {/* Mental Card */}
-          {widgetConfig.mental && data.mentalAvg !== null && (
+          {/* Mental Mini Card */}
+          {widgetConfig.mental && (
             <a href="/mental" className="block">
-              <Card className="p-5 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200/50 dark:border-purple-800/50 hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-10 h-10 rounded-2xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center">
-                        <span className="text-xl">🧠</span>
-                      </div>
-                      <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Mental</span>
-                    </div>
-                    <div className="flex items-baseline gap-2 mb-1">
-                      <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-                        {Math.round(data.mentalAvg * 10) / 10}
-                      </div>
-                      <div className="text-lg text-purple-400 dark:text-purple-500">/10</div>
-                    </div>
-                    <div className="text-sm text-zinc-500 dark:text-zinc-400">Promedio estado</div>
-                  </div>
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl ${
-                    data.mentalTrend === '↑' ? 'bg-green-100 dark:bg-green-900/30' :
-                    data.mentalTrend === '↓' ? 'bg-red-100 dark:bg-red-900/30' :
-                    'bg-zinc-100 dark:bg-zinc-800'
-                  }`}>
-                    {data.mentalTrend}
-                  </div>
+              <Card className="p-4 bg-gradient-to-br from-purple-500/10 to-pink-500/10 dark:from-purple-500/20 dark:to-pink-500/20 border-purple-200/50 dark:border-purple-500/30 hover:shadow-lg hover:shadow-purple-500/10 dark:hover:shadow-purple-500/20 transition-all group">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg">🧠</span>
+                  <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Mental</span>
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-xl font-bold text-purple-600 dark:text-purple-400">
+                    {data.mentalAvg !== null ? (Math.round(data.mentalAvg * 10) / 10) : '–'}
+                  </span>
+                  <span className="text-sm text-purple-400 dark:text-purple-500">/10</span>
+                </div>
+                <div className="text-xs mt-1 text-zinc-500 dark:text-zinc-400">
+                  {data.mentalTrend === '↑' ? 'Mejorando' : data.mentalTrend === '↓' ? 'Bajando' : 'Estable'}
                 </div>
               </Card>
             </a>
           )}
 
-          {/* Físico Card */}
+          {/* Físico Mini Card */}
           {widgetConfig.fisico && (
-          <a href="/fisico" className="block">
-            <Card className="p-5 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border-orange-200/50 dark:border-orange-800/50 hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-10 h-10 rounded-2xl bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center">
-                      <span className="text-xl">💪</span>
-                    </div>
-                    <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Tu cuerpo</span>
-                  </div>
-                  <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-1">
-                    {data.physicalDays} días
-                  </div>
-                  <div className="text-sm text-zinc-500 dark:text-zinc-400">Días activos</div>
+            <a href="/fisico" className="block">
+              <Card className="p-4 bg-gradient-to-br from-orange-500/10 to-amber-500/10 dark:from-orange-500/20 dark:to-amber-500/20 border-orange-200/50 dark:border-orange-500/30 hover:shadow-lg hover:shadow-orange-500/10 dark:hover:shadow-orange-500/20 transition-all group">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg">💪</span>
+                  <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Físico</span>
+                </div>
+                <div className="text-xl font-bold text-orange-600 dark:text-orange-400">
+                  {data.physicalDays}d
                 </div>
                 {data.physicalStreak > 0 && (
-                  <div className="px-3 py-1.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs font-semibold">
+                  <div className="text-xs mt-1 text-orange-500 dark:text-orange-400 font-medium">
                     🔥 {data.physicalStreak}d racha
                   </div>
                 )}
-              </div>
-            </Card>
-          </a>
+              </Card>
+            </a>
           )}
 
-          {/* Objetivos Card */}
+          {/* Objetivos Mini Card */}
           {data.activeGoals > 0 && (
             <a href="/objetivos" className="block">
-              <Card className="p-5 bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-950/20 dark:to-violet-950/20 border-indigo-200/50 dark:border-indigo-800/50 hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-10 h-10 rounded-2xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
-                        <span className="text-xl">🎯</span>
-                      </div>
-                      <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Objetivos</span>
-                    </div>
-                    <div className="flex items-baseline gap-2 mb-1">
-                      <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
-                        {data.activeGoals}
-                      </div>
-                      <div className="text-lg text-indigo-400 dark:text-indigo-500">activos</div>
-                    </div>
-                    {data.goalsProgress !== null && (
-                      <div className="mt-2">
-                        <div className="flex items-center justify-between text-xs mb-1">
-                          <span className="text-zinc-500 dark:text-zinc-400">Progreso promedio</span>
-                          <span className="font-semibold text-indigo-600 dark:text-indigo-400">{data.goalsProgress}%</span>
-                        </div>
-                        <div className="h-2 bg-indigo-100 dark:bg-indigo-900/40 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all"
-                            style={{ width: `${data.goalsProgress}%` }}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  {data.completedGoals > 0 && (
-                    <div className="px-3 py-1.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-semibold">
-                      ✓ {data.completedGoals} cumplidos
-                    </div>
-                  )}
+              <Card className="p-4 bg-gradient-to-br from-indigo-500/10 to-violet-500/10 dark:from-indigo-500/20 dark:to-violet-500/20 border-indigo-200/50 dark:border-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/10 dark:hover:shadow-indigo-500/20 transition-all group">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg">🎯</span>
+                  <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Objetivos</span>
                 </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
+                    {data.activeGoals}
+                  </span>
+                  <span className="text-sm text-indigo-400 dark:text-indigo-500">activos</span>
+                </div>
+                {data.goalsProgress !== null && (
+                  <div className="text-xs mt-1 text-zinc-500 dark:text-zinc-400">
+                    {data.goalsProgress}% promedio
+                  </div>
+                )}
               </Card>
             </a>
           )}
@@ -449,7 +508,7 @@ export default function ResumenPage() {
             <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1">Insights</h3>
 
             {crossInsights.spendingByMood?.insight && (
-              <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200/50 dark:border-blue-800/50">
+              <Card className="p-4 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 dark:from-blue-500/10 dark:to-indigo-500/10 border-blue-200/50 dark:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/10 transition-all">
                 <div className="flex items-start gap-3">
                   <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center flex-shrink-0">
                     <span className="text-base">💡</span>
@@ -467,7 +526,7 @@ export default function ResumenPage() {
             )}
 
             {crossInsights.moodByExercise?.insight && (
-              <Card className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200/50 dark:border-purple-800/50">
+              <Card className="p-4 bg-gradient-to-br from-purple-500/5 to-pink-500/5 dark:from-purple-500/10 dark:to-pink-500/10 border-purple-200/50 dark:border-purple-500/30 hover:shadow-lg hover:shadow-purple-500/10 transition-all">
                 <div className="flex items-start gap-3">
                   <div className="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center flex-shrink-0">
                     <span className="text-base">🧠</span>
@@ -485,7 +544,7 @@ export default function ResumenPage() {
             )}
 
             {crossInsights.impulsiveByExercise?.insight && (
-              <Card className="p-4 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border-orange-200/50 dark:border-orange-800/50">
+              <Card className="p-4 bg-gradient-to-br from-orange-500/5 to-amber-500/5 dark:from-orange-500/10 dark:to-amber-500/10 border-orange-200/50 dark:border-orange-500/30 hover:shadow-lg hover:shadow-orange-500/10 transition-all">
                 <div className="flex items-start gap-3">
                   <div className="w-9 h-9 rounded-xl bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center flex-shrink-0">
                     <span className="text-base">💪</span>
@@ -511,19 +570,19 @@ export default function ResumenPage() {
             {alerts.map((alert, i) => {
               const severityStyles = {
                 high: {
-                  bg: 'bg-red-50 dark:bg-red-950/20 border-red-200/50 dark:border-red-800/50',
+                  bg: 'bg-gradient-to-br from-red-500/10 to-rose-500/10 dark:from-red-500/20 dark:to-rose-500/20 border-red-200/50 dark:border-red-500/30',
                   icon: 'bg-red-100 dark:bg-red-900/40',
-                  cta: 'text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300'
+                  cta: 'text-red-600 dark:text-red-400'
                 },
                 medium: {
-                  bg: 'bg-orange-50 dark:bg-orange-950/20 border-orange-200/50 dark:border-orange-800/50',
+                  bg: 'bg-gradient-to-br from-orange-500/10 to-amber-500/10 dark:from-orange-500/20 dark:to-amber-500/20 border-orange-200/50 dark:border-orange-500/30',
                   icon: 'bg-orange-100 dark:bg-orange-900/40',
-                  cta: 'text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300'
+                  cta: 'text-orange-600 dark:text-orange-400'
                 },
                 low: {
-                  bg: 'bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200/50 dark:border-yellow-800/50',
+                  bg: 'bg-gradient-to-br from-yellow-500/10 to-amber-500/10 dark:from-yellow-500/20 dark:to-amber-500/20 border-yellow-200/50 dark:border-yellow-500/30',
                   icon: 'bg-yellow-100 dark:bg-yellow-900/40',
-                  cta: 'text-yellow-600 dark:text-yellow-400 hover:text-yellow-700 dark:hover:text-yellow-300'
+                  cta: 'text-yellow-600 dark:text-yellow-400'
                 }
               }
               const styles = severityStyles[alert.severity] || severityStyles.low
@@ -533,7 +592,7 @@ export default function ResumenPage() {
                                '/comportamiento'
 
               return (
-                <Card key={i} className={`p-4 ${styles.bg}`}>
+                <Card key={i} className={`p-4 ${styles.bg} hover:shadow-lg transition-all`}>
                   <div className="flex items-start gap-3">
                     <div className={`w-10 h-10 rounded-xl ${styles.icon} flex items-center justify-center flex-shrink-0`}>
                       <span className="text-lg">
@@ -567,28 +626,28 @@ export default function ResumenPage() {
 
         {/* Historial */}
         {widgetConfig.historial && (
-        <a href="/historia" className="block">
-          <Card className="p-4 bg-zinc-50 dark:bg-zinc-800/30 border-zinc-200/50 dark:border-zinc-700/50 hover:shadow-md transition-all active:scale-[0.98]">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
-                  <span className="text-lg">📊</span>
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    Historial
+          <a href="/historia" className="block">
+            <Card className="p-4 bg-zinc-100 dark:bg-zinc-800/30 border-zinc-200/50 dark:border-zinc-700/50 hover:shadow-lg hover:shadow-zinc-500/10 transition-all active:scale-[0.98]">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
+                    <span className="text-lg">📊</span>
                   </div>
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                    Ver resúmenes y exportar datos
+                  <div>
+                    <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                      Historial
+                    </div>
+                    <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                      Ver resúmenes y exportar datos
+                    </div>
                   </div>
                 </div>
+                <svg className="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </div>
-              <svg className="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </div>
-          </Card>
-        </a>
+            </Card>
+          </a>
         )}
       </div>
 
@@ -611,104 +670,38 @@ export default function ResumenPage() {
               </button>
             </div>
 
-            <div className="p-5 space-y-3">
+            <div className="p-5 space-y-3 max-h-[60vh] overflow-y-auto">
               <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-5">
                 Seleccioná qué widgets querés ver
               </p>
 
-              <label className="flex items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors active:scale-[0.98]">
-                <input
-                  type="checkbox"
-                  checked={widgetConfig.money}
-                  onChange={(e) => setWidgetConfig({ ...widgetConfig, money: e.target.checked })}
-                  className="w-5 h-5 rounded-lg border-zinc-300 dark:border-zinc-600 text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
-                />
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="w-9 h-9 rounded-xl bg-green-100 dark:bg-green-900/40 flex items-center justify-center">
-                    <span className="text-base">💰</span>
+              {[
+                { key: 'money', emoji: '💰', label: 'Money', color: 'green' },
+                { key: 'mental', emoji: '🧠', label: 'Mental', color: 'purple' },
+                { key: 'fisico', emoji: '💪', label: 'Físico', color: 'orange' },
+                { key: 'insights', emoji: '💡', label: 'Insights', color: 'blue' },
+                { key: 'alertas', emoji: '⚠️', label: 'Alertas', color: 'red' },
+                { key: 'historial', emoji: '📊', label: 'Historial', color: 'zinc' }
+              ].map(({ key, emoji, label, color }) => (
+                <label key={key} className="flex items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors active:scale-[0.98]">
+                  <input
+                    type="checkbox"
+                    checked={widgetConfig[key]}
+                    onChange={(e) => setWidgetConfig({ ...widgetConfig, [key]: e.target.checked })}
+                    className="w-5 h-5 rounded-lg border-zinc-300 dark:border-zinc-600 text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
+                  />
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className={`w-9 h-9 rounded-xl bg-${color}-100 dark:bg-${color}-900/40 flex items-center justify-center`}>
+                      <span className="text-base">{emoji}</span>
+                    </div>
+                    <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{label}</span>
                   </div>
-                  <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Money</span>
-                </div>
-              </label>
-
-              <label className="flex items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors active:scale-[0.98]">
-                <input
-                  type="checkbox"
-                  checked={widgetConfig.mental}
-                  onChange={(e) => setWidgetConfig({ ...widgetConfig, mental: e.target.checked })}
-                  className="w-5 h-5 rounded-lg border-zinc-300 dark:border-zinc-600 text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
-                />
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center">
-                    <span className="text-base">🧠</span>
-                  </div>
-                  <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Mental</span>
-                </div>
-              </label>
-
-              <label className="flex items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors active:scale-[0.98]">
-                <input
-                  type="checkbox"
-                  checked={widgetConfig.fisico}
-                  onChange={(e) => setWidgetConfig({ ...widgetConfig, fisico: e.target.checked })}
-                  className="w-5 h-5 rounded-lg border-zinc-300 dark:border-zinc-600 text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
-                />
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="w-9 h-9 rounded-xl bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center">
-                    <span className="text-base">💪</span>
-                  </div>
-                  <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Físico</span>
-                </div>
-              </label>
-
-              <label className="flex items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors active:scale-[0.98]">
-                <input
-                  type="checkbox"
-                  checked={widgetConfig.insights}
-                  onChange={(e) => setWidgetConfig({ ...widgetConfig, insights: e.target.checked })}
-                  className="w-5 h-5 rounded-lg border-zinc-300 dark:border-zinc-600 text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
-                />
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
-                    <span className="text-base">💡</span>
-                  </div>
-                  <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Insights</span>
-                </div>
-              </label>
-
-              <label className="flex items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors active:scale-[0.98]">
-                <input
-                  type="checkbox"
-                  checked={widgetConfig.alertas}
-                  onChange={(e) => setWidgetConfig({ ...widgetConfig, alertas: e.target.checked })}
-                  className="w-5 h-5 rounded-lg border-zinc-300 dark:border-zinc-600 text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
-                />
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
-                    <span className="text-base">⚠️</span>
-                  </div>
-                  <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Alertas</span>
-                </div>
-              </label>
-
-              <label className="flex items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors active:scale-[0.98]">
-                <input
-                  type="checkbox"
-                  checked={widgetConfig.historial}
-                  onChange={(e) => setWidgetConfig({ ...widgetConfig, historial: e.target.checked })}
-                  className="w-5 h-5 rounded-lg border-zinc-300 dark:border-zinc-600 text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
-                />
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="w-9 h-9 rounded-xl bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
-                    <span className="text-base">📊</span>
-                  </div>
-                  <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Historial</span>
-                </div>
-              </label>
+                </label>
+              ))}
 
               <button
                 onClick={() => setShowConfigModal(false)}
-                className="w-full py-3.5 px-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-colors mt-5 active:scale-[0.98]"
+                className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold text-sm transition-colors mt-5 active:scale-[0.98] shadow-lg shadow-purple-500/20"
               >
                 Guardar
               </button>
