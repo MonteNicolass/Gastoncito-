@@ -7,16 +7,18 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 
 export default function ChatPage() {
-  const [messages, setMessages] = useState([
-    { from: 'gaston', text: 'Contame algo de tu día...' }
-  ])
-
+  const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [pendingAction, setPendingAction] = useState(null)
   const messagesEndRef = useRef(null)
+  const inputRef = useRef(null)
 
   useEffect(() => {
     initDB()
+    // Autofocus on input
+    if (inputRef.current) {
+      inputRef.current.focus()
+    }
   }, [])
 
   useEffect(() => {
@@ -143,8 +145,13 @@ export default function ChatPage() {
       await addMovimiento(movimiento)
       await updateSaldo(movimiento.metodo, movimiento.tipo === 'gasto' ? -movimiento.monto : movimiento.monto)
 
-      const label = intent === 'add_subscription' ? 'Money (suscripción)' : 'Money'
-      setMessages(prev => [...prev, { from: 'gaston', text: `Registrado en: ${label}` }])
+      const typeLabel = movimiento.tipo === 'ingreso' ? 'Ingreso' : 'Gasto'
+      const hint = 'Afecta Money hoy'
+      setMessages(prev => [...prev, {
+        from: 'gaston',
+        text: `${typeLabel} guardado`,
+        hint
+      }])
 
     } else if (intent === 'log_entry' && entry) {
       await addLifeEntry({
@@ -154,12 +161,26 @@ export default function ChatPage() {
       })
 
       const labels = {
-        general: 'General',
-        physical: 'Físico',
-        mental: 'Mental',
-        money: 'Money'
+        general: 'Nota guardada',
+        physical: 'Hábito registrado',
+        mental: 'Estado mental registrado',
+        money: 'Money registrado'
       }
-      setMessages(prev => [...prev, { from: 'gaston', text: `Registrado en: ${labels[entry.domain]}` }])
+
+      const hints = {
+        general: null,
+        physical: 'Impacta en Físico',
+        mental: 'Impacta en Mental',
+        money: 'Afecta Money hoy'
+      }
+
+      const scoreText = entry.meta?.mood_score ? `: ${entry.meta.mood_score}/10` : ''
+
+      setMessages(prev => [...prev, {
+        from: 'gaston',
+        text: `${labels[entry.domain]}${scoreText}`,
+        hint: hints[entry.domain]
+      }])
 
     } else {
       // Unknown or unhandled
@@ -199,6 +220,14 @@ export default function ChatPage() {
       <TopBar title="Chat" />
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+        {messages.length === 0 && (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center px-8">
+              Escribí algo que quieras registrar…
+            </p>
+          </div>
+        )}
+
         {messages.map((m, i) => (
           <div key={i}>
             <div className={`flex ${m.from === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -210,6 +239,11 @@ export default function ChatPage() {
                 }`}
               >
                 <p className="text-sm leading-relaxed">{m.text}</p>
+                {m.hint && (
+                  <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
+                    {m.hint}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -241,26 +275,51 @@ export default function ChatPage() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Ejemplos */}
+      {/* Acciones rápidas */}
       <div className="px-4 pb-2">
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+        <div className="flex items-center gap-4 justify-center">
           <button
-            onClick={() => setInput('Gasté 1200 en café')}
-            className="flex-shrink-0 px-3 py-1.5 text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+            onClick={() => setInput('Gasté ')}
+            className="flex flex-col items-center gap-1 group"
+            title="Registrar gasto"
           >
-            Gasté 1200 en café
+            <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center group-hover:bg-green-200 dark:group-hover:bg-green-900/50 transition-colors">
+              <span className="text-2xl">💸</span>
+            </div>
+            <span className="text-xs text-zinc-600 dark:text-zinc-400">Gasto</span>
           </button>
+
           <button
-            onClick={() => setInput('Hoy me sentí ansioso')}
-            className="flex-shrink-0 px-3 py-1.5 text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+            onClick={() => setInput('Hoy me sentí ')}
+            className="flex flex-col items-center gap-1 group"
+            title="Registrar estado mental"
           >
-            Hoy me sentí ansioso
+            <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center group-hover:bg-purple-200 dark:group-hover:bg-purple-900/50 transition-colors">
+              <span className="text-2xl">🧠</span>
+            </div>
+            <span className="text-xs text-zinc-600 dark:text-zinc-400">Estado</span>
           </button>
+
           <button
-            onClick={() => setInput('Fui al gym')}
-            className="flex-shrink-0 px-3 py-1.5 text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+            onClick={() => setInput('Fui al ')}
+            className="flex flex-col items-center gap-1 group"
+            title="Registrar hábito"
           >
-            Fui al gym
+            <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center group-hover:bg-orange-200 dark:group-hover:bg-orange-900/50 transition-colors">
+              <span className="text-2xl">💪</span>
+            </div>
+            <span className="text-xs text-zinc-600 dark:text-zinc-400">Hábito</span>
+          </button>
+
+          <button
+            onClick={() => setInput('Nota: ')}
+            className="flex flex-col items-center gap-1 group"
+            title="Guardar nota"
+          >
+            <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors">
+              <span className="text-2xl">📝</span>
+            </div>
+            <span className="text-xs text-zinc-600 dark:text-zinc-400">Nota</span>
           </button>
         </div>
       </div>
@@ -268,8 +327,9 @@ export default function ChatPage() {
       <div className="sticky bottom-0 backdrop-blur-xl bg-zinc-50/80 dark:bg-zinc-950/80 border-t border-zinc-200/50 dark:border-zinc-800/50 px-4 py-3">
         <div className="flex gap-2 items-end">
           <input
+            ref={inputRef}
             className="flex-1 px-4 py-2.5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-full text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
-            placeholder="Contame algo de tu día..."
+            placeholder="Escribí algo que quieras registrar…"
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => {
