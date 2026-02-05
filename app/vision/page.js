@@ -23,6 +23,7 @@ export default function VisionGeneralPage() {
   const [alerts, setAlerts] = useState([])
   const [preferences, setPreferences] = useState(null)
   const [crossInsights, setCrossInsights] = useState(null)
+  const [showAllAlerts, setShowAllAlerts] = useState(false)
 
   const loadOverview = useCallback(async () => {
     try {
@@ -153,31 +154,60 @@ export default function VisionGeneralPage() {
     alertas: {
       title: '⚠️ Insights',
       description: 'Alertas tempranas',
-      render: () => alerts.length > 0 && (
-        <div className="space-y-2">
-          {alerts.map((alert, i) => (
-            <Card
-              key={i}
-              className={`p-4 ${
-                alert.severity === 'high'
-                  ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800'
-                  : alert.severity === 'medium'
-                  ? 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800'
-                  : 'bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800'
-              }`}
-            >
-              <div className="space-y-1">
-                <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                  {alert.title}
+      render: () => {
+        if (alerts.length === 0) return null
+
+        const displayAlerts = showAllAlerts ? alerts : alerts.slice(0, 3)
+        const hasMore = alerts.length > 3
+
+        return (
+          <div className="space-y-2">
+            {displayAlerts.map((alert, i) => (
+              <Card
+                key={i}
+                className={`p-3 ${
+                  alert.severity === 'high'
+                    ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800'
+                    : alert.severity === 'medium'
+                    ? 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800'
+                    : 'bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                      {alert.title}
+                    </div>
+                    {alert.message && (
+                      <div className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
+                        {alert.message}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="text-xs text-zinc-600 dark:text-zinc-400">
-                  {alert.message}
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )
+              </Card>
+            ))}
+
+            {hasMore && !showAllAlerts && (
+              <button
+                onClick={() => setShowAllAlerts(true)}
+                className="w-full text-center text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 py-2 transition-colors"
+              >
+                Ver {alerts.length - 3} más →
+              </button>
+            )}
+
+            {showAllAlerts && hasMore && (
+              <button
+                onClick={() => setShowAllAlerts(false)}
+                className="w-full text-center text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 py-2 transition-colors"
+              >
+                Ver menos ←
+              </button>
+            )}
+          </div>
+        )
+      }
     },
     objetivos: {
       title: '🎯 Objetivos',
