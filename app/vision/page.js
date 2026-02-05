@@ -6,6 +6,7 @@ import { initDB, getMovimientos, getLifeEntries, getCategorias, getGoals, getSub
 import { runAlertEngine, dismissAlert, buildUserContext, getSuggestionIcon, getSuggestionColors, getPrimaryCta } from '@/lib/alerts'
 import { getSpendingByMood, getMoodByExercise, getImpulsiveSpendingByExercise } from '@/lib/insights/crossInsights'
 import { getCachedRates } from '@/lib/services/market-rates'
+import { runRatoneandoEngine, getSavingsSummary, learnFromGasto } from '@/lib/ratoneando'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import ProgressRing from '@/components/ui/ProgressRing'
@@ -50,6 +51,7 @@ export default function ResumenPage() {
   const [alerts, setAlerts] = useState([])
   const [suggestions, setSuggestions] = useState([])
   const [crossInsights, setCrossInsights] = useState(null)
+  const [savingsInsight, setSavingsInsight] = useState(null)
   const [showConfigModal, setShowConfigModal] = useState(false)
   const [expandedAlertId, setExpandedAlertId] = useState(null)
   const [widgetConfig, setWidgetConfig] = useState(() => {
@@ -183,6 +185,10 @@ export default function ResumenPage() {
       const allAlerts = alertResult.alerts.slice(0, 3)
       const allSuggestions = alertResult.suggestions
 
+      // Run ratoneando engine for savings insights
+      const ratoneandoResult = await runRatoneandoEngine(movimientos)
+      const savingsSummary = getSavingsSummary(ratoneandoResult)
+
       const spendingByMood = getSpendingByMood(movimientos, lifeEntries, 30)
       const moodByExercise = getMoodByExercise(lifeEntries, 30)
       const impulsiveByExercise = getImpulsiveSpendingByExercise(movimientos, lifeEntries, 30)
@@ -219,6 +225,7 @@ export default function ResumenPage() {
       setAlerts(allAlerts)
       setSuggestions(allSuggestions)
       setCrossInsights({ spendingByMood, moodByExercise, impulsiveByExercise })
+      setSavingsInsight(savingsSummary)
     } catch (error) {
       console.error('Error loading data:', error)
     } finally {
@@ -563,6 +570,47 @@ export default function ResumenPage() {
               )
             })}
           </div>
+        )}
+
+        {/* Savings Insight Card */}
+        {savingsInsight && (
+          <button
+            onClick={() => savingsInsight.action?.href && router.push(savingsInsight.action.href)}
+            className={`w-full p-4 rounded-xl text-left transition-all active:scale-[0.98] ${
+              savingsInsight.priority === 'high'
+                ? 'bg-gradient-to-r from-emerald-500/10 to-teal-500/10 dark:from-emerald-500/20 dark:to-teal-500/20 border border-emerald-200 dark:border-emerald-800'
+                : 'bg-gradient-to-r from-blue-500/10 to-indigo-500/10 dark:from-blue-500/20 dark:to-indigo-500/20 border border-blue-200 dark:border-blue-800'
+            }`}
+          >
+            <div className="flex items-start gap-3">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                savingsInsight.priority === 'high'
+                  ? 'bg-emerald-500/20'
+                  : 'bg-blue-500/20'
+              }`}>
+                <Wallet className={`w-5 h-5 ${
+                  savingsInsight.priority === 'high' ? 'text-emerald-500' : 'text-blue-500'
+                }`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={`text-sm font-semibold ${
+                  savingsInsight.priority === 'high'
+                    ? 'text-emerald-700 dark:text-emerald-300'
+                    : 'text-blue-700 dark:text-blue-300'
+                }`}>
+                  {savingsInsight.title}
+                </p>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
+                  {savingsInsight.subtitle}
+                </p>
+                {savingsInsight.action && (
+                  <span className="inline-block mt-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                    {savingsInsight.action.label} →
+                  </span>
+                )}
+              </div>
+            </div>
+          </button>
         )}
 
         {/* Stats Cards Grid */}
