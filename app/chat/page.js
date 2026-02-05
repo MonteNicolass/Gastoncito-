@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { initDB, addMovimiento, updateSaldo, addNote, addLifeEntry, deleteMovimiento, deleteLifeEntry, deleteNote, getMovimientos } from '@/lib/storage'
 import { getPriorityAlertForChat, actOnAlert } from '@/lib/alerts'
 import { runRatoneandoEngine } from '@/lib/ratoneando'
@@ -9,6 +9,7 @@ import { generatePayoff, calculatePayoffContext, updateMonthlyStats } from '@/li
 import { quickPriceCheck } from '@/lib/mira-precios'
 import { getDietSuggestionForChat, initDietSystem } from '@/lib/dieta'
 import { getChatContextSuggestion, recordAndProcess, markAsHabitual } from '@/lib/gasti'
+import { getAutocompleteSuggestions } from '@/lib/chat/autocomplete'
 import TopBar from '@/components/ui/TopBar'
 import Button from '@/components/ui/Button'
 import {
@@ -532,6 +533,13 @@ export default function ChatPage() {
     inputRef.current?.focus()
   }
 
+  const suggestions = useMemo(() => getAutocompleteSuggestions(input), [input])
+
+  function handleSuggestionClick(suggestion) {
+    setInput(suggestion.prefix)
+    inputRef.current?.focus()
+  }
+
   const hasMessages = messages.length > 0
 
   return (
@@ -760,6 +768,20 @@ export default function ChatPage() {
 
           {/* Input Area - Inside the panel */}
           <div className="border-t border-zinc-100 dark:border-zinc-800 p-4 bg-zinc-50/50 dark:bg-zinc-900/50">
+            {/* Autocomplete Suggestions */}
+            {suggestions.length > 0 && input.trim().length >= 2 && (
+              <div className="flex items-center gap-2 mb-2">
+                {suggestions.map((s, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleSuggestionClick(s)}
+                    className="px-3 py-1.5 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium hover:bg-purple-100 dark:hover:bg-purple-900/30 active:scale-95 transition-all whitespace-nowrap"
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            )}
             {/* Quick Actions Pills */}
             <div className="flex items-center gap-2 mb-3 overflow-x-auto scrollbar-hide">
               <button
