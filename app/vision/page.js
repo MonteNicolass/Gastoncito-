@@ -11,6 +11,7 @@ import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import ProgressRing from '@/components/ui/ProgressRing'
 import Avatar from '@/components/ui/Avatar'
+import { SkeletonHero, SkeletonCard } from '@/components/ui/Skeleton'
 import {
   Brain,
   Dumbbell,
@@ -254,9 +255,13 @@ export default function ResumenPage() {
     return (
       <div className="flex flex-col min-h-screen bg-zinc-50 dark:bg-zinc-950">
         <TopBar title="Resumen" />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-pulse">
-            <div className="w-20 h-20 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
+          <SkeletonHero />
+          <div className="grid grid-cols-2 gap-4">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
           </div>
         </div>
       </div>
@@ -290,30 +295,31 @@ export default function ResumenPage() {
             }`} />
           </div>
 
-          <div className="relative flex items-center gap-5">
-            {/* Avatar */}
-            <Avatar
-              mentalScore={data?.mentalAvg || 5}
-              physicalDays={data?.physicalDays || 0}
-              moneyHealth={data?.moneyHealth || 50}
-              size="lg"
-            />
-
+          <div className="relative flex items-center gap-6">
+            {/* Score Principal */}
             <div className="flex-1">
-              <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1">
-                Estado General
+              <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-2">
+                Tu día
               </p>
-              <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-4xl font-bold text-white">{globalScore}</span>
-                <span className="text-lg text-zinc-400">pts</span>
+              <div className="flex items-baseline gap-2 mb-3">
+                <span className="text-5xl font-bold text-white tracking-tight">{globalScore}</span>
+                <span className="text-xl text-zinc-500 font-medium">/ 100</span>
               </div>
-              <p className="text-sm text-zinc-300">
+              <p className="text-sm text-zinc-400">
                 {globalScore >= 70 ? 'Excelente balance' :
                  globalScore >= 50 ? 'Vas bien' :
                  globalScore >= 30 ? 'Podés mejorar' :
                  'Necesita atención'}
               </p>
             </div>
+
+            {/* Avatar */}
+            <Avatar
+              mentalScore={data?.mentalAvg || 5}
+              physicalDays={data?.physicalDays || 0}
+              moneyHealth={data?.moneyHealth || 50}
+              size="md"
+            />
           </div>
 
           {/* Quick stats row */}
@@ -412,7 +418,7 @@ export default function ResumenPage() {
         )}
 
         {/* Stats Cards Grid */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           {/* Mental Card */}
           {widgetConfig.mental && (
             <button onClick={() => router.push('/mental')} className="text-left">
