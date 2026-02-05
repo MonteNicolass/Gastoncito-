@@ -59,18 +59,18 @@ export default function TabNav() {
   const activeMain = tabs.find(isMainActive) || null; // Ensure activeMain is always defined
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-stone-200 safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-black border-t border-gray-200 dark:border-gray-800 safe-area-bottom">
       {/* sublinks when a main tab with subs is active */}
       {activeMain && activeMain.subs && activeMain.subs.length > 0 && (
-        <div className="flex gap-2 px-3 py-2 overflow-x-auto border-b border-stone-100">
+        <div className="flex gap-1 px-3 py-2 overflow-x-auto border-b border-gray-100 dark:border-gray-900">
           {activeMain.subs.map((s) => (
             <Link
               key={s.path}
               href={s.path}
-              className={`flex items-center gap-2 shrink-0 px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2 shrink-0 px-3 py-1 text-sm font-medium transition-colors ${
                 pathname === s.path
-                  ? 'bg-stone-100 text-stone-900'
-                  : 'text-stone-600 hover:bg-stone-50'
+                  ? 'bg-black text-white dark:bg-white dark:text-black'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white'
               }`}
             >
               <span className="text-base">{s.icon}</span>
@@ -85,10 +85,10 @@ export default function TabNav() {
           <Link
             key={tab.path}
             href={tab.path}
-            className={`flex-1 min-w-0 flex flex-col items-center justify-center py-2 px-1 text-xs font-semibold transition-all ${
+            className={`flex-1 min-w-0 flex flex-col items-center justify-center py-2 px-1 text-xs font-medium transition-colors ${
               isMainActive(tab)
-                ? 'text-stone-900 bg-gradient-to-t from-stone-100 to-transparent'
-                : 'text-stone-500 hover:text-stone-700'
+                ? 'text-black dark:text-white border-t-2 border-black dark:border-white'
+                : 'text-gray-400 dark:text-gray-600 hover:text-black dark:hover:text-white'
             }`}
           >
             <span className="text-lg mb-0.5">{tab.icon}</span>

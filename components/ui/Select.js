@@ -8,12 +8,12 @@ export default function Select({
   return (
     <div className="space-y-1.5">
       {label && (
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <label className="block text-sm font-medium text-black dark:text-white">
           {label}
         </label>
       )}
       <select
-        className={`w-full px-4 py-2.5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all ${className}`}
+        className={`w-full px-4 py-2.5 bg-white dark:bg-black border border-gray-300 dark:border-gray-700 text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white transition-all ${className}`}
         {...props}
       >
         {children}
