@@ -7,6 +7,19 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
+import {
+  Target,
+  Plus,
+  CheckCircle,
+  XCircle,
+  ArrowRight,
+  Wallet,
+  Dumbbell,
+  Brain,
+  MoreVertical,
+  X,
+  Sparkles
+} from 'lucide-react'
 
 // Helper para obtener presupuestos de localStorage
 function getBudgetsFromLocalStorage() {
@@ -149,21 +162,21 @@ export default function ObjetivosPage() {
   const getStatusBadge = (status) => {
     if (status === 'completed') {
       return (
-        <span className="inline-block px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
-          ✓ Cumplido
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
+          <CheckCircle className="w-3 h-3" /> Cumplido
         </span>
       )
     }
     if (status === 'failed') {
       return (
-        <span className="inline-block px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300">
-          ✗ Fallido
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300">
+          <XCircle className="w-3 h-3" /> Fallido
         </span>
       )
     }
     return (
-      <span className="inline-block px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
-        → Activo
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+        <ArrowRight className="w-3 h-3" /> Activo
       </span>
     )
   }
@@ -171,22 +184,22 @@ export default function ObjetivosPage() {
   const getTypeBadge = (type) => {
     if (type === 'money') {
       return (
-        <span className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
-          💰 Económico
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
+          <Wallet className="w-3 h-3" /> Económico
         </span>
       )
     }
     if (type === 'physical') {
       return (
-        <span className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300">
-          💪 Físico
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300">
+          <Dumbbell className="w-3 h-3" /> Físico
         </span>
       )
     }
     if (type === 'mental') {
       return (
-        <span className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
-          🧠 Mental
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+          <Brain className="w-3 h-3" /> Mental
         </span>
       )
     }
@@ -208,16 +221,16 @@ export default function ObjetivosPage() {
 
   const getOverallStatus = () => {
     if (completedGoals.length > 0 && activeGoals.length === 0) {
-      return { text: 'Todos cumplidos', icon: '✨', color: 'text-green-600 dark:text-green-400' }
+      return { text: 'Todos cumplidos', Icon: Sparkles, color: 'text-green-600 dark:text-green-400' }
     }
     if (avgProgress >= 75) {
-      return { text: 'Casi listo', icon: '🎯', color: 'text-green-600 dark:text-green-400' }
+      return { text: 'Casi listo', Icon: Target, color: 'text-green-600 dark:text-green-400' }
     }
     if (avgProgress >= 50) {
-      return { text: 'Buen avance', icon: '✓', color: 'text-blue-600 dark:text-blue-400' }
+      return { text: 'Buen avance', Icon: CheckCircle, color: 'text-blue-600 dark:text-blue-400' }
     }
     if (activeGoals.length > 0) {
-      return { text: 'En progreso', icon: '→', color: 'text-zinc-500 dark:text-zinc-400' }
+      return { text: 'En progreso', Icon: ArrowRight, color: 'text-zinc-500 dark:text-zinc-400' }
     }
     return null
   }
@@ -246,7 +259,7 @@ export default function ObjetivosPage() {
               </div>
               {overallStatus && (
                 <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/60 dark:bg-zinc-800/60 ${overallStatus.color}`}>
-                  <span className="text-sm">{overallStatus.icon}</span>
+                  <overallStatus.Icon className="w-4 h-4" />
                   <span className="text-xs font-semibold">{overallStatus.text}</span>
                 </div>
               )}
@@ -274,9 +287,7 @@ export default function ObjetivosPage() {
           className="w-full p-4 bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 rounded-2xl transition-all active:scale-[0.98] shadow-lg shadow-indigo-500/20"
         >
           <div className="flex items-center justify-center gap-2 text-white">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
+            <Plus className="w-5 h-5" />
             <span className="font-semibold">Nueva meta</span>
           </div>
         </button>
@@ -287,7 +298,9 @@ export default function ObjetivosPage() {
           </h3>
           {goals.length === 0 ? (
             <Card className="p-8 text-center bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-950/20 dark:to-violet-950/20 border-indigo-200/50 dark:border-indigo-800/50">
-              <div className="text-4xl mb-4">🎯</div>
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                <Target className="w-8 h-8 text-indigo-500 dark:text-indigo-400" />
+              </div>
               <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
                 Definí tus metas
               </h3>
@@ -314,7 +327,9 @@ export default function ObjetivosPage() {
                       <div className="flex items-center gap-2 mb-2">
                         {getTypeBadge(goal.type)}
                         {isAlmostDone && (
-                          <span className="text-xs font-medium text-green-600 dark:text-green-400">Casi listo ✨</span>
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600 dark:text-green-400">
+                            Casi listo <Sparkles className="w-3 h-3" />
+                          </span>
                         )}
                       </div>
                       <div className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-1">
@@ -339,11 +354,7 @@ export default function ObjetivosPage() {
                         }}
                         className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded transition-colors"
                       >
-                        <svg className="w-5 h-5 text-zinc-600 dark:text-zinc-400" fill="currentColor" viewBox="0 0 16 16">
-                          <circle cx="8" cy="3" r="1.5"/>
-                          <circle cx="8" cy="8" r="1.5"/>
-                          <circle cx="8" cy="13" r="1.5"/>
-                        </svg>
+                        <MoreVertical className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
                       </button>
                       {contextMenuId === goal.id && (
                         <div className="absolute right-0 mt-1 w-36 bg-white dark:bg-zinc-800 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-700 z-10">
@@ -451,7 +462,7 @@ export default function ObjetivosPage() {
                   {/* Payoff para completados */}
                   {goal.status === 'completed' && (
                     <div className="flex items-center gap-2 pt-2 border-t border-green-200/50 dark:border-green-700/50">
-                      <span className="text-green-600 dark:text-green-400">✓</span>
+                      <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
                       <span className="text-sm font-medium text-green-700 dark:text-green-300">
                         Objetivo cumplido
                       </span>
@@ -477,9 +488,7 @@ export default function ObjetivosPage() {
                   onClick={handleCloseModal}
                   className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <X className="w-6 h-6" />
                 </button>
               </div>
             </div>

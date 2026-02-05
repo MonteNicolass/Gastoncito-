@@ -10,7 +10,23 @@ import { evaluateUserRules } from '@/lib/user-rules'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import ProgressRing from '@/components/ui/ProgressRing'
-import RecommendationCard from '@/components/ui/RecommendationCard'
+import Avatar from '@/components/ui/Avatar'
+import {
+  Brain,
+  Dumbbell,
+  Wallet,
+  Target,
+  TrendingUp,
+  TrendingDown,
+  AlertTriangle,
+  Zap,
+  Lightbulb,
+  ChevronRight,
+  BarChart3,
+  Settings,
+  Flame,
+  Calendar
+} from 'lucide-react'
 
 function getBudgetsFromLocalStorage() {
   if (typeof window === 'undefined') return []
@@ -83,13 +99,11 @@ export default function ResumenPage() {
         return fecha >= previousStartDate && fecha < previousEndDate
       })
 
-      // Calculate Money metrics
       const gastoTotal = filteredMovimientos.filter(m => m.tipo === 'gasto').reduce((sum, m) => sum + m.monto, 0)
       const ingresoTotal = filteredMovimientos.filter(m => m.tipo === 'ingreso').reduce((sum, m) => sum + m.monto, 0)
       const gastoPrevio = previousMovimientos.filter(m => m.tipo === 'gasto').reduce((sum, m) => sum + m.monto, 0)
       const gastoDiff = gastoPrevio > 0 ? ((gastoTotal - gastoPrevio) / gastoPrevio) * 100 : 0
 
-      // Calculate Mental metrics
       const mentalEntries = filteredEntries.filter(e => e.domain === 'mental' && e.meta?.mood_score)
       const mentalAvg = mentalEntries.length > 0
         ? mentalEntries.reduce((sum, e) => sum + e.meta.mood_score, 0) / mentalEntries.length
@@ -100,13 +114,12 @@ export default function ResumenPage() {
         ? prevMentalEntries.reduce((sum, e) => sum + e.meta.mood_score, 0) / prevMentalEntries.length
         : null
 
-      let mentalTrend = '→'
+      let mentalTrend = 'stable'
       if (mentalAvg !== null && prevMentalAvg !== null) {
-        if (mentalAvg > prevMentalAvg + 0.5) mentalTrend = '↑'
-        else if (mentalAvg < prevMentalAvg - 0.5) mentalTrend = '↓'
+        if (mentalAvg > prevMentalAvg + 0.5) mentalTrend = 'up'
+        else if (mentalAvg < prevMentalAvg - 0.5) mentalTrend = 'down'
       }
 
-      // Calculate Físico metrics
       const physicalDays = new Set(
         filteredEntries
           .filter(e => e.domain === 'physical')
@@ -116,7 +129,6 @@ export default function ResumenPage() {
           })
       ).size
 
-      // Calculate physical streak
       let physicalStreak = 0
       const today = new Date()
       today.setHours(0, 0, 0, 0)
@@ -141,23 +153,30 @@ export default function ResumenPage() {
         }
       }
 
-      // Detectar alertas
       const anomalies = detectAllAnomalies(movimientos, lifeEntries, categorias, goals)
       const userRuleAlerts = evaluateUserRules(movimientos, lifeEntries, budgets)
       const silentAlerts = getAllSilentAlerts(movimientos, lifeEntries, budgets, categorias)
       const allAlerts = [...anomalies, ...userRuleAlerts, ...silentAlerts].slice(0, 3)
 
-      // Cross insights
       const spendingByMood = getSpendingByMood(movimientos, lifeEntries, 30)
       const moodByExercise = getMoodByExercise(lifeEntries, 30)
       const impulsiveByExercise = getImpulsiveSpendingByExercise(movimientos, lifeEntries, 30)
 
-      // Calculate goals stats
       const activeGoals = goals.filter(g => g.status === 'active')
       const completedGoals = goals.filter(g => g.status === 'completed')
       const goalsProgress = activeGoals.length > 0
         ? Math.round(activeGoals.reduce((sum, g) => sum + Math.min(100, (g.progress / g.target) * 100), 0) / activeGoals.length)
         : null
+
+      // Money health score
+      let moneyHealth = 100
+      if (gastoPrevio > 0) {
+        if (gastoDiff > 50) moneyHealth -= 40
+        else if (gastoDiff > 20) moneyHealth -= 20
+        else if (gastoDiff > 0) moneyHealth -= 10
+        else moneyHealth += 10
+      }
+      moneyHealth = Math.min(100, Math.max(0, moneyHealth))
 
       setData({
         gastoTotal,
@@ -169,7 +188,8 @@ export default function ResumenPage() {
         physicalStreak,
         activeGoals: activeGoals.length,
         completedGoals: completedGoals.length,
-        goalsProgress
+        goalsProgress,
+        moneyHealth
       })
       setAlerts(allAlerts)
       setCrossInsights({ spendingByMood, moodByExercise, impulsiveByExercise })
@@ -195,32 +215,26 @@ export default function ResumenPage() {
     })
   }
 
-  // Calculate global score (0-100)
   const globalScore = useMemo(() => {
     if (!data) return 0
-
     let score = 0
     let factors = 0
 
-    // Mental contribuye (0-10 → 0-100)
     if (data.mentalAvg !== null) {
       score += data.mentalAvg * 10
       factors++
     }
 
-    // Físico contribuye (días activos: 0 = 0%, 3+ = 100%)
     const physicalScore = Math.min(100, (data.physicalDays / 3) * 100)
     score += physicalScore
     factors++
 
-    // Money contribuye (menos gasto diferencial = mejor)
     if (data.gastoDiff !== 0 || data.gastoTotal > 0) {
       const moneyScore = data.gastoDiff <= 0 ? 100 : data.gastoDiff <= 20 ? 70 : data.gastoDiff <= 50 ? 40 : 20
       score += moneyScore
       factors++
     }
 
-    // Objetivos contribuyen
     if (data.goalsProgress !== null) {
       score += data.goalsProgress
       factors++
@@ -229,7 +243,6 @@ export default function ResumenPage() {
     return factors > 0 ? Math.round(score / factors) : 0
   }, [data])
 
-  // Get color based on score
   const getScoreColor = (score) => {
     if (score >= 70) return 'green'
     if (score >= 50) return 'blue'
@@ -237,88 +250,13 @@ export default function ResumenPage() {
     return 'zinc'
   }
 
-  // Get recommendation based on data
-  const getRecommendation = () => {
-    if (!data) return null
-
-    // Physical inactivity
-    if (data.physicalDays === 0) {
-      return {
-        emoji: '💪',
-        title: 'Movete un poco hoy',
-        description: 'No registraste actividad física en este período. Una caminata corta puede mejorar tu energía.',
-        action: () => router.push('/fisico/habitos'),
-        actionLabel: 'Registrar',
-        variant: 'warning'
-      }
-    }
-
-    // Mental low
-    if (data.mentalAvg !== null && data.mentalAvg < 5) {
-      return {
-        emoji: '🧠',
-        title: 'Cuidá tu bienestar',
-        description: 'Tu estado mental está un poco bajo. Tomate un momento para vos.',
-        action: () => router.push('/mental'),
-        actionLabel: 'Ver más',
-        variant: 'info'
-      }
-    }
-
-    // Spending high
-    if (data.gastoDiff > 30) {
-      return {
-        emoji: '💸',
-        title: 'Revisá tus gastos',
-        description: `Gastaste ${data.gastoDiff.toFixed(0)}% más que el período anterior. Vale la pena revisar.`,
-        action: () => router.push('/money/movimientos'),
-        actionLabel: 'Ver gastos',
-        variant: 'warning'
-      }
-    }
-
-    // Goals stalled
-    if (data.activeGoals > 0 && data.goalsProgress !== null && data.goalsProgress < 25) {
-      return {
-        emoji: '🎯',
-        title: 'Tus objetivos esperan',
-        description: 'El progreso está bajo. Un pequeño avance hoy hace la diferencia.',
-        action: () => router.push('/objetivos'),
-        actionLabel: 'Ver objetivos',
-        variant: 'info'
-      }
-    }
-
-    // All good - positive reinforcement
-    if (globalScore >= 70) {
-      return {
-        emoji: '✨',
-        title: 'Vas muy bien',
-        description: 'Mantené este ritmo. Tus áreas están equilibradas.',
-        variant: 'success'
-      }
-    }
-
-    // Default
-    return {
-      emoji: '💡',
-      title: 'Seguí registrando',
-      description: 'Cuanto más registres, mejores insights vas a tener.',
-      action: () => router.push('/chat'),
-      actionLabel: 'Ir al chat',
-      variant: 'default'
-    }
-  }
-
-  const recommendation = getRecommendation()
-
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen bg-zinc-50 dark:bg-zinc-950">
         <TopBar title="Resumen" />
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-pulse">
-            <div className="w-24 h-24 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+            <div className="w-20 h-20 rounded-full bg-zinc-200 dark:bg-zinc-800" />
           </div>
         </div>
       </div>
@@ -333,21 +271,17 @@ export default function ResumenPage() {
           <button
             onClick={() => setShowConfigModal(true)}
             className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors active:scale-95"
-            aria-label="Configurar widgets"
+            aria-label="Configurar"
           >
-            <svg className="w-5 h-5 text-zinc-600 dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
+            <Settings className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
           </button>
         }
       />
 
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
-        {/* Estado General - Hero Section */}
+        {/* Hero Section with Avatar */}
         <div className="relative bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 dark:from-zinc-800 dark:via-zinc-900 dark:to-black rounded-3xl p-6 overflow-hidden">
-          {/* Glow effect */}
-          <div className="absolute inset-0 opacity-30">
+          <div className="absolute inset-0 opacity-20">
             <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full blur-3xl ${
               globalScore >= 70 ? 'bg-emerald-500' :
               globalScore >= 50 ? 'bg-blue-500' :
@@ -356,35 +290,62 @@ export default function ResumenPage() {
             }`} />
           </div>
 
-          <div className="relative flex flex-col items-center">
-            <div className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-4">
-              Estado General
-            </div>
-
-            <ProgressRing
-              progress={globalScore}
-              size={140}
-              strokeWidth={10}
-              color={getScoreColor(globalScore)}
-              label={globalScore}
-              sublabel="puntos"
+          <div className="relative flex items-center gap-5">
+            {/* Avatar */}
+            <Avatar
+              mentalScore={data?.mentalAvg || 5}
+              physicalDays={data?.physicalDays || 0}
+              moneyHealth={data?.moneyHealth || 50}
+              size="lg"
             />
 
-            <div className="mt-4 text-center">
-              <p className="text-lg font-semibold text-white">
-                {globalScore >= 70 ? 'Excelente' :
+            <div className="flex-1">
+              <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1">
+                Estado General
+              </p>
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="text-4xl font-bold text-white">{globalScore}</span>
+                <span className="text-lg text-zinc-400">pts</span>
+              </div>
+              <p className="text-sm text-zinc-300">
+                {globalScore >= 70 ? 'Excelente balance' :
                  globalScore >= 50 ? 'Vas bien' :
                  globalScore >= 30 ? 'Podés mejorar' :
                  'Necesita atención'}
               </p>
-              <p className="text-sm text-zinc-400 mt-1">
-                {period === 'hoy' ? 'Hoy' : period === 'semana' ? 'Esta semana' : 'Este mes'}
+            </div>
+          </div>
+
+          {/* Quick stats row */}
+          <div className="mt-5 pt-4 border-t border-zinc-700/50 grid grid-cols-4 gap-2">
+            <div className="text-center">
+              <Brain className="w-4 h-4 mx-auto mb-1 text-purple-400" />
+              <p className="text-sm font-semibold text-white">
+                {data?.mentalAvg ? (Math.round(data.mentalAvg * 10) / 10) : '–'}
               </p>
+              <p className="text-[10px] text-zinc-500">Mental</p>
+            </div>
+            <div className="text-center">
+              <Dumbbell className="w-4 h-4 mx-auto mb-1 text-orange-400" />
+              <p className="text-sm font-semibold text-white">{data?.physicalDays || 0}d</p>
+              <p className="text-[10px] text-zinc-500">Activo</p>
+            </div>
+            <div className="text-center">
+              <Wallet className="w-4 h-4 mx-auto mb-1 text-emerald-400" />
+              <p className="text-sm font-semibold text-white">
+                {data?.gastoDiff !== 0 ? (data?.gastoDiff > 0 ? '+' : '') + data?.gastoDiff?.toFixed(0) + '%' : '–'}
+              </p>
+              <p className="text-[10px] text-zinc-500">Gasto</p>
+            </div>
+            <div className="text-center">
+              <Target className="w-4 h-4 mx-auto mb-1 text-indigo-400" />
+              <p className="text-sm font-semibold text-white">{data?.goalsProgress || 0}%</p>
+              <p className="text-[10px] text-zinc-500">Objetivos</p>
             </div>
           </div>
         </div>
 
-        {/* Selector de Período */}
+        {/* Period Selector */}
         <div className="flex gap-2 p-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-2xl">
           {['hoy', 'semana', 'mes'].map((p) => (
             <button
@@ -393,7 +354,7 @@ export default function ResumenPage() {
               className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all active:scale-95 ${
                 period === p
                   ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                  : 'text-zinc-600 dark:text-zinc-400'
               }`}
             >
               {p === 'hoy' ? 'Hoy' : p === 'semana' ? 'Semana' : 'Mes'}
@@ -401,257 +362,224 @@ export default function ResumenPage() {
           ))}
         </div>
 
-        {/* Recomendación del día */}
-        {recommendation && (
-          <RecommendationCard
-            emoji={recommendation.emoji}
-            title={recommendation.title}
-            description={recommendation.description}
-            action={recommendation.action}
-            actionLabel={recommendation.actionLabel}
-            variant={recommendation.variant}
-          />
-        )}
-
-        {/* Mini Cards Grid */}
-        <div className="grid grid-cols-2 gap-3">
-          {/* Money Mini Card */}
-          {widgetConfig.money && (
-            <a href="/money" className="block">
-              <Card className="p-4 bg-gradient-to-br from-zinc-900 to-zinc-800 dark:from-zinc-800 dark:to-zinc-900 border-zinc-700 hover:shadow-lg hover:shadow-emerald-500/10 dark:hover:shadow-emerald-500/20 transition-all group">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-lg">💳</span>
-                  <span className="text-xs font-semibold text-zinc-400">Money</span>
-                </div>
-                <div className="text-xl font-bold text-white font-mono tracking-tight">
-                  {formatAmount(data.gastoTotal)}
-                </div>
-                {data.gastoDiff !== 0 && (
-                  <div className={`text-xs mt-1 font-medium ${
-                    data.gastoDiff > 0 ? 'text-red-400' : 'text-emerald-400'
-                  }`}>
-                    {data.gastoDiff > 0 ? '↑' : '↓'} {Math.abs(data.gastoDiff).toFixed(0)}%
-                  </div>
-                )}
-              </Card>
-            </a>
-          )}
-
-          {/* Mental Mini Card */}
-          {widgetConfig.mental && (
-            <a href="/mental" className="block">
-              <Card className="p-4 bg-gradient-to-br from-purple-500/10 to-pink-500/10 dark:from-purple-500/20 dark:to-pink-500/20 border-purple-200/50 dark:border-purple-500/30 hover:shadow-lg hover:shadow-purple-500/10 dark:hover:shadow-purple-500/20 transition-all group">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-lg">🧠</span>
-                  <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Mental</span>
-                </div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-xl font-bold text-purple-600 dark:text-purple-400">
-                    {data.mentalAvg !== null ? (Math.round(data.mentalAvg * 10) / 10) : '–'}
-                  </span>
-                  <span className="text-sm text-purple-400 dark:text-purple-500">/10</span>
-                </div>
-                <div className="text-xs mt-1 text-zinc-500 dark:text-zinc-400">
-                  {data.mentalTrend === '↑' ? 'Mejorando' : data.mentalTrend === '↓' ? 'Bajando' : 'Estable'}
-                </div>
-              </Card>
-            </a>
-          )}
-
-          {/* Físico Mini Card */}
-          {widgetConfig.fisico && (
-            <a href="/fisico" className="block">
-              <Card className="p-4 bg-gradient-to-br from-orange-500/10 to-amber-500/10 dark:from-orange-500/20 dark:to-amber-500/20 border-orange-200/50 dark:border-orange-500/30 hover:shadow-lg hover:shadow-orange-500/10 dark:hover:shadow-orange-500/20 transition-all group">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-lg">💪</span>
-                  <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Físico</span>
-                </div>
-                <div className="text-xl font-bold text-orange-600 dark:text-orange-400">
-                  {data.physicalDays}d
-                </div>
-                {data.physicalStreak > 0 && (
-                  <div className="text-xs mt-1 text-orange-500 dark:text-orange-400 font-medium">
-                    🔥 {data.physicalStreak}d racha
-                  </div>
-                )}
-              </Card>
-            </a>
-          )}
-
-          {/* Objetivos Mini Card */}
-          {data.activeGoals > 0 && (
-            <a href="/objetivos" className="block">
-              <Card className="p-4 bg-gradient-to-br from-indigo-500/10 to-violet-500/10 dark:from-indigo-500/20 dark:to-violet-500/20 border-indigo-200/50 dark:border-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/10 dark:hover:shadow-indigo-500/20 transition-all group">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-lg">🎯</span>
-                  <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Objetivos</span>
-                </div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
-                    {data.activeGoals}
-                  </span>
-                  <span className="text-sm text-indigo-400 dark:text-indigo-500">activos</span>
-                </div>
-                {data.goalsProgress !== null && (
-                  <div className="text-xs mt-1 text-zinc-500 dark:text-zinc-400">
-                    {data.goalsProgress}% promedio
-                  </div>
-                )}
-              </Card>
-            </a>
-          )}
-        </div>
-
-        {/* Insights Cruzados */}
-        {widgetConfig.insights && crossInsights && (crossInsights.spendingByMood?.insight || crossInsights.moodByExercise?.insight || crossInsights.impulsiveByExercise?.insight) && (
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1">Insights</h3>
-
-            {crossInsights.spendingByMood?.insight && (
-              <Card className="p-4 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 dark:from-blue-500/10 dark:to-indigo-500/10 border-blue-200/50 dark:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/10 transition-all">
-                <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center flex-shrink-0">
-                    <span className="text-base">💡</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 leading-relaxed">
-                      {crossInsights.spendingByMood.insight}
-                    </p>
-                    <a href="/insights" className="inline-block mt-2 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
-                      Ver más →
-                    </a>
-                  </div>
-                </div>
-              </Card>
-            )}
-
-            {crossInsights.moodByExercise?.insight && (
-              <Card className="p-4 bg-gradient-to-br from-purple-500/5 to-pink-500/5 dark:from-purple-500/10 dark:to-pink-500/10 border-purple-200/50 dark:border-purple-500/30 hover:shadow-lg hover:shadow-purple-500/10 transition-all">
-                <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center flex-shrink-0">
-                    <span className="text-base">🧠</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 leading-relaxed">
-                      {crossInsights.moodByExercise.insight}
-                    </p>
-                    <a href="/insights" className="inline-block mt-2 text-xs font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300">
-                      Ver más →
-                    </a>
-                  </div>
-                </div>
-              </Card>
-            )}
-
-            {crossInsights.impulsiveByExercise?.insight && (
-              <Card className="p-4 bg-gradient-to-br from-orange-500/5 to-amber-500/5 dark:from-orange-500/10 dark:to-amber-500/10 border-orange-200/50 dark:border-orange-500/30 hover:shadow-lg hover:shadow-orange-500/10 transition-all">
-                <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center flex-shrink-0">
-                    <span className="text-base">💪</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 leading-relaxed">
-                      {crossInsights.impulsiveByExercise.insight}
-                    </p>
-                    <a href="/insights" className="inline-block mt-2 text-xs font-semibold text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300">
-                      Ver más →
-                    </a>
-                  </div>
-                </div>
-              </Card>
-            )}
-          </div>
-        )}
-
-        {/* Alertas Tempranas */}
-        {widgetConfig.alertas && alerts.length > 0 && (
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1">Alertas</h3>
+        {/* Alerts Section */}
+        {alerts.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1 flex items-center gap-2">
+              <AlertTriangle className="w-3 h-3" />
+              Alertas
+            </h3>
             {alerts.map((alert, i) => {
-              const severityStyles = {
-                high: {
-                  bg: 'bg-gradient-to-br from-red-500/10 to-rose-500/10 dark:from-red-500/20 dark:to-rose-500/20 border-red-200/50 dark:border-red-500/30',
-                  icon: 'bg-red-100 dark:bg-red-900/40',
-                  cta: 'text-red-600 dark:text-red-400'
-                },
-                medium: {
-                  bg: 'bg-gradient-to-br from-orange-500/10 to-amber-500/10 dark:from-orange-500/20 dark:to-amber-500/20 border-orange-200/50 dark:border-orange-500/30',
-                  icon: 'bg-orange-100 dark:bg-orange-900/40',
-                  cta: 'text-orange-600 dark:text-orange-400'
-                },
-                low: {
-                  bg: 'bg-gradient-to-br from-yellow-500/10 to-amber-500/10 dark:from-yellow-500/20 dark:to-amber-500/20 border-yellow-200/50 dark:border-yellow-500/30',
-                  icon: 'bg-yellow-100 dark:bg-yellow-900/40',
-                  cta: 'text-yellow-600 dark:text-yellow-400'
-                }
-              }
-              const styles = severityStyles[alert.severity] || severityStyles.low
               const alertHref = alert.domain === 'money' ? '/money' :
                                alert.domain === 'mental' ? '/mental' :
                                alert.domain === 'physical' ? '/fisico' :
                                '/comportamiento'
 
               return (
-                <Card key={i} className={`p-4 ${styles.bg} hover:shadow-lg transition-all`}>
-                  <div className="flex items-start gap-3">
-                    <div className={`w-10 h-10 rounded-xl ${styles.icon} flex items-center justify-center flex-shrink-0`}>
-                      <span className="text-lg">
-                        {alert.severity === 'high' ? '⚠️' : alert.severity === 'medium' ? '⚡' : '💡'}
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                        {alert.title}
+                <button
+                  key={i}
+                  onClick={() => router.push(alertHref)}
+                  className={`w-full p-3 rounded-xl text-left transition-all active:scale-[0.98] flex items-center gap-3 ${
+                    alert.severity === 'high'
+                      ? 'bg-red-500/10 dark:bg-red-500/20 border border-red-200/50 dark:border-red-500/30'
+                      : alert.severity === 'medium'
+                      ? 'bg-orange-500/10 dark:bg-orange-500/20 border border-orange-200/50 dark:border-orange-500/30'
+                      : 'bg-yellow-500/10 dark:bg-yellow-500/20 border border-yellow-200/50 dark:border-yellow-500/30'
+                  }`}
+                >
+                  {alert.severity === 'high' ? (
+                    <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                  ) : alert.severity === 'medium' ? (
+                    <Zap className="w-5 h-5 text-orange-500 flex-shrink-0" />
+                  ) : (
+                    <Lightbulb className="w-5 h-5 text-yellow-500 flex-shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                      {alert.title}
+                    </p>
+                    {alert.message && (
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                        {alert.message}
                       </p>
-                      {alert.message && (
-                        <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5 leading-relaxed">
-                          {alert.message}
-                        </p>
-                      )}
-                      {alert.date_range && (
-                        <p className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
-                          {formatDate(alert.date_range.start)} – {formatDate(alert.date_range.end)}
-                        </p>
-                      )}
-                      <a href={alertHref} className={`inline-block mt-2 text-xs font-semibold ${styles.cta}`}>
-                        Ver detalle →
-                      </a>
-                    </div>
+                    )}
                   </div>
-                </Card>
+                  <ChevronRight className="w-4 h-4 text-zinc-400 flex-shrink-0" />
+                </button>
               )
             })}
           </div>
         )}
 
-        {/* Historial */}
-        {widgetConfig.historial && (
-          <a href="/historia" className="block">
-            <Card className="p-4 bg-zinc-100 dark:bg-zinc-800/30 border-zinc-200/50 dark:border-zinc-700/50 hover:shadow-lg hover:shadow-zinc-500/10 transition-all active:scale-[0.98]">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
-                    <span className="text-lg">📊</span>
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                      Historial
-                    </div>
-                    <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                      Ver resúmenes y exportar datos
-                    </div>
-                  </div>
+        {/* Stats Cards Grid */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* Mental Card */}
+          {widgetConfig.mental && (
+            <button onClick={() => router.push('/mental')} className="text-left">
+              <Card className="p-4 bg-gradient-to-br from-purple-500/5 to-pink-500/5 dark:from-purple-500/10 dark:to-pink-500/10 border-purple-200/50 dark:border-purple-500/20 hover:shadow-lg transition-all">
+                <div className="flex items-center gap-2 mb-2">
+                  <Brain className="w-4 h-4 text-purple-500" />
+                  <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Mental</span>
                 </div>
-                <svg className="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </Card>
-          </a>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                    {data?.mentalAvg !== null ? (Math.round(data.mentalAvg * 10) / 10) : '–'}
+                  </span>
+                  <span className="text-sm text-purple-400">/10</span>
+                </div>
+                <div className="flex items-center gap-1 mt-1">
+                  {data?.mentalTrend === 'up' ? (
+                    <TrendingUp className="w-3 h-3 text-emerald-500" />
+                  ) : data?.mentalTrend === 'down' ? (
+                    <TrendingDown className="w-3 h-3 text-red-500" />
+                  ) : null}
+                  <span className="text-xs text-zinc-500">
+                    {data?.mentalTrend === 'up' ? 'Mejorando' : data?.mentalTrend === 'down' ? 'Bajando' : 'Estable'}
+                  </span>
+                </div>
+              </Card>
+            </button>
+          )}
+
+          {/* Physical Card */}
+          {widgetConfig.fisico && (
+            <button onClick={() => router.push('/fisico')} className="text-left">
+              <Card className="p-4 bg-gradient-to-br from-orange-500/5 to-amber-500/5 dark:from-orange-500/10 dark:to-amber-500/10 border-orange-200/50 dark:border-orange-500/20 hover:shadow-lg transition-all">
+                <div className="flex items-center gap-2 mb-2">
+                  <Dumbbell className="w-4 h-4 text-orange-500" />
+                  <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Físico</span>
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                    {data?.physicalDays || 0}
+                  </span>
+                  <span className="text-sm text-orange-400">días</span>
+                </div>
+                {data?.physicalStreak > 0 && (
+                  <div className="flex items-center gap-1 mt-1">
+                    <Flame className="w-3 h-3 text-orange-500" />
+                    <span className="text-xs text-zinc-500">{data.physicalStreak}d racha</span>
+                  </div>
+                )}
+              </Card>
+            </button>
+          )}
+
+          {/* Money Card */}
+          {widgetConfig.money && (
+            <button onClick={() => router.push('/money')} className="text-left">
+              <Card className="p-4 bg-gradient-to-br from-zinc-800 to-zinc-900 dark:from-zinc-700 dark:to-zinc-800 border-zinc-700 hover:shadow-lg transition-all">
+                <div className="flex items-center gap-2 mb-2">
+                  <Wallet className="w-4 h-4 text-emerald-400" />
+                  <span className="text-xs font-semibold text-zinc-400">Money</span>
+                </div>
+                <div className="text-xl font-bold text-white font-mono">
+                  {formatAmount(data?.gastoTotal || 0)}
+                </div>
+                {data?.gastoDiff !== 0 && (
+                  <div className="flex items-center gap-1 mt-1">
+                    {data?.gastoDiff > 0 ? (
+                      <TrendingUp className="w-3 h-3 text-red-400" />
+                    ) : (
+                      <TrendingDown className="w-3 h-3 text-emerald-400" />
+                    )}
+                    <span className={`text-xs ${data?.gastoDiff > 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                      {data?.gastoDiff > 0 ? '+' : ''}{data?.gastoDiff?.toFixed(0)}%
+                    </span>
+                  </div>
+                )}
+              </Card>
+            </button>
+          )}
+
+          {/* Goals Card */}
+          {data?.activeGoals > 0 && (
+            <button onClick={() => router.push('/objetivos')} className="text-left">
+              <Card className="p-4 bg-gradient-to-br from-indigo-500/5 to-violet-500/5 dark:from-indigo-500/10 dark:to-violet-500/10 border-indigo-200/50 dark:border-indigo-500/20 hover:shadow-lg transition-all">
+                <div className="flex items-center gap-2 mb-2">
+                  <Target className="w-4 h-4 text-indigo-500" />
+                  <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Objetivos</span>
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                    {data?.activeGoals}
+                  </span>
+                  <span className="text-sm text-indigo-400">activos</span>
+                </div>
+                {data?.goalsProgress !== null && (
+                  <div className="mt-2">
+                    <div className="h-1.5 bg-indigo-100 dark:bg-indigo-900/40 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-indigo-500 rounded-full transition-all"
+                        style={{ width: `${data.goalsProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </Card>
+            </button>
+          )}
+        </div>
+
+        {/* Cross Insights */}
+        {widgetConfig.insights && crossInsights && (crossInsights.spendingByMood?.insight || crossInsights.moodByExercise?.insight) && (
+          <div className="space-y-2">
+            <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1 flex items-center gap-2">
+              <Lightbulb className="w-3 h-3" />
+              Insights
+            </h3>
+
+            {crossInsights.spendingByMood?.insight && (
+              <button
+                onClick={() => router.push('/insights')}
+                className="w-full p-3 rounded-xl text-left bg-blue-500/5 dark:bg-blue-500/10 border border-blue-200/50 dark:border-blue-500/20 hover:shadow-lg transition-all active:scale-[0.98] flex items-center gap-3"
+              >
+                <div className="w-8 h-8 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                  <BarChart3 className="w-4 h-4 text-blue-500" />
+                </div>
+                <p className="text-sm text-zinc-700 dark:text-zinc-300 flex-1">
+                  {crossInsights.spendingByMood.insight}
+                </p>
+                <ChevronRight className="w-4 h-4 text-zinc-400 flex-shrink-0" />
+              </button>
+            )}
+
+            {crossInsights.moodByExercise?.insight && (
+              <button
+                onClick={() => router.push('/insights')}
+                className="w-full p-3 rounded-xl text-left bg-purple-500/5 dark:bg-purple-500/10 border border-purple-200/50 dark:border-purple-500/20 hover:shadow-lg transition-all active:scale-[0.98] flex items-center gap-3"
+              >
+                <div className="w-8 h-8 rounded-lg bg-purple-500/10 dark:bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                  <Brain className="w-4 h-4 text-purple-500" />
+                </div>
+                <p className="text-sm text-zinc-700 dark:text-zinc-300 flex-1">
+                  {crossInsights.moodByExercise.insight}
+                </p>
+                <ChevronRight className="w-4 h-4 text-zinc-400 flex-shrink-0" />
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* History Link */}
+        {widgetConfig.historial && (
+          <button
+            onClick={() => router.push('/historia')}
+            className="w-full p-4 rounded-xl text-left bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200/50 dark:border-zinc-700/50 hover:shadow-lg transition-all active:scale-[0.98] flex items-center gap-3"
+          >
+            <div className="w-10 h-10 rounded-xl bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
+              <Calendar className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Historial</p>
+              <p className="text-xs text-zinc-500">Ver resúmenes y exportar</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-zinc-400" />
+          </button>
         )}
       </div>
 
-      {/* Modal de Configuración */}
+      {/* Config Modal */}
       {showConfigModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-end" onClick={() => setShowConfigModal(false)}>
           <div
@@ -659,49 +587,41 @@ export default function ResumenPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-5 border-b border-zinc-200 dark:border-zinc-800">
-              <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Configurar Resumen</h3>
+              <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Configurar</h3>
               <button
                 onClick={() => setShowConfigModal(false)}
-                className="p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors active:scale-95"
+                className="p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
               >
-                <svg className="w-5 h-5 text-zinc-500 dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
             <div className="p-5 space-y-3 max-h-[60vh] overflow-y-auto">
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-5">
-                Seleccioná qué widgets querés ver
-              </p>
-
               {[
-                { key: 'money', emoji: '💰', label: 'Money', color: 'green' },
-                { key: 'mental', emoji: '🧠', label: 'Mental', color: 'purple' },
-                { key: 'fisico', emoji: '💪', label: 'Físico', color: 'orange' },
-                { key: 'insights', emoji: '💡', label: 'Insights', color: 'blue' },
-                { key: 'alertas', emoji: '⚠️', label: 'Alertas', color: 'red' },
-                { key: 'historial', emoji: '📊', label: 'Historial', color: 'zinc' }
-              ].map(({ key, emoji, label, color }) => (
-                <label key={key} className="flex items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors active:scale-[0.98]">
+                { key: 'mental', icon: Brain, label: 'Mental' },
+                { key: 'fisico', icon: Dumbbell, label: 'Físico' },
+                { key: 'money', icon: Wallet, label: 'Money' },
+                { key: 'insights', icon: Lightbulb, label: 'Insights' },
+                { key: 'alertas', icon: AlertTriangle, label: 'Alertas' },
+                { key: 'historial', icon: Calendar, label: 'Historial' }
+              ].map(({ key, icon: Icon, label }) => (
+                <label key={key} className="flex items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
                   <input
                     type="checkbox"
                     checked={widgetConfig[key]}
                     onChange={(e) => setWidgetConfig({ ...widgetConfig, [key]: e.target.checked })}
-                    className="w-5 h-5 rounded-lg border-zinc-300 dark:border-zinc-600 text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
+                    className="w-5 h-5 rounded-lg border-zinc-300 dark:border-zinc-600 text-zinc-900 focus:ring-zinc-500"
                   />
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className={`w-9 h-9 rounded-xl bg-${color}-100 dark:bg-${color}-900/40 flex items-center justify-center`}>
-                      <span className="text-base">{emoji}</span>
-                    </div>
-                    <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{label}</span>
-                  </div>
+                  <Icon className="w-5 h-5 text-zinc-500" />
+                  <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{label}</span>
                 </label>
               ))}
 
               <button
                 onClick={() => setShowConfigModal(false)}
-                className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold text-sm transition-colors mt-5 active:scale-[0.98] shadow-lg shadow-purple-500/20"
+                className="w-full py-3.5 px-4 rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-semibold text-sm transition-colors mt-5 active:scale-[0.98]"
               >
                 Guardar
               </button>

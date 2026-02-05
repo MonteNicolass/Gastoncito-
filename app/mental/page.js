@@ -5,9 +5,21 @@ import { useRouter } from 'next/navigation'
 import { initDB, getLifeEntries } from '@/lib/storage'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
-import ListRow from '@/components/ui/ListRow'
 import ProgressRing from '@/components/ui/ProgressRing'
-import RecommendationCard from '@/components/ui/RecommendationCard'
+import {
+  Brain,
+  TrendingUp,
+  TrendingDown,
+  Flame,
+  ChevronRight,
+  BarChart3,
+  BookOpen,
+  LineChart,
+  Plus,
+  Smile,
+  Frown,
+  Meh
+} from 'lucide-react'
 
 export default function MentalPage() {
   const router = useRouter()
@@ -32,7 +44,6 @@ export default function MentalPage() {
         ? weekEntries.reduce((sum, e) => sum + e.meta.mood_score, 0) / weekEntries.length
         : null
 
-      // Semana anterior
       const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
       const prevWeekEntries = mentalEntries.filter(e => {
         const d = new Date(e.created_at)
@@ -42,7 +53,6 @@ export default function MentalPage() {
         ? prevWeekEntries.reduce((sum, e) => sum + e.meta.mood_score, 0) / prevWeekEntries.length
         : null
 
-      // Streak
       let streak = 0
       const today = new Date()
       today.setHours(0, 0, 0, 0)
@@ -70,7 +80,6 @@ export default function MentalPage() {
         weekEntries.map(e => new Date(e.created_at).toDateString())
       ).size
 
-      // Variabilidad
       let variability = null
       if (weekEntries.length >= 3) {
         const scores = weekEntries.map(e => e.meta.mood_score)
@@ -79,11 +88,10 @@ export default function MentalPage() {
         variability = Math.sqrt(variance)
       }
 
-      // Trend
       let trend = 'stable'
       if (weekAvg !== null && prevWeekAvg !== null) {
-        if (weekAvg > prevWeekAvg + 0.5) trend = 'improving'
-        else if (weekAvg < prevWeekAvg - 0.5) trend = 'declining'
+        if (weekAvg > prevWeekAvg + 0.5) trend = 'up'
+        else if (weekAvg < prevWeekAvg - 0.5) trend = 'down'
       }
 
       setStats({ weekAvg, streak, daysThisWeek, totalWeekEntries: weekEntries.length, prevWeekAvg, variability, trend })
@@ -99,93 +107,34 @@ export default function MentalPage() {
     return 'zinc'
   }
 
-  const getRecommendation = () => {
-    if (!stats) return null
-
-    if (stats.weekAvg !== null && stats.weekAvg < 4) {
-      return {
-        emoji: '💜',
-        title: 'Cuidá tu bienestar',
-        description: 'Tu estado mental estuvo bajo esta semana. Tomate un momento para vos.',
-        action: () => router.push('/mental/diario'),
-        actionLabel: 'Escribir',
-        variant: 'info'
-      }
-    }
-
-    if (stats.daysThisWeek === 0) {
-      return {
-        emoji: '📝',
-        title: 'Empezá a registrar',
-        description: 'No tenés registros esta semana. Un registro diario ayuda a entenderte mejor.',
-        action: () => router.push('/chat'),
-        actionLabel: 'Registrar',
-        variant: 'default'
-      }
-    }
-
-    if (stats.variability && stats.variability > 2.5) {
-      return {
-        emoji: '📊',
-        title: 'Semana variable',
-        description: 'Tu estado mental fluctuó bastante. Revisá qué factores pueden influir.',
-        action: () => router.push('/mental/insights'),
-        actionLabel: 'Ver insights',
-        variant: 'info'
-      }
-    }
-
-    if (stats.trend === 'improving') {
-      return {
-        emoji: '✨',
-        title: 'Vas mejorando',
-        description: 'Tu estado mental mejoró respecto a la semana pasada.',
-        variant: 'success'
-      }
-    }
-
-    if (stats.streak >= 7) {
-      return {
-        emoji: '🔥',
-        title: 'Excelente racha',
-        description: `${stats.streak} días seguidos registrando. Mantené el hábito.`,
-        variant: 'success'
-      }
-    }
-
-    return {
-      emoji: '🧠',
-      title: 'Seguí registrando',
-      description: 'Cada registro te ayuda a conocerte mejor.',
-      action: () => router.push('/chat'),
-      actionLabel: 'Registrar',
-      variant: 'default'
-    }
+  const getMoodIcon = (score) => {
+    if (score >= 7) return Smile
+    if (score >= 4) return Meh
+    return Frown
   }
-
-  const recommendation = getRecommendation()
 
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen bg-zinc-50 dark:bg-zinc-950">
-        <TopBar title="Tu mente" />
+        <TopBar title="Mental" />
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-pulse">
-            <div className="w-24 h-24 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+            <div className="w-20 h-20 rounded-full bg-zinc-200 dark:bg-zinc-800" />
           </div>
         </div>
       </div>
     )
   }
 
+  const MoodIcon = stats?.weekAvg ? getMoodIcon(stats.weekAvg) : Meh
+
   return (
     <div className="flex flex-col min-h-screen pb-24 bg-zinc-50 dark:bg-zinc-950">
-      <TopBar title="Tu mente" />
+      <TopBar title="Mental" />
 
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
         {/* Hero Section - Purple gradient */}
         <div className="relative bg-gradient-to-br from-purple-600 via-purple-700 to-pink-700 dark:from-purple-800 dark:via-purple-900 dark:to-pink-900 rounded-3xl p-6 overflow-hidden">
-          {/* Glow effect */}
           <div className="absolute inset-0 opacity-30">
             <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full blur-3xl ${
               stats?.weekAvg >= 7 ? 'bg-emerald-400' :
@@ -220,12 +169,13 @@ export default function MentalPage() {
                   {stats?.daysThisWeek || 0}/7 días
                 </span>
                 {stats?.trend && stats.trend !== 'stable' && (
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    stats.trend === 'improving'
+                  <span className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                    stats.trend === 'up'
                       ? 'bg-emerald-500/30 text-emerald-200'
                       : 'bg-red-500/30 text-red-200'
                   }`}>
-                    {stats.trend === 'improving' ? '↑ Mejorando' : '↓ Bajando'}
+                    {stats.trend === 'up' ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                    {stats.trend === 'up' ? 'Mejorando' : 'Bajando'}
                   </span>
                 )}
               </div>
@@ -248,7 +198,7 @@ export default function MentalPage() {
             </div>
             {stats?.streak > 0 && (
               <div className="flex items-center gap-2">
-                <span className="text-base">🔥</span>
+                <Flame className="w-4 h-4 text-orange-300" />
                 <span className="text-xs text-purple-200">
                   {stats.streak} días de racha
                 </span>
@@ -257,49 +207,61 @@ export default function MentalPage() {
           </div>
         </div>
 
-        {/* Recommendation */}
-        {recommendation && (
-          <RecommendationCard
-            emoji={recommendation.emoji}
-            title={recommendation.title}
-            description={recommendation.description}
-            action={recommendation.action}
-            actionLabel={recommendation.actionLabel}
-            variant={recommendation.variant}
-          />
-        )}
-
         {/* Quick action */}
-        <a href="/chat" className="block">
-          <Card className="p-5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg shadow-purple-500/20 active:scale-[0.98]">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
-                  <span className="text-2xl">🧠</span>
-                </div>
-                <div>
-                  <p className="text-white font-semibold">¿Cómo te sentís hoy?</p>
-                  <p className="text-purple-200 text-sm">Registrar estado</p>
-                </div>
-              </div>
-              <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+        <button
+          onClick={() => router.push('/chat')}
+          className="w-full p-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-2xl transition-all shadow-lg shadow-purple-500/20 active:scale-[0.98] flex items-center justify-between"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+              <Plus className="w-5 h-5 text-white" />
             </div>
-          </Card>
-        </a>
+            <div className="text-left">
+              <p className="text-white font-semibold text-sm">¿Cómo te sentís?</p>
+              <p className="text-purple-200 text-xs">Registrar estado</p>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-white/60" />
+        </button>
 
         {/* Navigation */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1">
             Explorar
           </h3>
-          <Card className="overflow-hidden divide-y divide-zinc-100 dark:divide-zinc-800 hover:shadow-lg transition-shadow">
-            <ListRow label="📊 Resumen mensual" href="/mental/resumen" />
-            <ListRow label="📝 Mi diario" href="/mental/diario" />
-            <ListRow label="📈 Insights" href="/mental/insights" />
-          </Card>
+          <div className="space-y-1">
+            {[
+              { icon: BarChart3, label: 'Resumen mensual', href: '/mental/resumen' },
+              { icon: BookOpen, label: 'Mi diario', href: '/mental/diario' },
+              { icon: LineChart, label: 'Insights', href: '/mental/insights' }
+            ].map(({ icon: Icon, label, href }) => (
+              <button
+                key={href}
+                onClick={() => router.push(href)}
+                className="w-full p-3 rounded-xl text-left bg-white dark:bg-zinc-800/50 border border-zinc-200/50 dark:border-zinc-700/50 hover:shadow-md transition-all active:scale-[0.98] flex items-center gap-3"
+              >
+                <Icon className="w-5 h-5 text-purple-500 dark:text-purple-400" />
+                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 flex-1">{label}</span>
+                <ChevronRight className="w-4 h-4 text-zinc-400" />
+              </button>
+            ))}
+          </div>
         </div>
+
+        {/* Variability insight */}
+        {stats?.variability !== null && stats.variability > 2 && (
+          <Card className="p-4 bg-amber-500/5 dark:bg-amber-500/10 border-amber-200/50 dark:border-amber-500/20">
+            <div className="flex items-start gap-3">
+              <Meh className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Semana variable</p>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
+                  Tu estado mental fluctuó bastante esta semana. Revisá qué factores pueden estar influyendo.
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
       </div>
     </div>
   )

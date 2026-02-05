@@ -8,6 +8,7 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Select from '@/components/ui/Select'
 import Toast from '@/components/ui/Toast'
+import { StickyNote, Trash2 } from 'lucide-react'
 
 export default function NotasPage() {
   const [notes, setNotes] = useState([])
@@ -144,7 +145,9 @@ export default function NotasPage() {
           </div>
           {filteredNotes.length === 0 ? (
             <Card className="p-8 text-center">
-              <div className="text-3xl mb-3">📄</div>
+              <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <StickyNote className="w-6 h-6 text-blue-500 dark:text-blue-400" />
+              </div>
               <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                 {filterType === 'all' ? 'Sin notas aún' : 'Sin notas con este filtro'}
               </p>
@@ -171,14 +174,12 @@ export default function NotasPage() {
                       {formatDate(note.created_at)}
                     </div>
                   </div>
-                  <Button
+                  <button
                     onClick={() => handleDelete(note.id)}
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-600 hover:text-red-700 dark:text-red-400 flex-shrink-0"
+                    className="p-2 text-red-500 hover:text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex-shrink-0"
                   >
-                    Eliminar
-                  </Button>
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </Card>
             ))

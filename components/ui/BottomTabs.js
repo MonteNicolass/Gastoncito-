@@ -5,6 +5,16 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { initDB, getMovimientos, getLifeEntries, getGoals } from '@/lib/storage'
 import { getMentalOverview, getPhysicalOverview } from '@/lib/overview-insights'
+import {
+  LayoutDashboard,
+  MessageCircle,
+  Brain,
+  Dumbbell,
+  StickyNote,
+  Target,
+  Wallet,
+  MoreHorizontal
+} from 'lucide-react'
 
 function getBudgetsFromLocalStorage() {
   if (typeof window === 'undefined') return []
@@ -48,7 +58,6 @@ export default function BottomTabs() {
       const thisMonthMovimientos = movimientos.filter(m => m.fecha.startsWith(currentMonth))
       const totalGastos = thisMonthMovimientos.filter(m => m.tipo === 'gasto').reduce((sum, m) => sum + m.monto, 0)
 
-      // Check budgets at risk
       let budgetAtRisk = false
       budgets.forEach(budget => {
         if (budget.type === 'category') {
@@ -64,8 +73,8 @@ export default function BottomTabs() {
         }
       })
 
-      if (budgetAtRisk || totalGastos > 0) {
-        alerts.money = budgetAtRisk
+      if (budgetAtRisk) {
+        alerts.money = true
       }
 
       // Objetivos: objetivos en riesgo
@@ -78,18 +87,6 @@ export default function BottomTabs() {
         alerts.objetivos = true
       }
 
-      // Hoy: hay registros cargados hoy
-      const today = new Date().toISOString().slice(0, 10)
-      const todayStart = new Date()
-      todayStart.setHours(0, 0, 0, 0)
-
-      const todayMovimientos = movimientos.filter(m => m.fecha === today)
-      const todayEntries = lifeEntries.filter(e => new Date(e.created_at) >= todayStart)
-
-      if (todayMovimientos.length > 0 || todayEntries.length > 0) {
-        alerts.hoy = true
-      }
-
       setPriorities(alerts)
     } catch (error) {
       console.error('Error calculating priorities:', error)
@@ -97,37 +94,41 @@ export default function BottomTabs() {
   }
 
   const tabs = [
-    { name: 'Resumen', href: '/vision', emoji: '📊', key: 'vision' },
-    { name: 'Chat', href: '/chat', emoji: '💬', key: 'chat' },
-    { name: 'Money', href: '/money', emoji: '💰', key: 'money' },
-    { name: 'Yo', href: '/mental', emoji: '🧠', key: 'mental' },
-    { name: 'Más', href: '/mas', emoji: '•••', key: 'mas' }
+    { name: 'Resumen', href: '/vision', icon: LayoutDashboard, key: 'vision' },
+    { name: 'Chat', href: '/chat', icon: MessageCircle, key: 'chat' },
+    { name: 'Mental', href: '/mental', icon: Brain, key: 'mental' },
+    { name: 'Físico', href: '/fisico', icon: Dumbbell, key: 'fisico' },
+    { name: 'Notas', href: '/notas', icon: StickyNote, key: 'notas' },
+    { name: 'Objetivos', href: '/objetivos', icon: Target, key: 'objetivos' },
+    { name: 'Money', href: '/money', icon: Wallet, key: 'money' },
+    { name: 'Más', href: '/mas', icon: MoreHorizontal, key: 'mas' }
   ]
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 backdrop-blur-xl bg-zinc-50/90 dark:bg-zinc-950/90 border-t border-zinc-200/50 dark:border-zinc-800/50">
-      <div className="flex items-center justify-around px-2 py-2 pb-safe max-w-lg mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 backdrop-blur-xl bg-zinc-50/95 dark:bg-zinc-950/95 border-t border-zinc-200/50 dark:border-zinc-800/50">
+      <div className="flex items-center justify-between px-1 py-1.5 pb-safe max-w-lg mx-auto overflow-x-auto scrollbar-hide">
         {tabs.map((tab) => {
           const baseSection = tab.href.split('/')[1]
           const currentSection = pathname.split('/')[1]
           const isActive = currentSection === baseSection || pathname === tab.href
           const hasPriority = priorities[tab.key]
+          const Icon = tab.icon
 
           return (
             <Link
               key={tab.href}
               href={tab.href}
-              className={`relative flex flex-col items-center gap-1 py-2 px-4 rounded-2xl transition-all active:scale-95 ${
+              className={`relative flex flex-col items-center gap-0.5 py-1.5 px-2.5 rounded-xl transition-all active:scale-95 min-w-[52px] ${
                 isActive
-                  ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400'
+                  ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
                   : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50'
               }`}
             >
               {hasPriority && !isActive && (
-                <span className="absolute top-1 right-2 w-2 h-2 bg-orange-500 dark:bg-orange-400 rounded-full shadow-sm" />
+                <span className="absolute top-0.5 right-1.5 w-1.5 h-1.5 bg-orange-500 dark:bg-orange-400 rounded-full" />
               )}
-              <span className="text-2xl">{tab.emoji}</span>
-              <span className={`text-[11px] font-semibold ${isActive ? '' : 'font-medium'}`}>{tab.name}</span>
+              <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
+              <span className={`text-[9px] ${isActive ? 'font-bold' : 'font-medium'}`}>{tab.name}</span>
             </Link>
           )
         })}

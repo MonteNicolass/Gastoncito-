@@ -5,9 +5,20 @@ import { useRouter } from 'next/navigation'
 import { initDB, getLifeEntries } from '@/lib/storage'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
-import ListRow from '@/components/ui/ListRow'
 import ProgressRing from '@/components/ui/ProgressRing'
-import RecommendationCard from '@/components/ui/RecommendationCard'
+import {
+  Dumbbell,
+  TrendingUp,
+  TrendingDown,
+  Flame,
+  ChevronRight,
+  BarChart3,
+  Activity,
+  Apple,
+  Pill,
+  Plus,
+  Calendar
+} from 'lucide-react'
 
 export default function FisicoPage() {
   const router = useRouter()
@@ -32,7 +43,6 @@ export default function FisicoPage() {
         weekEntries.map(e => new Date(e.created_at).toDateString())
       ).size
 
-      // Semana anterior
       const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
       const prevWeekEntries = physicalEntries.filter(e => {
         const d = new Date(e.created_at)
@@ -42,7 +52,6 @@ export default function FisicoPage() {
         prevWeekEntries.map(e => new Date(e.created_at).toDateString())
       ).size
 
-      // Streak
       let streak = 0
       const today = new Date()
       today.setHours(0, 0, 0, 0)
@@ -66,7 +75,6 @@ export default function FisicoPage() {
         }
       }
 
-      // Days since last
       let daysSinceLast = null
       if (physicalEntries.length > 0) {
         const sorted = [...physicalEntries].sort((a, b) =>
@@ -76,10 +84,9 @@ export default function FisicoPage() {
         daysSinceLast = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24))
       }
 
-      // Trend
       let trend = 'stable'
-      if (activeDays > prevActiveDays + 1) trend = 'improving'
-      else if (activeDays < prevActiveDays - 1) trend = 'declining'
+      if (activeDays > prevActiveDays + 1) trend = 'up'
+      else if (activeDays < prevActiveDays - 1) trend = 'down'
 
       const weekActivities = weekEntries.length
 
@@ -96,77 +103,13 @@ export default function FisicoPage() {
     return 'zinc'
   }
 
-  const getRecommendation = () => {
-    if (!stats) return null
-
-    if (stats.daysSinceLast !== null && stats.daysSinceLast >= 3) {
-      return {
-        emoji: '💪',
-        title: 'Retomá el movimiento',
-        description: `Hace ${stats.daysSinceLast} días que no registrás actividad. Una caminata corta suma.`,
-        action: () => router.push('/fisico/habitos'),
-        actionLabel: 'Registrar',
-        variant: 'warning'
-      }
-    }
-
-    if (stats.activeDays === 0) {
-      return {
-        emoji: '🏃',
-        title: 'Empezá la semana activo',
-        description: 'Todavía no registraste actividad esta semana. Cualquier movimiento cuenta.',
-        action: () => router.push('/chat'),
-        actionLabel: 'Registrar',
-        variant: 'default'
-      }
-    }
-
-    if (stats.streak >= 5) {
-      return {
-        emoji: '🔥',
-        title: 'Racha impresionante',
-        description: `${stats.streak} días seguidos de actividad. Seguí así.`,
-        variant: 'success'
-      }
-    }
-
-    if (stats.trend === 'improving') {
-      return {
-        emoji: '📈',
-        title: 'Mejorando el ritmo',
-        description: 'Esta semana estás más activo que la anterior.',
-        variant: 'success'
-      }
-    }
-
-    if (stats.activeDays >= 5) {
-      return {
-        emoji: '✨',
-        title: 'Semana muy activa',
-        description: `${stats.activeDays} días de actividad. Excelente trabajo.`,
-        variant: 'success'
-      }
-    }
-
-    return {
-      emoji: '💪',
-      title: 'Seguí moviéndote',
-      description: 'Cada día de actividad suma a tu bienestar.',
-      action: () => router.push('/chat'),
-      actionLabel: 'Registrar',
-      variant: 'default'
-    }
-  }
-
-  const recommendation = getRecommendation()
-
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen bg-zinc-50 dark:bg-zinc-950">
-        <TopBar title="Tu cuerpo" />
+        <TopBar title="Físico" />
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-pulse">
-            <div className="w-24 h-24 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+            <div className="w-20 h-20 rounded-full bg-zinc-200 dark:bg-zinc-800" />
           </div>
         </div>
       </div>
@@ -175,12 +118,11 @@ export default function FisicoPage() {
 
   return (
     <div className="flex flex-col min-h-screen pb-24 bg-zinc-50 dark:bg-zinc-950">
-      <TopBar title="Tu cuerpo" />
+      <TopBar title="Físico" />
 
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
         {/* Hero Section - Orange gradient */}
         <div className="relative bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 dark:from-orange-700 dark:via-orange-800 dark:to-amber-800 rounded-3xl p-6 overflow-hidden">
-          {/* Glow effect */}
           <div className="absolute inset-0 opacity-30">
             <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full blur-3xl ${
               stats?.activeDays >= 5 ? 'bg-emerald-400' :
@@ -215,12 +157,13 @@ export default function FisicoPage() {
                   {stats?.weekActivities || 0} actividades
                 </span>
                 {stats?.trend && stats.trend !== 'stable' && (
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    stats.trend === 'improving'
+                  <span className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                    stats.trend === 'up'
                       ? 'bg-emerald-500/30 text-emerald-100'
                       : 'bg-red-500/30 text-red-100'
                   }`}>
-                    {stats.trend === 'improving' ? '↑ Más activo' : '↓ Menos activo'}
+                    {stats.trend === 'up' ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                    {stats.trend === 'up' ? 'Más activo' : 'Menos activo'}
                   </span>
                 )}
               </div>
@@ -244,7 +187,7 @@ export default function FisicoPage() {
             <div className="flex items-center justify-between">
               {stats?.streak > 0 ? (
                 <div className="flex items-center gap-2">
-                  <span className="text-base">🔥</span>
+                  <Flame className="w-4 h-4 text-amber-200" />
                   <span className="text-xs text-orange-100">
                     {stats.streak} días de racha
                   </span>
@@ -260,51 +203,63 @@ export default function FisicoPage() {
           </div>
         </div>
 
-        {/* Recommendation */}
-        {recommendation && (
-          <RecommendationCard
-            emoji={recommendation.emoji}
-            title={recommendation.title}
-            description={recommendation.description}
-            action={recommendation.action}
-            actionLabel={recommendation.actionLabel}
-            variant={recommendation.variant}
-          />
-        )}
-
         {/* Quick action */}
-        <a href="/chat" className="block">
-          <Card className="p-5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 transition-all shadow-lg shadow-orange-500/20 active:scale-[0.98]">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
-                  <span className="text-2xl">💪</span>
-                </div>
-                <div>
-                  <p className="text-white font-semibold">¿Hiciste ejercicio?</p>
-                  <p className="text-orange-100 text-sm">Registrar actividad</p>
-                </div>
-              </div>
-              <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+        <button
+          onClick={() => router.push('/chat')}
+          className="w-full p-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-2xl transition-all shadow-lg shadow-orange-500/20 active:scale-[0.98] flex items-center justify-between"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+              <Plus className="w-5 h-5 text-white" />
             </div>
-          </Card>
-        </a>
+            <div className="text-left">
+              <p className="text-white font-semibold text-sm">¿Hiciste ejercicio?</p>
+              <p className="text-orange-100 text-xs">Registrar actividad</p>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-white/60" />
+        </button>
 
         {/* Navigation */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1">
             Explorar
           </h3>
-          <Card className="overflow-hidden divide-y divide-zinc-100 dark:divide-zinc-800 hover:shadow-lg transition-shadow">
-            <ListRow label="📊 Resumen mensual" href="/fisico/resumen" />
-            <ListRow label="🏃 Hábitos" href="/fisico/habitos" />
-            <ListRow label="🍎 Comida" href="/fisico/comida" />
-            <ListRow label="💊 Salud" href="/fisico/salud" />
-            <ListRow label="🏋️ Entrenos" href="/fisico/entrenos" />
-          </Card>
+          <div className="space-y-1">
+            {[
+              { icon: BarChart3, label: 'Resumen mensual', href: '/fisico/resumen' },
+              { icon: Activity, label: 'Hábitos', href: '/fisico/habitos' },
+              { icon: Apple, label: 'Comida', href: '/fisico/comida' },
+              { icon: Pill, label: 'Salud', href: '/fisico/salud' },
+              { icon: Dumbbell, label: 'Entrenos', href: '/fisico/entrenos' }
+            ].map(({ icon: Icon, label, href }) => (
+              <button
+                key={href}
+                onClick={() => router.push(href)}
+                className="w-full p-3 rounded-xl text-left bg-white dark:bg-zinc-800/50 border border-zinc-200/50 dark:border-zinc-700/50 hover:shadow-md transition-all active:scale-[0.98] flex items-center gap-3"
+              >
+                <Icon className="w-5 h-5 text-orange-500 dark:text-orange-400" />
+                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 flex-1">{label}</span>
+                <ChevronRight className="w-4 h-4 text-zinc-400" />
+              </button>
+            ))}
+          </div>
         </div>
+
+        {/* Inactivity warning */}
+        {stats?.daysSinceLast !== null && stats.daysSinceLast >= 3 && (
+          <Card className="p-4 bg-amber-500/5 dark:bg-amber-500/10 border-amber-200/50 dark:border-amber-500/20">
+            <div className="flex items-start gap-3">
+              <Calendar className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Retomá el movimiento</p>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
+                  Hace {stats.daysSinceLast} días que no registrás actividad. Una caminata corta suma.
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
       </div>
     </div>
   )

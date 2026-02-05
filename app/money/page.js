@@ -1,14 +1,28 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { initDB, getMovimientos } from '@/lib/storage'
 import { seedPredefinedCategories } from '@/lib/seed-categories'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
-import ListRow from '@/components/ui/ListRow'
 import ProgressRing from '@/components/ui/ProgressRing'
-import RecommendationCard from '@/components/ui/RecommendationCard'
+import {
+  Wallet,
+  CreditCard,
+  TrendingUp,
+  TrendingDown,
+  PiggyBank,
+  Receipt,
+  Bell,
+  BarChart3,
+  ChevronRight,
+  AlertTriangle,
+  CheckCircle,
+  LineChart,
+  ArrowRightLeft,
+  Plus
+} from 'lucide-react'
 
 function getBudgetsFromLocalStorage() {
   if (typeof window === 'undefined') return []
@@ -41,13 +55,11 @@ export default function MoneyPage() {
       const ingresosMes = thisMonthMov.filter(m => m.tipo === 'ingreso').reduce((sum, m) => sum + m.monto, 0)
       const balance = ingresosMes - gastosMes
 
-      // Mes anterior para comparación
       const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
       const prevMonthStr = prevMonth.toISOString().slice(0, 7)
       const prevMonthMov = movimientos.filter(m => m.fecha.startsWith(prevMonthStr))
       const gastosPrevMes = prevMonthMov.filter(m => m.tipo === 'gasto').reduce((sum, m) => sum + m.monto, 0)
 
-      // Control streak
       let controlStreak = 0
       const avgDaily = gastosMes / now.getDate()
 
@@ -67,7 +79,6 @@ export default function MoneyPage() {
         }
       }
 
-      // Budget usage
       let budgetUsage = null
       let budgetHealth = 100
       if (budgets.length > 0) {
@@ -85,13 +96,10 @@ export default function MoneyPage() {
           return { ...budget, spent, percent: Math.round((spent / budget.limit) * 100) }
         })
         budgetUsage = budgetStats.sort((a, b) => b.percent - a.percent)[0]
-
-        // Health = 100 - average over-budget percentage
         const avgOverBudget = budgetStats.reduce((sum, b) => sum + Math.max(0, b.percent - 100), 0) / budgetStats.length
         budgetHealth = Math.max(0, 100 - avgOverBudget)
       }
 
-      // Health score (0-100)
       let healthScore = 100
       if (gastosPrevMes > 0) {
         const diff = ((gastosMes - gastosPrevMes) / gastosPrevMes) * 100
@@ -134,70 +142,13 @@ export default function MoneyPage() {
     return 'zinc'
   }
 
-  const getRecommendation = () => {
-    if (!stats) return null
-
-    if (stats.budgetUsage?.percent > 100) {
-      return {
-        emoji: '⚠️',
-        title: 'Presupuesto excedido',
-        description: `${stats.budgetUsage.name} está al ${stats.budgetUsage.percent}%. Revisá tus gastos.`,
-        action: () => router.push('/money/presupuestos'),
-        actionLabel: 'Ver presupuestos',
-        variant: 'warning'
-      }
-    }
-
-    if (stats.gastoDiff > 30) {
-      return {
-        emoji: '📈',
-        title: 'Gasto en aumento',
-        description: `Gastaste ${stats.gastoDiff.toFixed(0)}% más que el mes pasado.`,
-        action: () => router.push('/money/movimientos'),
-        actionLabel: 'Ver movimientos',
-        variant: 'warning'
-      }
-    }
-
-    if (stats.controlStreak >= 7) {
-      return {
-        emoji: '✨',
-        title: 'Excelente control',
-        description: `${stats.controlStreak} días manteniendo el gasto bajo control.`,
-        variant: 'success'
-      }
-    }
-
-    if (stats.balance < 0) {
-      return {
-        emoji: '💸',
-        title: 'Balance negativo',
-        description: 'Tus gastos superan tus ingresos este mes.',
-        action: () => router.push('/money/resumen'),
-        actionLabel: 'Ver resumen',
-        variant: 'warning'
-      }
-    }
-
-    return {
-      emoji: '💳',
-      title: 'Seguí registrando',
-      description: 'Cada gasto que registrás mejora tus insights.',
-      action: () => router.push('/chat'),
-      actionLabel: 'Registrar',
-      variant: 'default'
-    }
-  }
-
-  const recommendation = getRecommendation()
-
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen bg-zinc-50 dark:bg-zinc-950">
         <TopBar title="Money" />
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-pulse">
-            <div className="w-24 h-24 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+            <div className="w-20 h-20 rounded-full bg-zinc-200 dark:bg-zinc-800" />
           </div>
         </div>
       </div>
@@ -209,9 +160,8 @@ export default function MoneyPage() {
       <TopBar title="Money" />
 
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-5">
-        {/* Hero Section - Dark wallet style */}
+        {/* Hero Section - Dark fintech style */}
         <div className="relative bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 dark:from-zinc-800 dark:via-zinc-900 dark:to-black rounded-3xl p-6 overflow-hidden">
-          {/* Glow effect */}
           <div className="absolute inset-0 opacity-20">
             <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full blur-3xl ${
               stats?.healthScore >= 70 ? 'bg-emerald-500' :
@@ -248,11 +198,12 @@ export default function MoneyPage() {
                   </span>
                 </div>
                 {stats?.gastoDiff !== 0 && (
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                  <span className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 ${
                     stats?.gastoDiff > 0
                       ? 'bg-red-500/20 text-red-400'
                       : 'bg-emerald-500/20 text-emerald-400'
                   }`}>
+                    {stats?.gastoDiff > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                     {stats?.gastoDiff > 0 ? '+' : ''}{stats?.gastoDiff?.toFixed(0)}%
                   </span>
                 )}
@@ -265,7 +216,7 @@ export default function MoneyPage() {
             <div className="mt-4 pt-4 border-t border-zinc-700/50 flex items-center justify-between">
               {stats?.controlStreak > 0 && (
                 <div className="flex items-center gap-2">
-                  <span className="text-emerald-400 text-sm">✓</span>
+                  <CheckCircle className="w-4 h-4 text-emerald-400" />
                   <span className="text-xs text-zinc-400">
                     {stats.controlStreak}d bajo control
                   </span>
@@ -287,61 +238,71 @@ export default function MoneyPage() {
           )}
         </div>
 
-        {/* Recommendation */}
-        {recommendation && (
-          <RecommendationCard
-            emoji={recommendation.emoji}
-            title={recommendation.title}
-            description={recommendation.description}
-            action={recommendation.action}
-            actionLabel={recommendation.actionLabel}
-            variant={recommendation.variant}
-          />
-        )}
-
         {/* Quick action */}
-        <a href="/chat" className="block">
-          <Card className="p-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg shadow-emerald-500/20 active:scale-[0.98]">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-                  <span className="text-xl">💸</span>
-                </div>
-                <div>
-                  <p className="text-white font-semibold text-sm">Registrar gasto</p>
-                  <p className="text-emerald-200 text-xs">o ingreso</p>
-                </div>
-              </div>
-              <svg className="w-4 h-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+        <button
+          onClick={() => router.push('/chat')}
+          className="w-full p-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 rounded-2xl transition-all shadow-lg shadow-emerald-500/20 active:scale-[0.98] flex items-center justify-between"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+              <Plus className="w-5 h-5 text-white" />
             </div>
-          </Card>
-        </a>
+            <div className="text-left">
+              <p className="text-white font-semibold text-sm">Registrar movimiento</p>
+              <p className="text-emerald-200 text-xs">Gasto o ingreso</p>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-white/60" />
+        </button>
 
-        {/* Navigation */}
-        <div className="space-y-3">
+        {/* Navigation - Gestión */}
+        <div className="space-y-2">
           <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1">
             Gestión
           </h3>
-          <Card className="overflow-hidden divide-y divide-zinc-100 dark:divide-zinc-800 hover:shadow-lg transition-shadow">
-            <ListRow label="📊 Resumen mensual" href="/money/resumen" />
-            <ListRow label="💳 Movimientos" href="/money/movimientos" />
-            <ListRow label="👛 Billeteras" href="/money/billeteras" />
-            <ListRow label="📋 Presupuestos" href="/money/presupuestos" />
-          </Card>
+          <div className="space-y-1">
+            {[
+              { icon: BarChart3, label: 'Resumen mensual', href: '/money/resumen' },
+              { icon: ArrowRightLeft, label: 'Movimientos', href: '/money/movimientos' },
+              { icon: CreditCard, label: 'Billeteras', href: '/money/billeteras' },
+              { icon: PiggyBank, label: 'Presupuestos', href: '/money/presupuestos' }
+            ].map(({ icon: Icon, label, href }) => (
+              <button
+                key={href}
+                onClick={() => router.push(href)}
+                className="w-full p-3 rounded-xl text-left bg-white dark:bg-zinc-800/50 border border-zinc-200/50 dark:border-zinc-700/50 hover:shadow-md transition-all active:scale-[0.98] flex items-center gap-3"
+              >
+                <Icon className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
+                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 flex-1">{label}</span>
+                <ChevronRight className="w-4 h-4 text-zinc-400" />
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="space-y-3">
+        {/* Navigation - Análisis */}
+        <div className="space-y-2">
           <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1">
             Análisis
           </h3>
-          <Card className="overflow-hidden divide-y divide-zinc-100 dark:divide-zinc-800 hover:shadow-lg transition-shadow">
-            <ListRow label="🔔 Suscripciones" href="/money/suscripciones" />
-            <ListRow label="⚠️ Alertas" href="/money/alertas" />
-            <ListRow label="📈 Insights" href="/money/insights" />
-            <ListRow label="📊 Inversiones" href="/money/inversiones" />
-          </Card>
+          <div className="space-y-1">
+            {[
+              { icon: Bell, label: 'Suscripciones', href: '/money/suscripciones' },
+              { icon: AlertTriangle, label: 'Alertas', href: '/money/alertas' },
+              { icon: LineChart, label: 'Insights', href: '/money/insights' },
+              { icon: Receipt, label: 'Inversiones', href: '/money/inversiones' }
+            ].map(({ icon: Icon, label, href }) => (
+              <button
+                key={href}
+                onClick={() => router.push(href)}
+                className="w-full p-3 rounded-xl text-left bg-white dark:bg-zinc-800/50 border border-zinc-200/50 dark:border-zinc-700/50 hover:shadow-md transition-all active:scale-[0.98] flex items-center gap-3"
+              >
+                <Icon className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
+                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 flex-1">{label}</span>
+                <ChevronRight className="w-4 h-4 text-zinc-400" />
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>

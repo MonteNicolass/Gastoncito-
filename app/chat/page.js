@@ -4,6 +4,17 @@ import { useState, useEffect, useRef } from 'react'
 import { initDB, addMovimiento, updateSaldo, addNote, addLifeEntry, deleteMovimiento, deleteLifeEntry, deleteNote } from '@/lib/storage'
 import TopBar from '@/components/ui/TopBar'
 import Button from '@/components/ui/Button'
+import {
+  MessageCircle,
+  Wallet,
+  Brain,
+  Dumbbell,
+  StickyNote,
+  Send,
+  Check,
+  ChevronRight,
+  Undo2
+} from 'lucide-react'
 
 export default function ChatPage() {
   const [messages, setMessages] = useState([])
@@ -320,7 +331,7 @@ export default function ChatPage() {
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full gap-4">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 flex items-center justify-center">
-              <span className="text-3xl">💬</span>
+              <MessageCircle className="w-8 h-8 text-purple-600 dark:text-purple-400" />
             </div>
             <div className="text-center">
               <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
@@ -389,9 +400,7 @@ export default function ChatPage() {
         <a href="/hoy" className="block">
           <div className="text-center text-xs font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors py-2 flex items-center justify-center gap-1">
             <span>Ver todo lo de hoy</span>
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
+            <ChevronRight className="w-3 h-3" />
           </div>
         </a>
       </div>
@@ -403,8 +412,8 @@ export default function ChatPage() {
             onClick={() => setInput('Gasté ')}
             className="flex flex-col items-center gap-1.5 group"
           >
-            <div className="w-14 h-14 rounded-2xl bg-green-100 dark:bg-green-900/40 flex items-center justify-center shadow-sm group-hover:bg-green-200 dark:group-hover:bg-green-900/60 group-active:scale-95 transition-all">
-              <span className="text-2xl">💸</span>
+            <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center shadow-sm group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900/60 group-active:scale-95 transition-all">
+              <Wallet className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
             </div>
             <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Gasto</span>
           </button>
@@ -414,7 +423,7 @@ export default function ChatPage() {
             className="flex flex-col items-center gap-1.5 group"
           >
             <div className="w-14 h-14 rounded-2xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center shadow-sm group-hover:bg-purple-200 dark:group-hover:bg-purple-900/60 group-active:scale-95 transition-all">
-              <span className="text-2xl">🧠</span>
+              <Brain className="w-6 h-6 text-purple-600 dark:text-purple-400" />
             </div>
             <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Estado</span>
           </button>
@@ -424,7 +433,7 @@ export default function ChatPage() {
             className="flex flex-col items-center gap-1.5 group"
           >
             <div className="w-14 h-14 rounded-2xl bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center shadow-sm group-hover:bg-orange-200 dark:group-hover:bg-orange-900/60 group-active:scale-95 transition-all">
-              <span className="text-2xl">💪</span>
+              <Dumbbell className="w-6 h-6 text-orange-600 dark:text-orange-400" />
             </div>
             <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Hábito</span>
           </button>
@@ -434,7 +443,7 @@ export default function ChatPage() {
             className="flex flex-col items-center gap-1.5 group"
           >
             <div className="w-14 h-14 rounded-2xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center shadow-sm group-hover:bg-blue-200 dark:group-hover:bg-blue-900/60 group-active:scale-95 transition-all">
-              <span className="text-2xl">📝</span>
+              <StickyNote className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
             <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Nota</span>
           </button>
@@ -456,10 +465,11 @@ export default function ChatPage() {
           />
           <button
             onClick={handleSend}
-            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm font-semibold rounded-2xl shadow-lg shadow-purple-500/20 active:scale-95 transition-all"
+            className="px-5 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm font-semibold rounded-2xl shadow-lg shadow-purple-500/20 active:scale-95 transition-all flex items-center gap-2"
             data-testid="chat-send-btn"
           >
-            Enviar
+            <Send className="w-4 h-4" />
+            <span>Enviar</span>
           </button>
         </div>
       </div>
@@ -470,17 +480,16 @@ export default function ChatPage() {
           <div className="bg-zinc-900 dark:bg-zinc-800 text-white px-5 py-4 rounded-2xl shadow-2xl flex items-center justify-between max-w-md mx-auto">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                </svg>
+                <Check className="w-5 h-5 text-green-400" />
               </div>
               <span className="text-sm font-semibold">Guardado</span>
             </div>
             <button
               onClick={handleUndo}
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-semibold transition-colors active:scale-95"
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-semibold transition-colors active:scale-95 flex items-center gap-2"
             >
-              Deshacer
+              <Undo2 className="w-4 h-4" />
+              <span>Deshacer</span>
             </button>
           </div>
         </div>

@@ -2,7 +2,39 @@
 
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
-import ListRow from '@/components/ui/ListRow'
+import { useRouter } from 'next/navigation'
+import {
+  Dumbbell,
+  StickyNote,
+  Target,
+  Wrench,
+  Search,
+  TrendingUp,
+  CalendarDays,
+  History,
+  Calendar,
+  CalendarRange,
+  CalendarClock,
+  Settings,
+  ListChecks,
+  Tags,
+  Database,
+  ChevronRight
+} from 'lucide-react'
+
+function NavRow({ icon: Icon, label, href, iconColor = 'text-zinc-500 dark:text-zinc-400' }) {
+  const router = useRouter()
+  return (
+    <button
+      onClick={() => router.push(href)}
+      className="w-full px-4 py-3 flex items-center gap-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+    >
+      <Icon className={`w-5 h-5 ${iconColor}`} />
+      <span className="flex-1 text-left text-sm font-medium text-zinc-900 dark:text-zinc-100">{label}</span>
+      <ChevronRight className="w-4 h-4 text-zinc-400" />
+    </button>
+  )
+}
 
 export default function MasPage() {
   return (
@@ -16,10 +48,10 @@ export default function MasPage() {
             Áreas
           </h3>
           <Card className="overflow-hidden divide-y divide-zinc-100 dark:divide-zinc-800">
-            <ListRow label="💪 Físico" href="/fisico" />
-            <ListRow label="📝 Notas" href="/notas" />
-            <ListRow label="🎯 Objetivos" href="/objetivos" />
-            <ListRow label="🛠️ Herramientas" href="/herramientas" />
+            <NavRow icon={Dumbbell} label="Físico" href="/fisico" iconColor="text-orange-500 dark:text-orange-400" />
+            <NavRow icon={StickyNote} label="Notas" href="/notas" iconColor="text-blue-500 dark:text-blue-400" />
+            <NavRow icon={Target} label="Objetivos" href="/objetivos" iconColor="text-indigo-500 dark:text-indigo-400" />
+            <NavRow icon={Wrench} label="Herramientas" href="/herramientas" iconColor="text-zinc-500 dark:text-zinc-400" />
           </Card>
         </div>
 
@@ -29,10 +61,10 @@ export default function MasPage() {
             Análisis
           </h3>
           <Card className="overflow-hidden divide-y divide-zinc-100 dark:divide-zinc-800">
-            <ListRow label="🔍 Comportamiento" href="/comportamiento" />
-            <ListRow label="📈 Insights cruzados" href="/insights" />
-            <ListRow label="📅 Eventos" href="/eventos" />
-            <ListRow label="📊 Historia" href="/historia" />
+            <NavRow icon={Search} label="Comportamiento" href="/comportamiento" />
+            <NavRow icon={TrendingUp} label="Insights cruzados" href="/insights" />
+            <NavRow icon={CalendarDays} label="Eventos" href="/eventos" />
+            <NavRow icon={History} label="Historia" href="/historia" />
           </Card>
         </div>
 
@@ -42,9 +74,9 @@ export default function MasPage() {
             Vistas temporales
           </h3>
           <Card className="overflow-hidden divide-y divide-zinc-100 dark:divide-zinc-800">
-            <ListRow label="📆 Hoy" href="/hoy" />
-            <ListRow label="📅 Semana" href="/semana" />
-            <ListRow label="🗓️ Mes" href="/mes" />
+            <NavRow icon={Calendar} label="Hoy" href="/hoy" />
+            <NavRow icon={CalendarRange} label="Semana" href="/semana" />
+            <NavRow icon={CalendarClock} label="Mes" href="/mes" />
           </Card>
         </div>
 
@@ -54,11 +86,11 @@ export default function MasPage() {
             Configuración
           </h3>
           <Card className="overflow-hidden divide-y divide-zinc-100 dark:divide-zinc-800">
-            <ListRow label="⚙️ Configuración" href="/mas/settings" />
-            <ListRow label="📋 Reglas" href="/mas/reglas" />
-            <ListRow label="🏷️ Categorías" href="/mas/categorias" />
-            <ListRow label="💾 Backup & Datos" href="/mas/backup" />
-            <ListRow label="🔎 Búsqueda" href="/busqueda" />
+            <NavRow icon={Settings} label="Configuración" href="/mas/settings" />
+            <NavRow icon={ListChecks} label="Reglas" href="/mas/reglas" />
+            <NavRow icon={Tags} label="Categorías" href="/mas/categorias" />
+            <NavRow icon={Database} label="Backup & Datos" href="/mas/backup" />
+            <NavRow icon={Search} label="Búsqueda" href="/busqueda" />
           </Card>
         </div>
       </div>
