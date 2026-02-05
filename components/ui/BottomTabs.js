@@ -100,6 +100,7 @@ export default function BottomTabs() {
     { name: 'Resumen', href: '/vision', emoji: '🏠', key: 'vision' },
     { name: 'Chat', href: '/chat', emoji: '💬', key: 'chat' },
     { name: 'Hoy', href: '/hoy', emoji: '📅', key: 'hoy' },
+    { name: 'Semana', href: '/semana', emoji: '📆', key: 'semana' },
     { name: 'Mental', href: '/mental', emoji: '🧠', key: 'mental' },
     { name: 'Físico', href: '/fisico', emoji: '💪', key: 'fisico' },
     { name: 'Money', href: '/money', emoji: '💰', key: 'money' },

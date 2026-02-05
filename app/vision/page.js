@@ -10,6 +10,7 @@ import { getSpendingByMood, getMoodByExercise, getImpulsiveSpendingByExercise } 
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import CardManager from '@/components/ui/CardManager'
+import QuickActionsInline from '@/components/ui/QuickActionsInline'
 
 function getBudgetsFromLocalStorage() {
   if (typeof window === 'undefined') return []
@@ -274,21 +275,33 @@ export default function VisionGeneralPage() {
       <TopBar title="Resumen General" />
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {/* Link a Hoy */}
-        <a href="/hoy">
-          <Card className="p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+        {/* Atajos rápidos */}
+        <div className="pb-2">
+          <QuickActionsInline onActionComplete={loadOverview} />
+        </div>
+
+        {/* Links rápidos */}
+        <div className="grid grid-cols-2 gap-2">
+          <a href="/hoy">
+            <Card className="p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer">
+              <div className="flex flex-col gap-1">
                 <span className="text-2xl">📅</span>
-                <div>
-                  <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Hoy</div>
-                  <div className="text-xs text-zinc-600 dark:text-zinc-400">Ver todo lo registrado hoy</div>
-                </div>
+                <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Hoy</div>
+                <div className="text-xs text-zinc-600 dark:text-zinc-400">Todo lo registrado</div>
               </div>
-              <span className="text-zinc-400 dark:text-zinc-500">→</span>
-            </div>
-          </Card>
-        </a>
+            </Card>
+          </a>
+
+          <a href="/semana">
+            <Card className="p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer">
+              <div className="flex flex-col gap-1">
+                <span className="text-2xl">📆</span>
+                <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Semana</div>
+                <div className="text-xs text-zinc-600 dark:text-zinc-400">Resumen semanal</div>
+              </div>
+            </Card>
+          </a>
+        </div>
 
         {/* Estado General */}
         {allCards.estadoGeneral.render()}
