@@ -25,13 +25,20 @@ export default function MovimientosPage() {
     monto: '',
     metodo: '',
     motivo: '',
+    categoria: '',
+    fecha: '',
+    recurrent: false,
   })
+  const [contextMenuId, setContextMenuId] = useState(null)
   const [showAddModal, setShowAddModal] = useState(false)
   const [addForm, setAddForm] = useState({
     monto: '',
     motivo: '',
     tipo: 'gasto',
     metodo: 'efectivo',
+    categoria: '',
+    fecha: new Date().toISOString().slice(0, 10),
+    recurrent: false,
   })
   const [categorias, setCategorias] = useState([])
   const [isCategoriesSeeded, setIsCategoriesSeeded] = useState(false)
@@ -53,6 +60,14 @@ export default function MovimientosPage() {
     }
     init()
   }, [])
+
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (contextMenuId) setContextMenuId(null)
+    }
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [contextMenuId])
 
   const wallets = useMemo(() => {
     const set = new Set()
@@ -109,20 +124,48 @@ export default function MovimientosPage() {
       monto: mov.monto || '',
       metodo: mov.metodo || '',
       motivo: mov.motivo || '',
+      categoria: mov.categoria || '',
+      fecha: mov.fecha || new Date().toISOString().slice(0, 10),
+      recurrent: mov.recurrent || false,
     })
   }
 
   const handleSaveEdit = async () => {
     if (!editModal) return
 
-    await updateMovimiento(editModal.id, {
+    const updates = {
       monto: parseFloat(editForm.monto) || editModal.monto,
       metodo: editForm.metodo || editModal.metodo,
       motivo: editForm.motivo || editModal.motivo,
-    })
+    }
+
+    if (editForm.categoria) updates.categoria = editForm.categoria
+    if (editForm.fecha) updates.fecha = editForm.fecha
+    if (editForm.recurrent !== undefined) updates.recurrent = editForm.recurrent
+
+    await updateMovimiento(editModal.id, updates)
 
     setEditModal(null)
     await loadMovimientos()
+  }
+
+  const handleDuplicate = async (mov) => {
+    const duplicate = {
+      fecha: new Date().toISOString().slice(0, 10),
+      tipo: mov.tipo,
+      monto: mov.monto,
+      metodo: mov.metodo || '',
+      motivo: mov.motivo || '',
+      categoria: mov.categoria || '',
+      recurrent: mov.recurrent || false,
+    }
+
+    await addMovimiento(duplicate)
+    if (mov.tipo !== 'movimiento') {
+      await updateSaldo(duplicate.metodo, duplicate.tipo === 'gasto' ? -duplicate.monto : duplicate.monto)
+    }
+    await loadMovimientos()
+    setEditModal(null)
   }
 
   const handleCloseModal = () => {
@@ -136,6 +179,9 @@ export default function MovimientosPage() {
       motivo: '',
       tipo: 'gasto',
       metodo: 'efectivo',
+      categoria: '',
+      fecha: new Date().toISOString().slice(0, 10),
+      recurrent: false,
     })
   }
 
@@ -149,15 +195,20 @@ export default function MovimientosPage() {
     setLastActionSignal(null) // Reset signal
 
     const movimiento = {
-      fecha: new Date().toISOString().slice(0, 10),
+      fecha: addForm.fecha || new Date().toISOString().slice(0, 10),
       tipo: addForm.tipo,
       monto: parseFloat(addForm.monto),
       metodo: addForm.metodo,
       motivo: addForm.motivo || '',
     }
 
+    if (addForm.categoria) movimiento.categoria = addForm.categoria
+    if (addForm.recurrent !== undefined) movimiento.recurrent = addForm.recurrent
+
     await addMovimiento(movimiento)
-    await updateSaldo(movimiento.metodo, movimiento.tipo === 'gasto' ? -movimiento.monto : movimiento.monto)
+    if (movimiento.tipo !== 'movimiento') {
+      await updateSaldo(movimiento.metodo, movimiento.tipo === 'gasto' ? -movimiento.monto : movimiento.monto)
+    }
 
     setShowAddModal(false)
     await loadMovimientos()
@@ -271,12 +322,14 @@ export default function MovimientosPage() {
           filtered.map((mov) => (
             <Card
               key={mov.id}
-              className="p-4 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors active:scale-[0.99]"
-              onClick={() => handleEdit(mov)}
+              className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors relative"
               data-testid="movimiento-item"
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
+                <div
+                  className="flex-1 min-w-0 cursor-pointer"
+                  onClick={() => handleEdit(mov)}
+                >
                   <div className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
                     {formatAmount(mov.monto)}
                   </div>
@@ -294,14 +347,69 @@ export default function MovimientosPage() {
                         {getCategoryName(mov.category_id) || mov.categoria}
                       </span>
                     )}
+                    {mov.recurrent && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">
+                        Recurrente
+                      </span>
+                    )}
                   </div>
                 </div>
-                <div className="text-right flex-shrink-0">
+                <div className="text-right flex-shrink-0 flex flex-col items-end gap-1">
                   <div className="inline-flex items-center px-2 py-1 rounded-lg text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
                     {mov.tipo}
                   </div>
-                  <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
+                  <div className="text-xs text-zinc-400 dark:text-zinc-500">
                     {mov.fecha}
+                  </div>
+                  {/* Menú contextual */}
+                  <div className="relative">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setContextMenuId(contextMenuId === mov.id ? null : mov.id)
+                      }}
+                      className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded transition-colors"
+                    >
+                      <svg className="w-4 h-4 text-zinc-600 dark:text-zinc-400" fill="currentColor" viewBox="0 0 16 16">
+                        <circle cx="8" cy="3" r="1.5"/>
+                        <circle cx="8" cy="8" r="1.5"/>
+                        <circle cx="8" cy="13" r="1.5"/>
+                      </svg>
+                    </button>
+                    {contextMenuId === mov.id && (
+                      <div className="absolute right-0 mt-1 w-32 bg-white dark:bg-zinc-800 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-700 z-10">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleEdit(mov)
+                            setContextMenuId(null)
+                          }}
+                          className="w-full px-3 py-2 text-left text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-t-lg"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDuplicate(mov)
+                            setContextMenuId(null)
+                          }}
+                          className="w-full px-3 py-2 text-left text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                        >
+                          Duplicar
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDelete(mov.id)
+                            setContextMenuId(null)
+                          }}
+                          className="w-full px-3 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-lg"
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -335,16 +443,53 @@ export default function MovimientosPage() {
                 value={editForm.monto}
                 onChange={(e) => setEditForm({ ...editForm, monto: e.target.value })}
               />
-              <Input
-                label="Billetera"
+              <Select
+                label="Método de pago"
                 value={editForm.metodo}
                 onChange={(e) => setEditForm({ ...editForm, metodo: e.target.value })}
+              >
+                <option value="Efectivo">Efectivo</option>
+                <option value="Débito">Débito</option>
+                <option value="Crédito">Crédito</option>
+                <option value="Transferencia">Transferencia</option>
+                <option value="Virtual">Virtual</option>
+              </Select>
+              <Select
+                label="Categoría"
+                value={editForm.categoria}
+                onChange={(e) => setEditForm({ ...editForm, categoria: e.target.value })}
+              >
+                <option value="">Sin categoría</option>
+                <option value="Comida">Comida</option>
+                <option value="Transporte">Transporte</option>
+                <option value="Suscripciones">Suscripciones</option>
+                <option value="Ocio">Ocio</option>
+                <option value="Servicios">Servicios</option>
+                <option value="Compras">Compras</option>
+                <option value="Salud">Salud</option>
+                <option value="Educación">Educación</option>
+                <option value="Otro">Otro</option>
+              </Select>
+              <Input
+                label="Fecha"
+                type="date"
+                value={editForm.fecha}
+                onChange={(e) => setEditForm({ ...editForm, fecha: e.target.value })}
               />
               <Input
                 label="Descripción"
                 value={editForm.motivo}
                 onChange={(e) => setEditForm({ ...editForm, motivo: e.target.value })}
               />
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={editForm.recurrent}
+                  onChange={(e) => setEditForm({ ...editForm, recurrent: e.target.checked })}
+                  className="w-4 h-4 text-blue-600 bg-zinc-100 border-zinc-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-zinc-800 focus:ring-2 dark:bg-zinc-700 dark:border-zinc-600"
+                />
+                <span className="text-sm text-zinc-700 dark:text-zinc-300">Marcar como recurrente</span>
+              </label>
 
               <div className="flex gap-2 pt-2">
                 <Button
@@ -356,6 +501,13 @@ export default function MovimientosPage() {
                   className="flex-1"
                 >
                   Eliminar
+                </Button>
+                <Button
+                  onClick={() => handleDuplicate(editModal)}
+                  variant="secondary"
+                  className="flex-1"
+                >
+                  Duplicar
                 </Button>
                 <Button
                   onClick={handleSaveEdit}
@@ -398,13 +550,6 @@ export default function MovimientosPage() {
                 data-testid="manual-monto-input"
                 required
               />
-              <Input
-                label="Descripción"
-                placeholder="Ej: Café, taxi, etc."
-                value={addForm.motivo}
-                onChange={(e) => setAddForm({ ...addForm, motivo: e.target.value })}
-                data-testid="manual-motivo-input"
-              />
               <Select
                 label="Tipo"
                 value={addForm.tipo}
@@ -416,16 +561,55 @@ export default function MovimientosPage() {
                 <option value="movimiento">Movimiento</option>
               </Select>
               <Select
-                label="Billetera"
+                label="Método de pago"
                 value={addForm.metodo}
                 onChange={(e) => setAddForm({ ...addForm, metodo: e.target.value })}
                 data-testid="manual-metodo-select"
               >
-                <option value="efectivo">Efectivo</option>
-                <option value="mercado pago">Mercado Pago</option>
-                <option value="galicia">Galicia</option>
-                <option value="otro">Otro</option>
+                <option value="Efectivo">Efectivo</option>
+                <option value="Débito">Débito</option>
+                <option value="Crédito">Crédito</option>
+                <option value="Transferencia">Transferencia</option>
+                <option value="Virtual">Virtual</option>
               </Select>
+              <Select
+                label="Categoría"
+                value={addForm.categoria}
+                onChange={(e) => setAddForm({ ...addForm, categoria: e.target.value })}
+              >
+                <option value="">Sin categoría</option>
+                <option value="Comida">Comida</option>
+                <option value="Transporte">Transporte</option>
+                <option value="Suscripciones">Suscripciones</option>
+                <option value="Ocio">Ocio</option>
+                <option value="Servicios">Servicios</option>
+                <option value="Compras">Compras</option>
+                <option value="Salud">Salud</option>
+                <option value="Educación">Educación</option>
+                <option value="Otro">Otro</option>
+              </Select>
+              <Input
+                label="Fecha"
+                type="date"
+                value={addForm.fecha}
+                onChange={(e) => setAddForm({ ...addForm, fecha: e.target.value })}
+              />
+              <Input
+                label="Descripción"
+                placeholder="Ej: Café, taxi, etc."
+                value={addForm.motivo}
+                onChange={(e) => setAddForm({ ...addForm, motivo: e.target.value })}
+                data-testid="manual-motivo-input"
+              />
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={addForm.recurrent}
+                  onChange={(e) => setAddForm({ ...addForm, recurrent: e.target.checked })}
+                  className="w-4 h-4 text-blue-600 bg-zinc-100 border-zinc-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-zinc-800 focus:ring-2 dark:bg-zinc-700 dark:border-zinc-600"
+                />
+                <span className="text-sm text-zinc-700 dark:text-zinc-300">Marcar como recurrente</span>
+              </label>
 
               <div className="pt-2">
                 <Button

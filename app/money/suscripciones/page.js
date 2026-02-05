@@ -1,29 +1,66 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { initDB, getSubscriptions, addSubscription, deleteSubscription } from '@/lib/storage'
+import { initDB, getSubscriptions, addSubscription, deleteSubscription, updateSubscription, getWallets } from '@/lib/storage'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 
+const SUBSCRIPTION_PRESETS = [
+  { value: 'Netflix', label: 'Netflix' },
+  { value: 'Spotify', label: 'Spotify' },
+  { value: 'YouTube Premium', label: 'YouTube Premium' },
+  { value: 'iCloud', label: 'iCloud' },
+  { value: 'Google Drive', label: 'Google Drive' },
+  { value: 'Amazon Prime', label: 'Amazon Prime' },
+  { value: 'Disney+', label: 'Disney+' },
+  { value: 'HBO Max', label: 'HBO Max' },
+  { value: 'ChatGPT Plus', label: 'ChatGPT Plus' },
+  { value: 'otro', label: 'Otro (personalizado)' },
+]
+
 export default function SuscripcionesPage() {
   const [subscriptions, setSubscriptions] = useState([])
+  const [wallets, setWallets] = useState([])
   const [showModal, setShowModal] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  const [openMenuId, setOpenMenuId] = useState(null)
   const [formData, setFormData] = useState({
     name: '',
+    customName: '',
     amount: '',
-    cadence: '1', // Default to monthly
+    cadence: '1',
+    wallet: '',
   })
 
   useEffect(() => {
-    initDB().then(loadSubscriptions)
+    initDB().then(() => {
+      loadSubscriptions()
+      loadWallets()
+    })
   }, [])
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (openMenuId && !e.target.closest('[data-menu-container]')) {
+        setOpenMenuId(null)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [openMenuId])
 
   const loadSubscriptions = async () => {
     const data = await getSubscriptions()
     setSubscriptions(data)
+  }
+
+  const loadWallets = async () => {
+    const data = await getWallets()
+    setWallets(data)
   }
 
   const calculateNextChargeDate = (cadenceMonths) => {
@@ -65,11 +102,28 @@ export default function SuscripcionesPage() {
 
   const handleOpenModal = () => {
     setShowModal(true)
+    setEditingId(null)
     setFormData({
       name: '',
+      customName: '',
       amount: '',
       cadence: '1',
+      wallet: '',
     })
+  }
+
+  const handleEditSubscription = (sub) => {
+    setEditingId(sub.id)
+    const isPreset = SUBSCRIPTION_PRESETS.some(p => p.value === sub.name)
+    setFormData({
+      name: isPreset ? sub.name : 'otro',
+      customName: isPreset ? '' : sub.name,
+      amount: sub.amount.toString(),
+      cadence: sub.cadence_months.toString(),
+      wallet: sub.wallet || '',
+    })
+    setShowModal(true)
+    setOpenMenuId(null)
   }
 
   const handleCloseModal = () => {
@@ -78,24 +132,52 @@ export default function SuscripcionesPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!formData.name.trim() || !formData.amount) return
 
-    const nextChargeDate = calculateNextChargeDate(formData.cadence)
+    const finalName = formData.name === 'otro'
+      ? formData.customName.trim()
+      : formData.name
 
-    await addSubscription({
-      name: formData.name.trim(),
+    if (!finalName || !formData.amount) return
+
+    const subscriptionData = {
+      name: finalName,
       amount: parseFloat(formData.amount),
       cadence_months: parseInt(formData.cadence),
-      next_charge_date: nextChargeDate,
-    })
+      next_charge_date: editingId
+        ? subscriptions.find(s => s.id === editingId).next_charge_date
+        : calculateNextChargeDate(formData.cadence),
+      wallet: formData.wallet || undefined,
+    }
+
+    if (editingId) {
+      await updateSubscription(editingId, subscriptionData)
+    } else {
+      await addSubscription(subscriptionData)
+    }
 
     setShowModal(false)
+    setEditingId(null)
     await loadSubscriptions()
   }
 
   const handleDelete = async (id, name) => {
     if (!confirm(`¿Eliminar la suscripción "${name}"?`)) return
     await deleteSubscription(id)
+    setOpenMenuId(null)
+    if (editingId === id) {
+      setShowModal(false)
+      setEditingId(null)
+    }
+    await loadSubscriptions()
+  }
+
+  const handleDeleteFromModal = async () => {
+    if (!editingId) return
+    const sub = subscriptions.find(s => s.id === editingId)
+    if (!confirm(`¿Eliminar la suscripción "${sub.name}"?`)) return
+    await deleteSubscription(editingId)
+    setShowModal(false)
+    setEditingId(null)
     await loadSubscriptions()
   }
 
@@ -168,16 +250,44 @@ export default function SuscripcionesPage() {
                       <span className="text-xs text-zinc-500 dark:text-zinc-400">
                         Próximo: {formatDate(sub.next_charge_date)}
                       </span>
+                      {sub.wallet && (
+                        <>
+                          <span className="text-xs text-zinc-400 dark:text-zinc-500">
+                            •
+                          </span>
+                          <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                            {sub.wallet}
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
-                  <Button
-                    onClick={() => handleDelete(sub.id, sub.name)}
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-600 hover:text-red-700 dark:text-red-400 flex-shrink-0"
-                  >
-                    Eliminar
-                  </Button>
+                  <div className="relative flex-shrink-0" data-menu-container>
+                    <button
+                      onClick={() => setOpenMenuId(openMenuId === sub.id ? null : sub.id)}
+                      className="p-2 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                    >
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                      </svg>
+                    </button>
+                    {openMenuId === sub.id && (
+                      <div className="absolute right-0 mt-1 bg-white dark:bg-zinc-800 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-700 py-1 z-10 min-w-[140px]">
+                        <button
+                          onClick={() => handleEditSubscription(sub)}
+                          className="w-full px-4 py-2 text-left text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleDelete(sub.id, sub.name)}
+                          className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </Card>
             ))
@@ -192,7 +302,7 @@ export default function SuscripcionesPage() {
             <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
-                  Nueva suscripción
+                  {editingId ? 'Editar suscripción' : 'Nueva suscripción'}
                 </h3>
                 <button
                   onClick={handleCloseModal}
@@ -206,15 +316,33 @@ export default function SuscripcionesPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="p-4 space-y-3">
-              <Input
+              <Select
                 label="Nombre"
-                type="text"
-                placeholder="Netflix, Spotify, etc."
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                data-testid="sub-name-input"
+                data-testid="sub-name-select"
                 required
-              />
+              >
+                <option value="">Seleccionar...</option>
+                {SUBSCRIPTION_PRESETS.map(preset => (
+                  <option key={preset.value} value={preset.value}>
+                    {preset.label}
+                  </option>
+                ))}
+              </Select>
+
+              {formData.name === 'otro' && (
+                <Input
+                  label="Nombre personalizado"
+                  type="text"
+                  placeholder="Ingresa el nombre"
+                  value={formData.customName}
+                  onChange={(e) => setFormData({ ...formData, customName: e.target.value })}
+                  data-testid="sub-custom-name-input"
+                  required
+                />
+              )}
+
               <Input
                 label="Monto"
                 type="number"
@@ -225,6 +353,7 @@ export default function SuscripcionesPage() {
                 data-testid="sub-amount-input"
                 required
               />
+
               <Select
                 label="Frecuencia"
                 value={formData.cadence}
@@ -237,14 +366,39 @@ export default function SuscripcionesPage() {
                 <option value="12">Anual</option>
               </Select>
 
-              <div className="pt-2">
+              <Select
+                label="Billetera asociada (opcional)"
+                value={formData.wallet}
+                onChange={(e) => setFormData({ ...formData, wallet: e.target.value })}
+                data-testid="sub-wallet-select"
+              >
+                <option value="">Ninguna</option>
+                {wallets.map(wallet => (
+                  <option key={wallet.wallet} value={wallet.wallet}>
+                    {wallet.wallet}
+                  </option>
+                ))}
+              </Select>
+
+              <div className="pt-2 flex gap-2">
+                {editingId && (
+                  <Button
+                    type="button"
+                    onClick={handleDeleteFromModal}
+                    variant="ghost"
+                    className="flex-1 text-red-600 hover:text-red-700 dark:text-red-400"
+                    data-testid="sub-delete-btn"
+                  >
+                    Eliminar
+                  </Button>
+                )}
                 <Button
                   type="submit"
                   variant="primary"
-                  className="w-full"
+                  className={editingId ? 'flex-1' : 'w-full'}
                   data-testid="sub-submit-btn"
                 >
-                  Agregar
+                  {editingId ? 'Guardar' : 'Agregar'}
                 </Button>
               </div>
             </form>
