@@ -11,6 +11,7 @@ export default function NotasPage() {
   const [notes, setNotes] = useState([])
   const [text, setText] = useState('')
   const [type, setType] = useState('')
+  const [filterType, setFilterType] = useState('all')
 
   useEffect(() => {
     initDB().then(loadNotes)
@@ -68,6 +69,9 @@ export default function NotasPage() {
               onChange={(e) => setType(e.target.value)}
             >
               <option value="">Sin tipo</option>
+              <option value="general">General</option>
+              <option value="mental">Mental</option>
+              <option value="money">Money</option>
               <option value="idea">Idea</option>
               <option value="video">Video</option>
               <option value="negocio">Negocio</option>
@@ -85,23 +89,49 @@ export default function NotasPage() {
           </div>
         </Card>
 
+        {/* Filtro */}
+        <div className="px-1">
+          <Select
+            label="Filtrar por tipo"
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            className="text-sm"
+          >
+            <option value="all">Todas</option>
+            <option value="general">General</option>
+            <option value="mental">Mental</option>
+            <option value="money">Money</option>
+            <option value="idea">Idea</option>
+            <option value="video">Video</option>
+            <option value="negocio">Negocio</option>
+            <option value="salud">Salud</option>
+            <option value="personal">Personal</option>
+            <option value="null">Sin tipo</option>
+          </Select>
+        </div>
+
         {/* Lista de notas */}
         <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1">
-            Mis notas
-          </h2>
-          {notes.length === 0 ? (
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+              Mis notas
+            </h2>
+            <span className="text-xs text-zinc-500 dark:text-zinc-400">
+              {notes.filter(n => filterType === 'all' || (filterType === 'null' ? !n.type : n.type === filterType)).length} notas
+            </span>
+          </div>
+          {notes.filter(n => filterType === 'all' || (filterType === 'null' ? !n.type : n.type === filterType)).length === 0 ? (
             <Card className="p-8 text-center">
               <div className="text-3xl mb-3">📄</div>
               <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                Sin notas aún
+                {filterType === 'all' ? 'Sin notas aún' : 'Sin notas con este filtro'}
               </p>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Guardá tu primera nota arriba
+                {filterType === 'all' ? 'Guardá tu primera nota arriba' : 'Probá con otro filtro'}
               </p>
             </Card>
           ) : (
-            notes.map((note) => (
+            notes.filter(n => filterType === 'all' || (filterType === 'null' ? !n.type : n.type === filterType)).map((note) => (
               <Card key={note.id} className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">

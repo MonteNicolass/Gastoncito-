@@ -103,18 +103,9 @@ export default function ChatPage() {
       // 4. Execute based on confidence
       const confidence = routing.confidence || 0
 
-      if (confidence >= 0.70) {
-        // Auto-execute
+      if (confidence >= 0.50) {
+        // Auto-execute (media confidence o mayor)
         await executeAction(routing, text)
-      } else if (confidence >= 0.40) {
-        // Request confirmation
-        setPendingAction({ routing, originalText: text })
-        const actionDesc = getActionDescription(routing)
-        setMessages(prev => [...prev, {
-          from: 'gaston',
-          text: actionDesc,
-          needsConfirmation: true
-        }])
       } else {
         // Low confidence => save as general note
         await addLifeEntry({
@@ -181,22 +172,6 @@ export default function ChatPage() {
     }
   }
 
-  function getActionDescription(routing) {
-    const { brain, intent, money } = routing
-
-    if (brain === 'money' && money?.amount) {
-      const tipo = intent === 'add_income' ? 'ingreso' : 'gasto'
-      const merchant = money.merchant ? ` en ${money.merchant}` : ''
-      return `Detecté un ${tipo} de $${money.amount}${merchant}. ¿Lo registro?`
-    }
-
-    if (intent === 'log_entry') {
-      const labels = { mental: 'Mental', physical: 'Físico', general: 'General' }
-      return `¿Guardar en ${labels[routing.entry?.domain || 'general']}?`
-    }
-
-    return '¿Confirmar acción?'
-  }
 
   async function handleConfirm() {
     if (!pendingAction) return

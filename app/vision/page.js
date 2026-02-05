@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { initDB, getMovimientos, getLifeEntries, getCategorias, getGoals } from '@/lib/storage'
+import { initDB, getMovimientos, getLifeEntries, getCategorias, getGoals, getWallets } from '@/lib/storage'
 import { getAllOverviewData } from '@/lib/overview-insights'
 import { getAllBehaviorInsights } from '@/lib/insights/behaviorInsights'
 import TopBar from '@/components/ui/TopBar'
@@ -22,9 +22,10 @@ export default function VisionGeneralPage() {
       const lifeEntries = await getLifeEntries()
       const categorias = await getCategorias()
       const goals = await getGoals()
+      const wallets = await getWallets()
 
       const behaviorInsights = getAllBehaviorInsights(movimientos, lifeEntries)
-      const overview = getAllOverviewData(movimientos, lifeEntries, categorias, goals, behaviorInsights)
+      const overview = getAllOverviewData(movimientos, lifeEntries, categorias, goals, behaviorInsights, wallets)
 
       setData(overview)
     } catch (error) {
@@ -115,9 +116,16 @@ export default function VisionGeneralPage() {
               </div>
 
               <div className="flex justify-between items-baseline">
-                <span className="text-xs text-zinc-600 dark:text-zinc-400">Balance</span>
+                <span className="text-xs text-zinc-600 dark:text-zinc-400">Balance mes</span>
                 <span className={`text-lg font-semibold ${data.money.balance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                   {formatAmount(data.money.balance)}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-baseline">
+                <span className="text-xs text-zinc-600 dark:text-zinc-400">Total billeteras</span>
+                <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                  {formatAmount(data.money.walletsBalance)}
                 </span>
               </div>
 
@@ -159,22 +167,30 @@ export default function VisionGeneralPage() {
               </div>
 
             <div className="space-y-2">
-              <div className="flex justify-between items-baseline">
-                <span className="text-xs text-zinc-600 dark:text-zinc-400">Promedio</span>
-                <span className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-                  {data.mental.average7d}/10
-                </span>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">7 días</div>
+                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                    {data.mental.average7d}/10
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">30 días</div>
+                  <div className="text-2xl font-bold text-purple-500 dark:text-purple-300">
+                    {data.mental.average30d}/10
+                  </div>
+                </div>
               </div>
 
-              <div className="flex justify-between items-baseline">
+              <div className="flex justify-between items-baseline pt-2 border-t border-purple-200 dark:border-purple-800">
                 <span className="text-xs text-zinc-600 dark:text-zinc-400">Tendencia</span>
                 <span className={`text-sm font-semibold ${getMentalTrendColor(data.mental.trend)}`}>
                   {getMentalTrendText(data.mental.trend)}
                 </span>
               </div>
 
-              <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                {data.mental.count} registros
+              <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                {data.mental.count} registros últimos 7 días
               </div>
             </div>
             </Card>
