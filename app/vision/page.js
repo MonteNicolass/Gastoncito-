@@ -244,6 +244,22 @@ export default function VisionGeneralPage() {
       <TopBar title="Resumen General" />
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        {/* Link a Hoy */}
+        <a href="/hoy">
+          <Card className="p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">📅</span>
+                <div>
+                  <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Hoy</div>
+                  <div className="text-xs text-zinc-600 dark:text-zinc-400">Ver todo lo registrado hoy</div>
+                </div>
+              </div>
+              <span className="text-zinc-400 dark:text-zinc-500">→</span>
+            </div>
+          </Card>
+        </a>
+
         {/* Estado General */}
         {allCards.estadoGeneral.render()}
 

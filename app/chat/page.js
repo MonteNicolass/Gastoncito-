@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { initDB, addMovimiento, updateSaldo, addNote, addLifeEntry } from '@/lib/storage'
+import { initDB, addMovimiento, updateSaldo, addNote, addLifeEntry, deleteMovimiento, deleteLifeEntry, deleteNote } from '@/lib/storage'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
@@ -10,8 +10,11 @@ export default function ChatPage() {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [pendingAction, setPendingAction] = useState(null)
+  const [lastAction, setLastAction] = useState(null)
+  const [showUndo, setShowUndo] = useState(false)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
+  const undoTimerRef = useRef(null)
 
   useEffect(() => {
     initDB()
@@ -142,8 +145,16 @@ export default function ChatPage() {
         is_subscription: money.is_subscription || false
       }
 
-      await addMovimiento(movimiento)
+      const result = await addMovimiento(movimiento)
       await updateSaldo(movimiento.metodo, movimiento.tipo === 'gasto' ? -movimiento.monto : movimiento.monto)
+
+      // Save for undo
+      setLastAction({
+        type: 'movimiento',
+        id: result.id || result,
+        data: movimiento
+      })
+      showUndoToast()
 
       const typeLabel = movimiento.tipo === 'ingreso' ? 'Ingreso' : 'Gasto'
       const hint = 'Afecta Money hoy'
@@ -154,11 +165,19 @@ export default function ChatPage() {
       }])
 
     } else if (intent === 'log_entry' && entry) {
-      await addLifeEntry({
+      const result = await addLifeEntry({
         text: entry.text || originalText,
         domain: entry.domain,
         meta: entry.meta || {}
       })
+
+      // Save for undo
+      setLastAction({
+        type: 'life_entry',
+        id: result.id || result,
+        data: { text: entry.text || originalText, domain: entry.domain, meta: entry.meta || {} }
+      })
+      showUndoToast()
 
       const labels = {
         general: 'Nota guardada',
@@ -184,12 +203,64 @@ export default function ChatPage() {
 
     } else {
       // Unknown or unhandled
-      await addLifeEntry({
+      const result = await addLifeEntry({
         text: originalText,
         domain: 'general',
         meta: {}
       })
+
+      // Save for undo
+      setLastAction({
+        type: 'life_entry',
+        id: result.id || result,
+        data: { text: originalText, domain: 'general', meta: {} }
+      })
+      showUndoToast()
+
       setMessages(prev => [...prev, { from: 'gaston', text: 'Guardado como nota' }])
+    }
+  }
+
+  function showUndoToast() {
+    setShowUndo(true)
+
+    // Clear existing timer
+    if (undoTimerRef.current) {
+      clearTimeout(undoTimerRef.current)
+    }
+
+    // Auto-hide after 8 seconds
+    undoTimerRef.current = setTimeout(() => {
+      setShowUndo(false)
+      setLastAction(null)
+    }, 8000)
+  }
+
+  async function handleUndo() {
+    if (!lastAction) return
+
+    try {
+      if (lastAction.type === 'movimiento') {
+        await deleteMovimiento(lastAction.id)
+        // Revert saldo
+        const movimiento = lastAction.data
+        await updateSaldo(movimiento.metodo, movimiento.tipo === 'gasto' ? movimiento.monto : -movimiento.monto)
+      } else if (lastAction.type === 'life_entry') {
+        await deleteLifeEntry(lastAction.id)
+      } else if (lastAction.type === 'note') {
+        await deleteNote(lastAction.id)
+      }
+
+      setMessages(prev => [...prev, { from: 'gaston', text: 'Deshecho' }])
+    } catch (error) {
+      console.error('Undo error:', error)
+      setMessages(prev => [...prev, { from: 'gaston', text: 'Error al deshacer' }])
+    } finally {
+      setShowUndo(false)
+      setLastAction(null)
+      if (undoTimerRef.current) {
+        clearTimeout(undoTimerRef.current)
+      }
     }
   }
 
@@ -275,6 +346,15 @@ export default function ChatPage() {
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Link rápido a Hoy */}
+      <div className="px-4 pb-2">
+        <a href="/hoy" className="block">
+          <div className="text-center text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
+            Ver todo lo de hoy →
+          </div>
+        </a>
+      </div>
+
       {/* Acciones rápidas */}
       <div className="px-4 pb-2">
         <div className="flex items-center gap-4 justify-center">
@@ -348,6 +428,21 @@ export default function ChatPage() {
           </Button>
         </div>
       </div>
+
+      {/* Undo Toast */}
+      {showUndo && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[70] animate-slide-up">
+          <div className="bg-zinc-800 dark:bg-zinc-700 text-white px-4 py-3 rounded-full shadow-lg flex items-center gap-3">
+            <span className="text-sm font-medium">Guardado</span>
+            <button
+              onClick={handleUndo}
+              className="text-sm font-semibold text-blue-400 hover:text-blue-300 transition-colors"
+            >
+              Deshacer
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
