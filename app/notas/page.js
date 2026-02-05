@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { initDB, getNotes, addNote, deleteNote } from '@/lib/storage'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
@@ -17,33 +17,41 @@ export default function NotasPage() {
     initDB().then(loadNotes)
   }, [])
 
-  const loadNotes = async () => {
+  const loadNotes = useCallback(async () => {
     const data = await getNotes()
     setNotes(data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)))
-  }
+  }, [])
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     if (!text.trim()) return
     await addNote({ text: text.trim(), type: type || null })
     setText('')
     setType('')
     await loadNotes()
-  }
+  }, [text, type, loadNotes])
 
-  const handleDelete = async (id) => {
+  const handleDelete = useCallback(async (id) => {
     if (!confirm('¿Eliminar esta nota?')) return
     await deleteNote(id)
     await loadNotes()
-  }
+  }, [loadNotes])
 
-  const formatDate = (dateString) => {
+  const formatDate = useCallback((dateString) => {
     return new Date(dateString).toLocaleDateString('es-AR', {
       day: 'numeric',
       month: 'short',
       hour: '2-digit',
       minute: '2-digit'
     })
-  }
+  }, [])
+
+  // Memoize filtered notes
+  const filteredNotes = useMemo(() => {
+    return notes.filter(n =>
+      filterType === 'all' ||
+      (filterType === 'null' ? !n.type : n.type === filterType)
+    )
+  }, [notes, filterType])
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -117,10 +125,10 @@ export default function NotasPage() {
               Mis notas
             </h2>
             <span className="text-xs text-zinc-500 dark:text-zinc-400">
-              {notes.filter(n => filterType === 'all' || (filterType === 'null' ? !n.type : n.type === filterType)).length} notas
+              {filteredNotes.length} notas
             </span>
           </div>
-          {notes.filter(n => filterType === 'all' || (filterType === 'null' ? !n.type : n.type === filterType)).length === 0 ? (
+          {filteredNotes.length === 0 ? (
             <Card className="p-8 text-center">
               <div className="text-3xl mb-3">📄</div>
               <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
@@ -131,7 +139,7 @@ export default function NotasPage() {
               </p>
             </Card>
           ) : (
-            notes.filter(n => filterType === 'all' || (filterType === 'null' ? !n.type : n.type === filterType)).map((note) => (
+            filteredNotes.map((note) => (
               <Card key={note.id} className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">

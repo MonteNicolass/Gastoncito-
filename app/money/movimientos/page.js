@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { initDB, getMovimientos, deleteMovimiento, updateMovimiento, getCategorias, addMovimiento, updateSaldo, getWallets } from '@/lib/storage'
 import { seedPredefinedCategories } from '@/lib/seed-categories'
 import TopBar from '@/components/ui/TopBar'
@@ -70,14 +70,14 @@ export default function MovimientosPage() {
   const [isCategoriesSeeded, setIsCategoriesSeeded] = useState(false)
   const [lastActionSignal, setLastActionSignal] = useState(null)
 
-  const loadMovimientos = async () => {
+  const loadMovimientos = useCallback(async () => {
     const data = await getMovimientos()
     const cats = await getCategorias()
     const walletsData = await getWallets()
     setMovimientos(data.sort((a, b) => b.id - a.id))
     setCategorias(cats)
     setWallets(walletsData)
-  }
+  }, [])
 
   useEffect(() => {
     const init = async () => {
@@ -198,20 +198,20 @@ export default function MovimientosPage() {
     })
   }, [movimientos, filterType, filterWallet, filterCategory])
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setFilterType('all')
     setFilterWallet('all')
     setFilterCategory('all')
-  }
+  }, [])
 
-  const handleDelete = async (id) => {
+  const handleDelete = useCallback(async (id) => {
     if (!confirm('¿Eliminar este movimiento?')) return
     vibrate(50)
     await deleteMovimiento(id)
     await loadMovimientos()
-  }
+  }, [loadMovimientos])
 
-  const handleEdit = (mov) => {
+  const handleEdit = useCallback((mov) => {
     setEditModal(mov)
     setEditForm({
       monto: mov.monto || '',
@@ -221,9 +221,9 @@ export default function MovimientosPage() {
       fecha: mov.fecha || new Date().toISOString().slice(0, 10),
       recurrent: mov.recurrent || false,
     })
-  }
+  }, [])
 
-  const handleSaveEdit = async () => {
+  const handleSaveEdit = useCallback(async () => {
     if (!editModal) return
 
     const updates = {
@@ -240,9 +240,9 @@ export default function MovimientosPage() {
 
     setEditModal(null)
     await loadMovimientos()
-  }
+  }, [editModal, editForm, loadMovimientos])
 
-  const handleDuplicate = async (mov) => {
+  const handleDuplicate = useCallback(async (mov) => {
     const duplicate = {
       fecha: new Date().toISOString().slice(0, 10),
       tipo: mov.tipo,
@@ -259,13 +259,13 @@ export default function MovimientosPage() {
     }
     await loadMovimientos()
     setEditModal(null)
-  }
+  }, [loadMovimientos])
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setEditModal(null)
-  }
+  }, [])
 
-  const handleOpenAddModal = () => {
+  const handleOpenAddModal = useCallback(() => {
     setShowAddModal(true)
     // Preseleccionar: 1) Primary wallet, 2) Wallet más frecuente, 3) Efectivo
     const suggestedWallet = wallets.find(w => w.is_primary)?.wallet || mostFrequentWallet || 'Efectivo'
@@ -278,26 +278,30 @@ export default function MovimientosPage() {
       fecha: new Date().toISOString().slice(0, 10),
       recurrent: false,
     })
-  }
+  }, [wallets, mostFrequentWallet])
 
   // Detectar categoría automáticamente al escribir descripción
-  const handleDescriptionChange = (value) => {
-    setAddForm({ ...addForm, motivo: value })
+  const handleDescriptionChange = useCallback((value) => {
+    setAddForm(prev => {
+      const newForm = { ...prev, motivo: value }
 
-    // Si no hay categoría seleccionada, detectar automáticamente
-    if (!addForm.categoria && value.length >= 3) {
-      const detectedCategory = detectCategoryFromDescription(value)
-      if (detectedCategory) {
-        setAddForm({ ...addForm, motivo: value, categoria: detectedCategory })
+      // Si no hay categoría seleccionada, detectar automáticamente
+      if (!prev.categoria && value.length >= 3) {
+        const detectedCategory = detectCategoryFromDescription(value)
+        if (detectedCategory) {
+          newForm.categoria = detectedCategory
+        }
       }
-    }
-  }
 
-  const handleCloseAddModal = () => {
+      return newForm
+    })
+  }, [])
+
+  const handleCloseAddModal = useCallback(() => {
     setShowAddModal(false)
-  }
+  }, [])
 
-  const handleAddSubmit = async () => {
+  const handleAddSubmit = useCallback(async () => {
     if (!addForm.monto) return
 
     setLastActionSignal(null)
@@ -322,7 +326,7 @@ export default function MovimientosPage() {
     await loadMovimientos()
 
     setLastActionSignal('movement_created')
-  }
+  }, [addForm, loadMovimientos])
 
   // Autocompletar descripción cuando cambia categoría
   const handleCategoryChange = (categoria, isAddForm = true) => {

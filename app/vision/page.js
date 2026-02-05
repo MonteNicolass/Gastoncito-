@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { initDB, getMovimientos, getLifeEntries, getCategorias, getGoals, getWallets } from '@/lib/storage'
 import { getAllOverviewData } from '@/lib/overview-insights'
 import { getAllBehaviorInsights } from '@/lib/insights/behaviorInsights'
@@ -19,11 +19,7 @@ export default function VisionGeneralPage() {
   const [data, setData] = useState(null)
   const [alerts, setAlerts] = useState([])
 
-  useEffect(() => {
-    loadOverview()
-  }, [])
-
-  async function loadOverview() {
+  const loadOverview = useCallback(async () => {
     try {
       await initDB()
       const movimientos = await getMovimientos()
@@ -44,39 +40,43 @@ export default function VisionGeneralPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const formatAmount = (amount) => {
+  useEffect(() => {
+    loadOverview()
+  }, [loadOverview])
+
+  const formatAmount = useCallback((amount) => {
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
       currency: 'ARS',
       minimumFractionDigits: 0,
     }).format(amount)
-  }
+  }, [])
 
-  const getTrendIcon = (trend) => {
+  const getTrendIcon = useCallback((trend) => {
     if (trend === 'up') return '↑'
     if (trend === 'down') return '↓'
     return '→'
-  }
+  }, [])
 
-  const getTrendColor = (trend) => {
+  const getTrendColor = useCallback((trend) => {
     if (trend === 'up') return 'text-red-600 dark:text-red-400'
     if (trend === 'down') return 'text-green-600 dark:text-green-400'
     return 'text-zinc-600 dark:text-zinc-400'
-  }
+  }, [])
 
-  const getMentalTrendText = (trend) => {
+  const getMentalTrendText = useCallback((trend) => {
     if (trend === 'improving') return 'Mejorando'
     if (trend === 'declining') return 'Bajando'
     return 'Estable'
-  }
+  }, [])
 
-  const getMentalTrendColor = (trend) => {
+  const getMentalTrendColor = useCallback((trend) => {
     if (trend === 'improving') return 'text-green-600 dark:text-green-400'
     if (trend === 'declining') return 'text-red-600 dark:text-red-400'
     return 'text-zinc-600 dark:text-zinc-400'
-  }
+  }, [])
 
   if (loading) {
     return (

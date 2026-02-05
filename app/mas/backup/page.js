@@ -1,63 +1,87 @@
 'use client'
 
-import { useState } from 'react'
-import { exportMovimientosJSON, exportMovimientosCSV, exportBackupJSON, importBackupJSON, clearAll } from '@/lib/storage'
+import { useState, useEffect } from 'react'
+import { initDB, getMovimientos, getWallets, getGoals, clearAll } from '@/lib/storage'
+import { exportMovimientosCSV, exportBilleterasCSV, exportPresupuestosCSV, exportObjetivosCSV } from '@/lib/exports'
+import { createBackup, downloadBackup, restoreBackup, readBackupFile } from '@/lib/backup'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
+import Select from '@/components/ui/Select'
+
+function getBudgetsFromLocalStorage() {
+  if (typeof window === 'undefined') return []
+  const data = localStorage.getItem('gaston_budgets')
+  return data ? JSON.parse(data) : []
+}
 
 export default function BackupPage() {
   const [isProcessing, setIsProcessing] = useState(false)
+  const [db, setDb] = useState(null)
+  const [rangeType, setRangeType] = useState('all')
+  const [customStart, setCustomStart] = useState('')
+  const [customEnd, setCustomEnd] = useState('')
 
-  const handleExportJSON = async () => {
+  useEffect(() => {
+    initDB().then(setDb)
+  }, [])
+
+  const handleExportMovimientosCSV = async () => {
+    if (!db) return
     setIsProcessing(true)
     try {
-      const json = await exportMovimientosJSON()
-      const blob = new Blob([json], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `gaston-movimientos-${new Date().toISOString().split('T')[0]}.json`
-      a.click()
-      URL.revokeObjectURL(url)
+      const movimientos = await getMovimientos()
+      exportMovimientosCSV(movimientos, rangeType, customStart, customEnd)
     } finally {
       setIsProcessing(false)
     }
   }
 
-  const handleExportCSV = async () => {
+  const handleExportBilleterasCSV = async () => {
+    if (!db) return
     setIsProcessing(true)
     try {
-      const csv = await exportMovimientosCSV()
-      const blob = new Blob([csv], { type: 'text/csv' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `gaston-movimientos-${new Date().toISOString().split('T')[0]}.csv`
-      a.click()
-      URL.revokeObjectURL(url)
+      const wallets = await getWallets()
+      exportBilleterasCSV(wallets)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleExportPresupuestosCSV = () => {
+    setIsProcessing(true)
+    try {
+      const budgets = getBudgetsFromLocalStorage()
+      exportPresupuestosCSV(budgets)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleExportObjetivosCSV = async () => {
+    if (!db) return
+    setIsProcessing(true)
+    try {
+      const goals = await getGoals()
+      exportObjetivosCSV(goals)
     } finally {
       setIsProcessing(false)
     }
   }
 
   const handleExportBackup = async () => {
+    if (!db) return
     setIsProcessing(true)
     try {
-      const backup = await exportBackupJSON()
-      const blob = new Blob([backup], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `gaston-backup-${new Date().toISOString().split('T')[0]}.json`
-      a.click()
-      URL.revokeObjectURL(url)
+      const backup = await createBackup(db)
+      downloadBackup(backup)
     } finally {
       setIsProcessing(false)
     }
   }
 
   const handleImportBackup = async () => {
+    if (!db) return
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = '.json'
@@ -69,8 +93,8 @@ export default function BackupPage() {
 
       setIsProcessing(true)
       try {
-        const text = await file.text()
-        await importBackupJSON(text)
+        const backupData = await readBackupFile(file)
+        await restoreBackup(db, backupData)
         alert('Backup importado exitosamente. La página se recargará.')
         window.location.reload()
       } catch (error) {
@@ -103,31 +127,93 @@ export default function BackupPage() {
       <TopBar title="Backup & Datos" backHref="/mas" />
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {/* Exportar movimientos */}
+        {/* Exportar CSV */}
         <div className="space-y-2">
           <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1">
-            Exportar movimientos
+            Exportar CSV
           </h2>
-          <Card className="p-4 space-y-2">
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
-              Descarga solo los movimientos en formato JSON o CSV
+          <Card className="p-4 space-y-3">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              Descarga tus datos en formato CSV para Excel o Google Sheets
             </p>
-            <Button
-              onClick={handleExportJSON}
-              disabled={isProcessing}
-              variant="ghost"
-              className="w-full justify-start"
-            >
-              📄 Exportar JSON
-            </Button>
-            <Button
-              onClick={handleExportCSV}
-              disabled={isProcessing}
-              variant="ghost"
-              className="w-full justify-start"
-            >
-              📊 Exportar CSV
-            </Button>
+
+            {/* Selector de rango para movimientos */}
+            <div className="space-y-2 pt-2 border-t border-zinc-200 dark:border-zinc-700">
+              <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                Rango de fechas (solo para Movimientos)
+              </p>
+              <Select
+                value={rangeType}
+                onChange={(e) => setRangeType(e.target.value)}
+              >
+                <option value="all">Todo</option>
+                <option value="month">Este mes</option>
+                <option value="custom">Personalizado</option>
+              </Select>
+
+              {rangeType === 'custom' && (
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs text-zinc-600 dark:text-zinc-400 mb-1">
+                      Desde
+                    </label>
+                    <input
+                      type="date"
+                      value={customStart}
+                      onChange={(e) => setCustomStart(e.target.value)}
+                      className="w-full px-3 py-2 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-zinc-600 dark:text-zinc-400 mb-1">
+                      Hasta
+                    </label>
+                    <input
+                      type="date"
+                      value={customEnd}
+                      onChange={(e) => setCustomEnd(e.target.value)}
+                      className="w-full px-3 py-2 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Botones de exportación */}
+            <div className="space-y-2 pt-2 border-t border-zinc-200 dark:border-zinc-700">
+              <Button
+                onClick={handleExportMovimientosCSV}
+                disabled={isProcessing || !db}
+                variant="ghost"
+                className="w-full justify-start"
+              >
+                💸 Exportar Movimientos
+              </Button>
+              <Button
+                onClick={handleExportBilleterasCSV}
+                disabled={isProcessing || !db}
+                variant="ghost"
+                className="w-full justify-start"
+              >
+                👛 Exportar Billeteras
+              </Button>
+              <Button
+                onClick={handleExportPresupuestosCSV}
+                disabled={isProcessing}
+                variant="ghost"
+                className="w-full justify-start"
+              >
+                📊 Exportar Presupuestos
+              </Button>
+              <Button
+                onClick={handleExportObjetivosCSV}
+                disabled={isProcessing || !db}
+                variant="ghost"
+                className="w-full justify-start"
+              >
+                🎯 Exportar Objetivos
+              </Button>
+            </div>
           </Card>
         </div>
 
@@ -138,7 +224,7 @@ export default function BackupPage() {
           </h2>
           <Card className="p-4">
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
-              Incluye movimientos, saldos, billeteras, categorías, reglas, suscripciones y configuraciones
+              Incluye todo: movimientos, billeteras, presupuestos, objetivos, categorías, reglas, suscripciones, notas, vida (mental/físico) y configuraciones
             </p>
             <div className="space-y-2">
               <Button
