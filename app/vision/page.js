@@ -92,18 +92,19 @@ export default function VisionGeneralPage() {
 
         {/* Money */}
         {data?.money && (
-          <Card className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">💰 Money</div>
-                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                  Gasto del mes
-                </h3>
+          <a href="/money">
+            <Card className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800 hover:shadow-md transition-shadow cursor-pointer">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">💰 Money</div>
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                    Gasto del mes
+                  </h3>
+                </div>
+                <div className={`text-2xl font-bold ${getTrendColor(data.money.trend)}`}>
+                  {getTrendIcon(data.money.trend)}
+                </div>
               </div>
-              <div className={`text-2xl font-bold ${getTrendColor(data.money.trend)}`}>
-                {getTrendIcon(data.money.trend)}
-              </div>
-            </div>
 
             <div className="space-y-2">
               <div className="flex justify-between items-baseline">
@@ -140,20 +141,22 @@ export default function VisionGeneralPage() {
                 </div>
               )}
             </div>
-          </Card>
+            </Card>
+          </a>
         )}
 
         {/* Mental */}
         {data?.mental && data.mental.average7d > 0 && (
-          <Card className="p-4 bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-950/20 dark:to-violet-950/20 border-purple-200 dark:border-purple-800">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">🧠 Mental</div>
-                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                  Últimos 7 días
-                </h3>
+          <a href="/mental">
+            <Card className="p-4 bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-950/20 dark:to-violet-950/20 border-purple-200 dark:border-purple-800 hover:shadow-md transition-shadow cursor-pointer">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">🧠 Mental</div>
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                    Últimos 7 días
+                  </h3>
+                </div>
               </div>
-            </div>
 
             <div className="space-y-2">
               <div className="flex justify-between items-baseline">
@@ -174,20 +177,22 @@ export default function VisionGeneralPage() {
                 {data.mental.count} registros
               </div>
             </div>
-          </Card>
+            </Card>
+          </a>
         )}
 
         {/* Físico */}
         {data?.physical && (
-          <Card className="p-4 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border-orange-200 dark:border-orange-800">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">💪 Físico</div>
-                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                  Esta semana
-                </h3>
+          <a href="/fisico">
+            <Card className="p-4 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border-orange-200 dark:border-orange-800 hover:shadow-md transition-shadow cursor-pointer">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">💪 Físico</div>
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                    Esta semana
+                  </h3>
+                </div>
               </div>
-            </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -204,12 +209,14 @@ export default function VisionGeneralPage() {
                 </div>
               </div>
             </div>
-          </Card>
+            </Card>
+          </a>
         )}
 
         {/* Objetivos */}
         {data?.goals && data.goals.total > 0 && (
-          <Card className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 border-blue-200 dark:border-blue-800">
+          <a href="/objetivos">
+            <Card className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 border-blue-200 dark:border-blue-800 hover:shadow-md transition-shadow cursor-pointer">
             <div className="flex items-start justify-between mb-3">
               <div>
                 <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">🎯 Objetivos</div>
@@ -241,7 +248,8 @@ export default function VisionGeneralPage() {
                 </div>
               )}
             </div>
-          </Card>
+            </Card>
+          </a>
         )}
 
         {/* Comportamiento */}

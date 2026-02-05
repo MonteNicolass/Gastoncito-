@@ -28,6 +28,18 @@ const CATEGORY_SUGGESTIONS = {
   'Otro': []
 }
 
+// Keywords para detección automática de categoría
+const CATEGORY_KEYWORDS = {
+  'Comida': ['almuerzo', 'cena', 'desayuno', 'snack', 'café', 'delivery', 'rappi', 'pedidosya', 'comida', 'restaurant', 'resto', 'mcdonald', 'burger', 'pizza', 'empanadas'],
+  'Transporte': ['taxi', 'uber', 'cabify', 'colectivo', 'subte', 'nafta', 'estacionamiento', 'peaje', 'tren', 'bondi'],
+  'Suscripciones': ['netflix', 'spotify', 'youtube', 'icloud', 'google drive', 'amazon prime', 'disney', 'hbo', 'chatgpt', 'premium'],
+  'Ocio': ['cine', 'teatro', 'bar', 'boliche', 'concierto', 'juegos', 'steam', 'playstation', 'xbox', 'entretenimiento'],
+  'Servicios': ['luz', 'gas', 'agua', 'internet', 'cable', 'telefonía', 'edesur', 'metrogas', 'telecom', 'movistar'],
+  'Compras': ['ropa', 'zapatillas', 'electrónica', 'muebles', 'deco', 'mercadolibre', 'amazon', 'tienda'],
+  'Salud': ['médico', 'dentista', 'farmacia', 'gimnasio', 'terapia', 'doctor', 'consulta', 'medicamento'],
+  'Educación': ['curso', 'libro', 'universidad', 'colegio', 'taller', 'clase', 'educación', 'capacitación']
+}
+
 export default function MovimientosPage() {
   const [movimientos, setMovimientos] = useState([])
   const [wallets, setWallets] = useState([])
@@ -96,6 +108,69 @@ export default function MovimientosPage() {
     wallets.forEach(w => set.add(w.wallet))
     return Array.from(set).sort()
   }, [movimientos, wallets])
+
+  // Calcular billetera más frecuente (últimos 30 días)
+  const mostFrequentWallet = useMemo(() => {
+    const now = new Date()
+    const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+
+    const recentMovs = movimientos.filter(m => {
+      const fecha = new Date(m.fecha)
+      return fecha >= last30Days
+    })
+
+    const walletCount = {}
+    recentMovs.forEach(m => {
+      if (m.metodo) walletCount[m.metodo] = (walletCount[m.metodo] || 0) + 1
+    })
+
+    const sorted = Object.entries(walletCount).sort((a, b) => b[1] - a[1])
+    return sorted.length > 0 ? sorted[0][0] : null
+  }, [movimientos])
+
+  // Calcular promedio por categoría para detectar gastos atípicos
+  const categoryAverages = useMemo(() => {
+    const categoryTotals = {}
+    const categoryCounts = {}
+
+    movimientos.filter(m => m.tipo === 'gasto' && m.categoria).forEach(m => {
+      const cat = m.categoria
+      categoryTotals[cat] = (categoryTotals[cat] || 0) + m.monto
+      categoryCounts[cat] = (categoryCounts[cat] || 0) + 1
+    })
+
+    const averages = {}
+    Object.keys(categoryTotals).forEach(cat => {
+      averages[cat] = categoryTotals[cat] / categoryCounts[cat]
+    })
+
+    return averages
+  }, [movimientos])
+
+  // Detectar categoría automáticamente basada en descripción
+  const detectCategoryFromDescription = (description) => {
+    if (!description) return null
+
+    const normalizedDesc = description.toLowerCase().trim()
+
+    for (const [category, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
+      for (const keyword of keywords) {
+        if (normalizedDesc.includes(keyword)) {
+          return category
+        }
+      }
+    }
+
+    return null
+  }
+
+  // Verificar si un movimiento es gasto atípico (>2x promedio)
+  const isAtypicalSpending = (mov) => {
+    if (mov.tipo !== 'gasto' || !mov.categoria) return false
+    const avg = categoryAverages[mov.categoria]
+    if (!avg) return false
+    return mov.monto > avg * 2
+  }
 
   const categories = useMemo(() => {
     const set = new Set()
@@ -192,15 +267,30 @@ export default function MovimientosPage() {
 
   const handleOpenAddModal = () => {
     setShowAddModal(true)
+    // Preseleccionar: 1) Primary wallet, 2) Wallet más frecuente, 3) Efectivo
+    const suggestedWallet = wallets.find(w => w.is_primary)?.wallet || mostFrequentWallet || 'Efectivo'
     setAddForm({
       monto: '',
       motivo: '',
       tipo: 'gasto',
-      metodo: wallets.find(w => w.is_primary)?.wallet || 'Efectivo',
+      metodo: suggestedWallet,
       categoria: '',
       fecha: new Date().toISOString().slice(0, 10),
       recurrent: false,
     })
+  }
+
+  // Detectar categoría automáticamente al escribir descripción
+  const handleDescriptionChange = (value) => {
+    setAddForm({ ...addForm, motivo: value })
+
+    // Si no hay categoría seleccionada, detectar automáticamente
+    if (!addForm.categoria && value.length >= 3) {
+      const detectedCategory = detectCategoryFromDescription(value)
+      if (detectedCategory) {
+        setAddForm({ ...addForm, motivo: value, categoria: detectedCategory })
+      }
+    }
   }
 
   const handleCloseAddModal = () => {
@@ -386,7 +476,12 @@ export default function MovimientosPage() {
                     )}
                     {mov.recurrent && (
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">
-                        Recurrente
+                        🔄 Recurrente
+                      </span>
+                    )}
+                    {isAtypicalSpending(mov) && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300">
+                        ⚠️ Gasto alto
                       </span>
                     )}
                   </div>
@@ -615,37 +710,51 @@ export default function MovimientosPage() {
                   </>
                 )}
               </Select>
-              <Select
-                label="Categoría"
-                value={addForm.categoria}
-                onChange={(e) => handleCategoryChange(e.target.value, true)}
-              >
-                <option value="">Sin categoría</option>
-                <option value="Comida">Comida</option>
-                <option value="Transporte">Transporte</option>
-                <option value="Suscripciones">Suscripciones</option>
-                <option value="Ocio">Ocio</option>
-                <option value="Servicios">Servicios</option>
-                <option value="Compras">Compras</option>
-                <option value="Salud">Salud</option>
-                <option value="Educación">Educación</option>
-                <option value="Otro">Otro</option>
-              </Select>
+              <div>
+                <Select
+                  label="Categoría"
+                  value={addForm.categoria}
+                  onChange={(e) => handleCategoryChange(e.target.value, true)}
+                >
+                  <option value="">Sin categoría</option>
+                  <option value="Comida">Comida</option>
+                  <option value="Transporte">Transporte</option>
+                  <option value="Suscripciones">Suscripciones</option>
+                  <option value="Ocio">Ocio</option>
+                  <option value="Servicios">Servicios</option>
+                  <option value="Compras">Compras</option>
+                  <option value="Salud">Salud</option>
+                  <option value="Educación">Educación</option>
+                  <option value="Otro">Otro</option>
+                </Select>
+                {addForm.categoria && addForm.motivo && (
+                  <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                    ✓ Detectada automáticamente
+                  </p>
+                )}
+              </div>
               <Input
                 label="Fecha"
                 type="date"
                 value={addForm.fecha}
                 onChange={(e) => setAddForm({ ...addForm, fecha: e.target.value })}
               />
-              <Input
-                label="Descripción"
-                placeholder={addForm.categoria && CATEGORY_SUGGESTIONS[addForm.categoria]?.length > 0
-                  ? `Ej: ${CATEGORY_SUGGESTIONS[addForm.categoria].join(', ')}`
-                  : "Ej: Café, taxi, etc."}
-                value={addForm.motivo}
-                onChange={(e) => setAddForm({ ...addForm, motivo: e.target.value })}
-                data-testid="manual-motivo-input"
-              />
+              <div>
+                <Input
+                  label="Descripción"
+                  placeholder={addForm.categoria && CATEGORY_SUGGESTIONS[addForm.categoria]?.length > 0
+                    ? `Ej: ${CATEGORY_SUGGESTIONS[addForm.categoria].join(', ')}`
+                    : "Ej: Café, taxi, uber..."}
+                  value={addForm.motivo}
+                  onChange={(e) => handleDescriptionChange(e.target.value)}
+                  data-testid="manual-motivo-input"
+                />
+                {!addForm.categoria && (
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                    💡 Escribí y detectaré la categoría automáticamente
+                  </p>
+                )}
+              </div>
               {addForm.categoria && CATEGORY_SUGGESTIONS[addForm.categoria]?.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {CATEGORY_SUGGESTIONS[addForm.categoria].slice(0, 4).map(suggestion => (
