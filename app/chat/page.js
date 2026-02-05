@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { initDB, addMovimiento, updateSaldo, addNote, addLifeEntry, deleteMovimiento, deleteLifeEntry, deleteNote } from '@/lib/storage'
+import { initDB, addMovimiento, updateSaldo, addNote, addLifeEntry, deleteMovimiento, deleteLifeEntry, deleteNote, getMovimientos } from '@/lib/storage'
 import { getPriorityAlertForChat, actOnAlert } from '@/lib/alerts'
+import { runRatoneandoEngine } from '@/lib/ratoneando'
+import { getRatoneandoAlertForChat } from '@/lib/alerts/ratoneando-alerts'
 import TopBar from '@/components/ui/TopBar'
 import Button from '@/components/ui/Button'
 import {
@@ -16,7 +18,8 @@ import {
   Sparkles,
   AlertTriangle,
   Heart,
-  Bell
+  Bell,
+  PiggyBank
 } from 'lucide-react'
 
 // Ejemplos clickeables para el estado inicial
@@ -34,34 +37,52 @@ export default function ChatPage() {
   const [showUndo, setShowUndo] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
   const [alertContext, setAlertContext] = useState(null)
+  const [ratoneandoContext, setRatoneandoContext] = useState(null)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
   const undoTimerRef = useRef(null)
 
   useEffect(() => {
-    initDB()
+    async function loadContext() {
+      await initDB()
 
-    // Check for prefill from insight actions
-    if (typeof window !== 'undefined') {
-      const prefill = localStorage.getItem('chat_prefill')
-      if (prefill) {
-        setInput(prefill)
-        localStorage.removeItem('chat_prefill')
+      // Check for prefill from insight actions
+      if (typeof window !== 'undefined') {
+        const prefill = localStorage.getItem('chat_prefill')
+        if (prefill) {
+          setInput(prefill)
+          localStorage.removeItem('chat_prefill')
+        }
+
+        // Load priority alert for context
+        const priorityAlert = getPriorityAlertForChat()
+        if (priorityAlert) {
+          setAlertContext(priorityAlert)
+        }
+
+        // Load ratoneando context for savings opportunities
+        try {
+          const movimientos = await getMovimientos()
+          const ratoneandoResult = await runRatoneandoEngine(movimientos)
+          const ratoneandoAlert = getRatoneandoAlertForChat(ratoneandoResult)
+          if (ratoneandoAlert && !priorityAlert) {
+            // Only show ratoneando if no higher priority alert
+            setRatoneandoContext(ratoneandoAlert)
+          }
+        } catch (e) {
+          console.warn('Could not load ratoneando context:', e)
+        }
       }
 
-      // Load priority alert for context
-      const priorityAlert = getPriorityAlertForChat()
-      if (priorityAlert) {
-        setAlertContext(priorityAlert)
-      }
+      // Autofocus on input
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus()
+        }
+      }, 100)
     }
 
-    // Autofocus on input
-    setTimeout(() => {
-      if (inputRef.current) {
-        inputRef.current.focus()
-      }
-    }, 100)
+    loadContext()
   }, [])
 
   useEffect(() => {
@@ -443,6 +464,39 @@ export default function ChatPage() {
                         className="mt-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 transition-all active:scale-95"
                       >
                         {alertContext.action.label}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Ratoneando Context Message (savings opportunity) */}
+            {ratoneandoContext && !alertContext && !hasMessages && (
+              <div className="flex gap-3 mt-2">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-500/20">
+                  <PiggyBank className="w-4 h-4 text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="rounded-2xl rounded-tl-md px-4 py-3 inline-block max-w-[280px] bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800">
+                    <p className="text-sm text-zinc-900 dark:text-zinc-100 leading-relaxed font-medium">
+                      {ratoneandoContext.title}
+                    </p>
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
+                      {ratoneandoContext.message}
+                    </p>
+                    {ratoneandoContext.action && (
+                      <button
+                        onClick={() => {
+                          // Navigate to insights or dismiss
+                          if (ratoneandoContext.action.type === 'show_recommendation') {
+                            window.location.href = '/money/insights'
+                          }
+                          setRatoneandoContext(null)
+                        }}
+                        className="mt-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 dark:bg-emerald-500 text-white transition-all active:scale-95"
+                      >
+                        {ratoneandoContext.action.label}
                       </button>
                     )}
                   </div>

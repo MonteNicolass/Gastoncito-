@@ -172,22 +172,24 @@ export default function ResumenPage() {
       // Build user context for proactive suggestions
       const userContext = await buildUserContext({ lifeEntries, goals })
 
-      // Run the unified alert engine
+      // Run ratoneando engine FIRST for savings insights (needed by alert engine)
+      const ratoneandoResult = await runRatoneandoEngine(movimientos)
+      const savingsSummary = getSavingsSummary(ratoneandoResult)
+
+      // Run the unified alert engine (includes ratoneando alerts)
       const alertResult = await runAlertEngine({
         movimientos,
         lifeEntries,
         budgets,
         subscriptions,
         rates,
-        context: userContext
+        context: userContext,
+        ratoneandoResult,
+        patterns: ratoneandoResult?.patterns
       })
 
       const allAlerts = alertResult.alerts.slice(0, 3)
       const allSuggestions = alertResult.suggestions
-
-      // Run ratoneando engine for savings insights
-      const ratoneandoResult = await runRatoneandoEngine(movimientos)
-      const savingsSummary = getSavingsSummary(ratoneandoResult)
 
       const spendingByMood = getSpendingByMood(movimientos, lifeEntries, 30)
       const moodByExercise = getMoodByExercise(lifeEntries, 30)
