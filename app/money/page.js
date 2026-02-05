@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { initDB, getMovimientos } from '@/lib/storage'
+import { initDB, getMovimientos, getWallets, addMovimiento, updateSaldo } from '@/lib/storage'
 import { seedPredefinedCategories } from '@/lib/seed-categories'
+import { getSpendingAwareness, getRecentShortcuts, getMonthComparisonData, getTopCategoriesData } from '@/lib/gasti'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import ProgressRing from '@/components/ui/ProgressRing'
+import QuickAddModal from '@/components/ui/QuickAddModal'
 import {
   Wallet,
   CreditCard,
@@ -21,7 +23,9 @@ import {
   CheckCircle,
   LineChart,
   ArrowRightLeft,
-  Plus
+  Plus,
+  Repeat,
+  Zap
 } from 'lucide-react'
 
 function getBudgetsFromLocalStorage() {
@@ -34,6 +38,12 @@ export default function MoneyPage() {
   const router = useRouter()
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [showQuickAdd, setShowQuickAdd] = useState(false)
+  const [wallets, setWallets] = useState([])
+  const [shortcuts, setShortcuts] = useState([])
+  const [spendingAwareness, setSpendingAwareness] = useState(null)
+  const [monthComparison, setMonthComparison] = useState(null)
+  const [topCategories, setTopCategories] = useState(null)
 
   useEffect(() => {
     initDB().then(() => {
@@ -46,6 +56,21 @@ export default function MoneyPage() {
     try {
       const movimientos = await getMovimientos()
       const budgets = getBudgetsFromLocalStorage()
+      const walletsData = await getWallets()
+      setWallets(walletsData)
+
+      // Load gasti data
+      const shortcutsData = getRecentShortcuts(movimientos, 4)
+      setShortcuts(shortcutsData)
+
+      const awarenessData = getSpendingAwareness(movimientos)
+      setSpendingAwareness(awarenessData)
+
+      const comparisonData = getMonthComparisonData(movimientos)
+      setMonthComparison(comparisonData)
+
+      const categoriesData = getTopCategoriesData(movimientos, 5)
+      setTopCategories(categoriesData)
 
       const now = new Date()
       const currentMonth = now.toISOString().slice(0, 7)
@@ -140,6 +165,23 @@ export default function MoneyPage() {
     if (score >= 50) return 'blue'
     if (score >= 30) return 'orange'
     return 'zinc'
+  }
+
+  async function handleQuickAdd(gasto) {
+    try {
+      await addMovimiento({
+        fecha: gasto.fecha,
+        tipo: gasto.tipo,
+        monto: gasto.monto,
+        motivo: gasto.motivo,
+        metodo: gasto.metodo,
+        category_id: gasto.category_id
+      })
+      await updateSaldo(gasto.metodo, -gasto.monto)
+      loadStats()
+    } catch (error) {
+      console.error('Error adding quick expense:', error)
+    }
   }
 
   if (loading) {
@@ -238,22 +280,132 @@ export default function MoneyPage() {
           )}
         </div>
 
-        {/* Quick action */}
+        {/* Quick action - Opens QuickAddModal */}
         <button
-          onClick={() => router.push('/chat')}
+          onClick={() => setShowQuickAdd(true)}
           className="w-full p-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 rounded-2xl transition-all shadow-lg shadow-emerald-500/20 active:scale-[0.98] flex items-center justify-between"
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-              <Plus className="w-5 h-5 text-white" />
+              <Zap className="w-5 h-5 text-white" />
             </div>
             <div className="text-left">
-              <p className="text-white font-semibold text-sm">Registrar movimiento</p>
-              <p className="text-emerald-200 text-xs">Gasto o ingreso</p>
+              <p className="text-white font-semibold text-sm">Gasto rápido</p>
+              <p className="text-emerald-200 text-xs">1 paso, sin confirmación</p>
             </div>
           </div>
           <ChevronRight className="w-5 h-5 text-white/60" />
         </button>
+
+        {/* Spending Awareness */}
+        {spendingAwareness && spendingAwareness.recentCount > 0 && (
+          <div className="p-4 rounded-2xl bg-white dark:bg-zinc-800/50 border border-zinc-200/60 dark:border-zinc-700/60">
+            <div className="flex items-center gap-2 mb-3">
+              <BarChart3 className="w-4 h-4 text-zinc-500" />
+              <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                Últimos 30 días
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+                  {spendingAwareness.recentCount}
+                </p>
+                <p className="text-xs text-zinc-500">gastos</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+                  {formatAmount(spendingAwareness.dailyAvg)}
+                </p>
+                <p className="text-xs text-zinc-500">prom/día</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+                  {spendingAwareness.peakDayName}
+                </p>
+                <p className="text-xs text-zinc-500">día pico</p>
+              </div>
+            </div>
+            {/* Mini bar chart by day of week */}
+            <div className="mt-4 flex items-end gap-1 h-8">
+              {spendingAwareness.byDayOfWeek.map((d, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                  <div
+                    className={`w-full rounded-t transition-all ${d.isMax ? 'bg-emerald-500' : 'bg-zinc-200 dark:bg-zinc-700'}`}
+                    style={{ height: `${Math.max(4, (d.count / Math.max(...spendingAwareness.byDayOfWeek.map(x => x.count))) * 32)}px` }}
+                  />
+                  <span className="text-[9px] text-zinc-400">{d.day}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Month Comparison Bars */}
+        {monthComparison && monthComparison.length > 0 && (
+          <div className="p-4 rounded-2xl bg-white dark:bg-zinc-800/50 border border-zinc-200/60 dark:border-zinc-700/60">
+            <div className="flex items-center gap-2 mb-3">
+              <TrendingUp className="w-4 h-4 text-zinc-500" />
+              <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                Comparación mensual
+              </span>
+            </div>
+            <div className="space-y-3">
+              {monthComparison.map((month, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <span className="text-xs text-zinc-500 w-10">{month.month}</span>
+                  <div className="flex-1 h-6 bg-zinc-100 dark:bg-zinc-700 rounded-lg overflow-hidden">
+                    <div
+                      className={`h-full rounded-lg transition-all ${
+                        i === monthComparison.length - 1 ? 'bg-emerald-500' : 'bg-zinc-300 dark:bg-zinc-600'
+                      }`}
+                      style={{ width: `${month.percentage}%` }}
+                    />
+                  </div>
+                  <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 w-16 text-right">
+                    {formatAmount(month.total)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Top Categories */}
+        {topCategories && topCategories.length > 0 && (
+          <div className="p-4 rounded-2xl bg-white dark:bg-zinc-800/50 border border-zinc-200/60 dark:border-zinc-700/60">
+            <div className="flex items-center gap-2 mb-3">
+              <Receipt className="w-4 h-4 text-zinc-500" />
+              <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                Top categorías del mes
+              </span>
+            </div>
+            <div className="space-y-2">
+              {topCategories.map((cat, i) => (
+                <div key={cat.id} className="flex items-center gap-3">
+                  <span className="text-xs text-zinc-400 w-4">{i + 1}</span>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 capitalize">
+                        {cat.name}
+                      </span>
+                      <span className="text-xs text-zinc-500">{cat.percentage}%</span>
+                    </div>
+                    <div className="h-1.5 bg-zinc-100 dark:bg-zinc-700 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-emerald-500 rounded-full transition-all"
+                        style={{ width: `${cat.barWidth}%` }}
+                      />
+                    </div>
+                  </div>
+                  <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 w-20 text-right">
+                    {formatAmount(cat.amount)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Navigation - Gestión */}
         <div className="space-y-2">
@@ -305,6 +457,15 @@ export default function MoneyPage() {
           </div>
         </div>
       </div>
+
+      {/* Quick Add Modal */}
+      <QuickAddModal
+        isOpen={showQuickAdd}
+        onClose={() => setShowQuickAdd(false)}
+        onAdd={handleQuickAdd}
+        shortcuts={shortcuts}
+        wallets={wallets}
+      />
     </div>
   )
 }

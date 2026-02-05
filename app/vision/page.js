@@ -10,6 +10,7 @@ import { runRatoneandoEngine, getSavingsSummary, learnFromGasto } from '@/lib/ra
 import { calculateMonthlyState, getDomainProgressions, getHistoricalTrend, getStateDisplay, saveProgressionToHistory, formatMonth } from '@/lib/progression'
 import { getMonthlyStats, getMonthlySummaryPayoff } from '@/lib/payoff'
 import { getDietInsights, initDietSystem, shouldShowDietFeatures } from '@/lib/dieta'
+import { getInsightsForVision, getCausalInsightForVision, getMonthComparisonData, getTopCategoriesData } from '@/lib/gasti'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import ProgressRing from '@/components/ui/ProgressRing'
@@ -64,6 +65,7 @@ export default function ResumenPage() {
   const [progressHistory, setProgressHistory] = useState(null)
   const [monthlyAchievements, setMonthlyAchievements] = useState(null)
   const [dietInsights, setDietInsights] = useState(null)
+  const [gastiInsights, setGastiInsights] = useState(null)
   const [showConfigModal, setShowConfigModal] = useState(false)
   const [expandedAlertId, setExpandedAlertId] = useState(null)
   const [widgetConfig, setWidgetConfig] = useState(() => {
@@ -276,6 +278,10 @@ export default function ResumenPage() {
       setProgressHistory(historyResult)
       setMonthlyAchievements(achievements)
       setDietInsights(dietInsightsResult)
+
+      // Load gasti insights (spending awareness, causal explanations)
+      const gastiResult = getInsightsForVision(movimientos, budgets)
+      setGastiInsights(gastiResult)
     } catch (error) {
       console.error('Error loading data:', error)
     } finally {
@@ -935,6 +941,71 @@ export default function ResumenPage() {
             </button>
           )}
         </div>
+
+        {/* Gasti Insights (Causal Explanations + Actionable) */}
+        {gastiInsights && gastiInsights.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1 flex items-center gap-2">
+              <Zap className="w-3 h-3" />
+              Patrones de gasto
+            </h3>
+            {gastiInsights.slice(0, 3).map((insight) => (
+              <div
+                key={insight.id}
+                className={`p-4 rounded-xl border transition-all ${
+                  insight.color === 'red' ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800' :
+                  insight.color === 'amber' ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800' :
+                  insight.color === 'emerald' ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800' :
+                  'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                    insight.color === 'red' ? 'bg-red-500/20' :
+                    insight.color === 'amber' ? 'bg-amber-500/20' :
+                    insight.color === 'emerald' ? 'bg-emerald-500/20' :
+                    'bg-blue-500/20'
+                  }`}>
+                    {insight.type === 'comparison' && <TrendingUp className={`w-4 h-4 ${insight.color === 'red' ? 'text-red-500' : insight.color === 'amber' ? 'text-amber-500' : insight.color === 'emerald' ? 'text-emerald-500' : 'text-blue-500'}`} />}
+                    {insight.type === 'pattern' && <BarChart3 className={`w-4 h-4 ${insight.color === 'red' ? 'text-red-500' : insight.color === 'amber' ? 'text-amber-500' : insight.color === 'emerald' ? 'text-emerald-500' : 'text-blue-500'}`} />}
+                    {insight.type === 'causal' && <Lightbulb className={`w-4 h-4 ${insight.color === 'red' ? 'text-red-500' : insight.color === 'amber' ? 'text-amber-500' : insight.color === 'emerald' ? 'text-emerald-500' : 'text-blue-500'}`} />}
+                    {!['comparison', 'pattern', 'causal'].includes(insight.type) && <Info className={`w-4 h-4 ${insight.color === 'red' ? 'text-red-500' : insight.color === 'amber' ? 'text-amber-500' : insight.color === 'emerald' ? 'text-emerald-500' : 'text-blue-500'}`} />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-medium ${
+                      insight.color === 'red' ? 'text-red-700 dark:text-red-300' :
+                      insight.color === 'amber' ? 'text-amber-700 dark:text-amber-300' :
+                      insight.color === 'emerald' ? 'text-emerald-700 dark:text-emerald-300' :
+                      'text-blue-700 dark:text-blue-300'
+                    }`}>
+                      {insight.title}
+                    </p>
+                    {insight.detail && (
+                      <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
+                        {insight.detail}
+                      </p>
+                    )}
+                    {insight.cta && (
+                      <button
+                        onClick={() => {
+                          if (insight.cta.action?.type === 'navigate') {
+                            router.push(insight.cta.action.href)
+                          } else if (insight.cta.action?.type === 'chat_prefill') {
+                            localStorage.setItem('chat_prefill', insight.cta.action.text || '')
+                            router.push('/chat')
+                          }
+                        }}
+                        className="mt-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 transition-all active:scale-95"
+                      >
+                        {insight.cta.label}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Cross Insights */}
         {widgetConfig.insights && crossInsights && (crossInsights.spendingByMood?.insight || crossInsights.moodByExercise?.insight) && (

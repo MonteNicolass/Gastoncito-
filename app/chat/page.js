@@ -8,6 +8,7 @@ import { getRatoneandoAlertForChat } from '@/lib/alerts/ratoneando-alerts'
 import { generatePayoff, calculatePayoffContext, updateMonthlyStats } from '@/lib/payoff'
 import { quickPriceCheck } from '@/lib/mira-precios'
 import { getDietSuggestionForChat, initDietSystem } from '@/lib/dieta'
+import { getChatContextSuggestion, recordAndProcess } from '@/lib/gasti'
 import TopBar from '@/components/ui/TopBar'
 import Button from '@/components/ui/Button'
 import {
@@ -87,6 +88,21 @@ export default function ChatPage() {
             const dietSuggestion = getDietSuggestionForChat(ratoneandoResult?.patterns)
             if (dietSuggestion) {
               setRatoneandoContext(dietSuggestion) // Reuse same context slot
+            } else {
+              // Try gasti context suggestion (spending insights)
+              const budgets = localStorage.getItem('gaston_budgets')
+              const parsedBudgets = budgets ? JSON.parse(budgets) : []
+              const gastiSuggestion = getChatContextSuggestion(movimientos, parsedBudgets)
+              if (gastiSuggestion) {
+                setRatoneandoContext({
+                  title: gastiSuggestion.message,
+                  message: gastiSuggestion.detail,
+                  action: gastiSuggestion.cta ? {
+                    type: 'show_recommendation',
+                    label: gastiSuggestion.cta.label || 'Ver más'
+                  } : null
+                })
+              }
             }
           }
         } catch (e) {
@@ -276,6 +292,16 @@ export default function ChatPage() {
         data: movimiento
       })
       showUndoToast()
+
+      // Record for pattern detection (gasti)
+      if (movimiento.tipo === 'gasto') {
+        const allMovimientos = await getMovimientos()
+        const processResult = await recordAndProcess(movimiento, allMovimientos)
+        // If pattern detected, could show suggestion (future enhancement)
+        if (processResult?.suggestion) {
+          console.log('Pattern suggestion:', processResult.suggestion)
+        }
+      }
 
       // Show payoff for expense/income
       if (movimiento.tipo === 'gasto') {
