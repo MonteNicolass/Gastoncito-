@@ -8,6 +8,21 @@ import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 
+// Opciones de billeteras (nombre = proveedor)
+const WALLET_OPTIONS = [
+  { value: 'Efectivo', label: 'Efectivo' },
+  { value: 'Mercado Pago', label: 'Mercado Pago' },
+  { value: 'Banco Nación', label: 'Banco Nación' },
+  { value: 'Banco Galicia', label: 'Banco Galicia' },
+  { value: 'BBVA', label: 'BBVA' },
+  { value: 'Santander', label: 'Santander' },
+  { value: 'Brubank', label: 'Brubank' },
+  { value: 'Ualá', label: 'Ualá' },
+  { value: 'Lemon', label: 'Lemon' },
+  { value: 'Binance', label: 'Binance' },
+  { value: 'Otro', label: 'Otro' }
+]
+
 export default function BilleterasPage() {
   const [wallets, setWallets] = useState([])
   const [showModal, setShowModal] = useState(false)
@@ -15,7 +30,6 @@ export default function BilleterasPage() {
   const [formData, setFormData] = useState({
     nombre: '',
     tipo: 'efectivo',
-    proveedor: 'efectivo',
     saldo: '',
     isPrimary: false,
     isHidden: false
@@ -42,7 +56,6 @@ export default function BilleterasPage() {
       setFormData({
         nombre: wallet.wallet,
         tipo: wallet.tipo || 'efectivo',
-        proveedor: wallet.proveedor || 'efectivo',
         saldo: wallet.saldo.toString(),
         isPrimary: wallet.is_primary || false,
         isHidden: wallet.is_hidden || false
@@ -52,7 +65,6 @@ export default function BilleterasPage() {
       setFormData({
         nombre: '',
         tipo: 'efectivo',
-        proveedor: 'efectivo',
         saldo: '',
         isPrimary: false,
         isHidden: false
@@ -68,13 +80,13 @@ export default function BilleterasPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!formData.nombre.trim() || formData.saldo === '') return
+    if (!formData.nombre || formData.saldo === '') return
 
     const walletData = {
-      wallet: formData.nombre.trim(),
+      wallet: formData.nombre,
       saldo: parseFloat(formData.saldo),
       tipo: formData.tipo,
-      proveedor: formData.proveedor,
+      proveedor: formData.nombre, // Proveedor = Nombre
       is_primary: formData.isPrimary,
       is_hidden: formData.isHidden
     }
@@ -142,11 +154,11 @@ export default function BilleterasPage() {
           </h2>
           {visibleWallets.length === 0 ? (
             <Card className="p-8 text-center">
-              <div className="text-3xl mb-3">💳</div>
-              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              <div className="text-4xl mb-4">💳</div>
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
                 Sin billeteras aún
-              </p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              </h3>
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">
                 Creá tu primera billetera arriba
               </p>
             </Card>
@@ -154,7 +166,7 @@ export default function BilleterasPage() {
             visibleWallets.map((w) => (
               <Card
                 key={w.wallet}
-                className="p-4"
+                className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
@@ -171,9 +183,9 @@ export default function BilleterasPage() {
                     <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">
                       {formatAmount(w.saldo)}
                     </div>
-                    {(w.tipo || w.proveedor) && (
-                      <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5">
-                        {w.proveedor || w.tipo}
+                    {w.tipo && (
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5 capitalize">
+                        {w.tipo.replace('_', ' ')}
                       </div>
                     )}
                   </div>
@@ -252,14 +264,19 @@ export default function BilleterasPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="p-4 space-y-3">
-              <Input
-                label="Nombre"
-                type="text"
-                placeholder="Ej: Efectivo, Mercado Pago"
+              <Select
+                label="Billetera"
                 value={formData.nombre}
                 onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                 required
-              />
+              >
+                <option value="">Seleccionar...</option>
+                {WALLET_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </Select>
 
               <Select
                 label="Tipo"
@@ -272,24 +289,6 @@ export default function BilleterasPage() {
                 <option value="tarjeta_debito">Tarjeta de débito</option>
                 <option value="virtual">Virtual</option>
                 <option value="crypto">Crypto</option>
-                <option value="otro">Otro</option>
-              </Select>
-
-              <Select
-                label="Banco / Proveedor"
-                value={formData.proveedor}
-                onChange={(e) => setFormData({ ...formData, proveedor: e.target.value })}
-              >
-                <option value="efectivo">Efectivo</option>
-                <option value="mercado_pago">Mercado Pago</option>
-                <option value="banco_nacion">Banco Nación</option>
-                <option value="banco_galicia">Banco Galicia</option>
-                <option value="bbva">BBVA</option>
-                <option value="santander">Santander</option>
-                <option value="brubank">Brubank</option>
-                <option value="uala">Ualá</option>
-                <option value="lemon">Lemon</option>
-                <option value="binance">Binance</option>
                 <option value="otro">Otro</option>
               </Select>
 

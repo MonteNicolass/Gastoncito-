@@ -62,6 +62,13 @@ export default function Home() {
       color: 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800'
     },
     {
+      name: 'Visión General',
+      path: '/vision',
+      icon: '📊',
+      desc: 'Resumen de todas tus áreas',
+      color: 'bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800'
+    },
+    {
       name: 'Money',
       path: '/money',
       icon: '💰',
