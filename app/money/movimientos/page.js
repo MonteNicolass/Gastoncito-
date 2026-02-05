@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { initDB, getMovimientos, deleteMovimiento, updateMovimiento, getCategorias, addMovimiento, updateSaldo } from '@/lib/storage'
+import { initDB, getMovimientos, deleteMovimiento, updateMovimiento, getCategorias, addMovimiento, updateSaldo, getWallets } from '@/lib/storage'
 import { seedPredefinedCategories } from '@/lib/seed-categories'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
@@ -15,8 +15,22 @@ const vibrate = (pattern) => {
   }
 }
 
+// Sugerencias de descripción por categoría
+const CATEGORY_SUGGESTIONS = {
+  'Comida': ['Almuerzo', 'Cena', 'Desayuno', 'Snack', 'Café', 'Delivery'],
+  'Transporte': ['Taxi', 'Uber', 'Colectivo', 'Subte', 'Nafta', 'Estacionamiento'],
+  'Suscripciones': ['Netflix', 'Spotify', 'YouTube Premium', 'iCloud', 'Google Drive'],
+  'Ocio': ['Cine', 'Teatro', 'Bar', 'Boliche', 'Concierto', 'Juegos'],
+  'Servicios': ['Luz', 'Gas', 'Agua', 'Internet', 'Cable', 'Telefonía'],
+  'Compras': ['Ropa', 'Zapatillas', 'Electrónica', 'Muebles', 'Deco'],
+  'Salud': ['Médico', 'Dentista', 'Farmacia', 'Gimnasio', 'Terapia'],
+  'Educación': ['Curso', 'Libro', 'Universidad', 'Colegio', 'Taller'],
+  'Otro': []
+}
+
 export default function MovimientosPage() {
   const [movimientos, setMovimientos] = useState([])
+  const [wallets, setWallets] = useState([])
   const [filterType, setFilterType] = useState('all')
   const [filterWallet, setFilterWallet] = useState('all')
   const [filterCategory, setFilterCategory] = useState('all')
@@ -35,7 +49,7 @@ export default function MovimientosPage() {
     monto: '',
     motivo: '',
     tipo: 'gasto',
-    metodo: 'efectivo',
+    metodo: 'Efectivo',
     categoria: '',
     fecha: new Date().toISOString().slice(0, 10),
     recurrent: false,
@@ -47,8 +61,10 @@ export default function MovimientosPage() {
   const loadMovimientos = async () => {
     const data = await getMovimientos()
     const cats = await getCategorias()
+    const walletsData = await getWallets()
     setMovimientos(data.sort((a, b) => b.id - a.id))
     setCategorias(cats)
+    setWallets(walletsData)
   }
 
   useEffect(() => {
@@ -69,15 +85,17 @@ export default function MovimientosPage() {
     return () => document.removeEventListener('click', handleClickOutside)
   }, [contextMenuId])
 
-  const wallets = useMemo(() => {
+  const walletNames = useMemo(() => {
     const set = new Set()
     movimientos.forEach((m) => {
       if (m.metodo) set.add(m.metodo)
       if (m.origen) set.add(m.origen)
       if (m.destino) set.add(m.destino)
     })
+    // Agregar billeteras del sistema
+    wallets.forEach(w => set.add(w.wallet))
     return Array.from(set).sort()
-  }, [movimientos])
+  }, [movimientos, wallets])
 
   const categories = useMemo(() => {
     const set = new Set()
@@ -178,7 +196,7 @@ export default function MovimientosPage() {
       monto: '',
       motivo: '',
       tipo: 'gasto',
-      metodo: 'efectivo',
+      metodo: wallets.find(w => w.is_primary)?.wallet || 'Efectivo',
       categoria: '',
       fecha: new Date().toISOString().slice(0, 10),
       recurrent: false,
@@ -192,7 +210,7 @@ export default function MovimientosPage() {
   const handleAddSubmit = async () => {
     if (!addForm.monto) return
 
-    setLastActionSignal(null) // Reset signal
+    setLastActionSignal(null)
 
     const movimiento = {
       fecha: addForm.fecha || new Date().toISOString().slice(0, 10),
@@ -213,7 +231,22 @@ export default function MovimientosPage() {
     setShowAddModal(false)
     await loadMovimientos()
 
-    setLastActionSignal('movement_created') // Set signal after everything is done
+    setLastActionSignal('movement_created')
+  }
+
+  // Autocompletar descripción cuando cambia categoría
+  const handleCategoryChange = (categoria, isAddForm = true) => {
+    if (isAddForm) {
+      setAddForm({ ...addForm, categoria })
+      // Si no hay motivo aún, sugerir uno
+      if (!addForm.motivo && CATEGORY_SUGGESTIONS[categoria] && CATEGORY_SUGGESTIONS[categoria].length > 0) {
+        setAddForm({ ...addForm, categoria, motivo: CATEGORY_SUGGESTIONS[categoria][0] })
+      } else {
+        setAddForm({ ...addForm, categoria })
+      }
+    } else {
+      setEditForm({ ...editForm, categoria })
+    }
   }
 
   const formatAmount = (amount) => {
@@ -277,7 +310,7 @@ export default function MovimientosPage() {
             className="text-xs py-2"
           >
             <option value="all">Billeteras</option>
-            {wallets.map((w) => (
+            {walletNames.map((w) => (
               <option key={w} value={w}>
                 {w}
               </option>
@@ -311,11 +344,15 @@ export default function MovimientosPage() {
       {/* Lista */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
         {filtered.length === 0 ? (
-          <Card className="p-6 text-center">
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <Card className="p-8 text-center">
+            <div className="text-4xl mb-4">💸</div>
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
+              {movimientos.length === 0 ? 'Sin movimientos aún' : 'Sin resultados'}
+            </h3>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
               {movimientos.length === 0
-                ? 'No hay movimientos registrados.'
-                : 'No hay movimientos con estos filtros.'}
+                ? 'Agregá tu primer movimiento arriba'
+                : 'No hay movimientos con estos filtros'}
             </p>
           </Card>
         ) : (
@@ -444,20 +481,18 @@ export default function MovimientosPage() {
                 onChange={(e) => setEditForm({ ...editForm, monto: e.target.value })}
               />
               <Select
-                label="Método de pago"
+                label="Billetera"
                 value={editForm.metodo}
                 onChange={(e) => setEditForm({ ...editForm, metodo: e.target.value })}
               >
-                <option value="Efectivo">Efectivo</option>
-                <option value="Débito">Débito</option>
-                <option value="Crédito">Crédito</option>
-                <option value="Transferencia">Transferencia</option>
-                <option value="Virtual">Virtual</option>
+                {walletNames.map(w => (
+                  <option key={w} value={w}>{w}</option>
+                ))}
               </Select>
               <Select
                 label="Categoría"
                 value={editForm.categoria}
-                onChange={(e) => setEditForm({ ...editForm, categoria: e.target.value })}
+                onChange={(e) => handleCategoryChange(e.target.value, false)}
               >
                 <option value="">Sin categoría</option>
                 <option value="Comida">Comida</option>
@@ -561,21 +596,29 @@ export default function MovimientosPage() {
                 <option value="movimiento">Movimiento</option>
               </Select>
               <Select
-                label="Método de pago"
+                label="Billetera"
                 value={addForm.metodo}
                 onChange={(e) => setAddForm({ ...addForm, metodo: e.target.value })}
                 data-testid="manual-metodo-select"
               >
-                <option value="Efectivo">Efectivo</option>
-                <option value="Débito">Débito</option>
-                <option value="Crédito">Crédito</option>
-                <option value="Transferencia">Transferencia</option>
-                <option value="Virtual">Virtual</option>
+                {walletNames.length > 0 ? (
+                  walletNames.map(w => (
+                    <option key={w} value={w}>{w}</option>
+                  ))
+                ) : (
+                  <>
+                    <option value="Efectivo">Efectivo</option>
+                    <option value="Débito">Débito</option>
+                    <option value="Crédito">Crédito</option>
+                    <option value="Transferencia">Transferencia</option>
+                    <option value="Virtual">Virtual</option>
+                  </>
+                )}
               </Select>
               <Select
                 label="Categoría"
                 value={addForm.categoria}
-                onChange={(e) => setAddForm({ ...addForm, categoria: e.target.value })}
+                onChange={(e) => handleCategoryChange(e.target.value, true)}
               >
                 <option value="">Sin categoría</option>
                 <option value="Comida">Comida</option>
@@ -596,11 +639,27 @@ export default function MovimientosPage() {
               />
               <Input
                 label="Descripción"
-                placeholder="Ej: Café, taxi, etc."
+                placeholder={addForm.categoria && CATEGORY_SUGGESTIONS[addForm.categoria]?.length > 0
+                  ? `Ej: ${CATEGORY_SUGGESTIONS[addForm.categoria].join(', ')}`
+                  : "Ej: Café, taxi, etc."}
                 value={addForm.motivo}
                 onChange={(e) => setAddForm({ ...addForm, motivo: e.target.value })}
                 data-testid="manual-motivo-input"
               />
+              {addForm.categoria && CATEGORY_SUGGESTIONS[addForm.categoria]?.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {CATEGORY_SUGGESTIONS[addForm.categoria].slice(0, 4).map(suggestion => (
+                    <button
+                      key={suggestion}
+                      type="button"
+                      onClick={() => setAddForm({ ...addForm, motivo: suggestion })}
+                      className="text-xs px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              )}
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
