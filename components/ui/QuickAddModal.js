@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { X, Send, Wallet, Tag, Check, ArrowRight, Repeat } from 'lucide-react'
+import { X, Send, Wallet, Tag, Check, ArrowRight, Repeat, Star, Zap } from 'lucide-react'
 
 /**
  * QuickAddModal - Ultra-fast expense registration
@@ -181,33 +181,55 @@ export default function QuickAddModal({
             </div>
           )}
 
-          {/* Shortcuts */}
+          {/* Shortcuts - Habitual and Frequent */}
           {showShortcuts && shortcuts.length > 0 && (
             <div className="mt-4">
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
-                Gastos frecuentes
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2 flex items-center gap-1">
+                <Zap className="w-3 h-3" />
+                1 tap para registrar
               </p>
               <div className="space-y-2">
                 {shortcuts.slice(0, 4).map((shortcut, i) => (
                   <button
                     key={i}
                     onClick={() => handleShortcutClick(shortcut)}
-                    className="w-full flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 transition-colors group"
+                    className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all active:scale-[0.98] group ${
+                      shortcut.isHabitual
+                        ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/30'
+                        : 'bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                    }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
-                        <Repeat className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                        shortcut.isHabitual
+                          ? 'bg-emerald-200 dark:bg-emerald-800'
+                          : 'bg-zinc-200 dark:bg-zinc-700'
+                      }`}>
+                        {shortcut.isHabitual ? (
+                          <Star className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        ) : (
+                          <Repeat className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                        )}
                       </div>
                       <div className="text-left">
-                        <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                        <p className={`text-sm font-medium ${
+                          shortcut.isHabitual
+                            ? 'text-emerald-700 dark:text-emerald-300'
+                            : 'text-zinc-900 dark:text-zinc-100'
+                        }`}>
                           {shortcut.motivo}
                         </p>
                         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                          ~${shortcut.suggestedAmount.toLocaleString('es-AR')} / {shortcut.count}x
+                          ${shortcut.suggestedAmount.toLocaleString('es-AR')}
+                          {shortcut.count && ` / ${shortcut.count}x`}
                         </p>
                       </div>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors" />
+                    <ArrowRight className={`w-4 h-4 transition-colors ${
+                      shortcut.isHabitual
+                        ? 'text-emerald-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-300'
+                        : 'text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300'
+                    }`} />
                   </button>
                 ))}
               </div>

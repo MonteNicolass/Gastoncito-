@@ -942,68 +942,116 @@ export default function ResumenPage() {
           )}
         </div>
 
-        {/* Gasti Insights (Causal Explanations + Actionable) */}
+        {/* Gasti Insights - Focused: 1 economic + 1 causal + 1 recommendation */}
         {gastiInsights && gastiInsights.length > 0 && (
           <div className="space-y-2">
             <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1 flex items-center gap-2">
               <Zap className="w-3 h-3" />
-              Patrones de gasto
+              Tu resumen financiero
             </h3>
-            {gastiInsights.slice(0, 3).map((insight) => (
-              <div
-                key={insight.id}
-                className={`p-4 rounded-xl border transition-all ${
-                  insight.color === 'red' ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800' :
-                  insight.color === 'amber' ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800' :
-                  insight.color === 'emerald' ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800' :
-                  'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800'
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                    insight.color === 'red' ? 'bg-red-500/20' :
-                    insight.color === 'amber' ? 'bg-amber-500/20' :
-                    insight.color === 'emerald' ? 'bg-emerald-500/20' :
-                    'bg-blue-500/20'
-                  }`}>
-                    {insight.type === 'comparison' && <TrendingUp className={`w-4 h-4 ${insight.color === 'red' ? 'text-red-500' : insight.color === 'amber' ? 'text-amber-500' : insight.color === 'emerald' ? 'text-emerald-500' : 'text-blue-500'}`} />}
-                    {insight.type === 'pattern' && <BarChart3 className={`w-4 h-4 ${insight.color === 'red' ? 'text-red-500' : insight.color === 'amber' ? 'text-amber-500' : insight.color === 'emerald' ? 'text-emerald-500' : 'text-blue-500'}`} />}
-                    {insight.type === 'causal' && <Lightbulb className={`w-4 h-4 ${insight.color === 'red' ? 'text-red-500' : insight.color === 'amber' ? 'text-amber-500' : insight.color === 'emerald' ? 'text-emerald-500' : 'text-blue-500'}`} />}
-                    {!['comparison', 'pattern', 'causal'].includes(insight.type) && <Info className={`w-4 h-4 ${insight.color === 'red' ? 'text-red-500' : insight.color === 'amber' ? 'text-amber-500' : insight.color === 'emerald' ? 'text-emerald-500' : 'text-blue-500'}`} />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-medium ${
-                      insight.color === 'red' ? 'text-red-700 dark:text-red-300' :
-                      insight.color === 'amber' ? 'text-amber-700 dark:text-amber-300' :
-                      insight.color === 'emerald' ? 'text-emerald-700 dark:text-emerald-300' :
-                      'text-blue-700 dark:text-blue-300'
+            {gastiInsights.slice(0, 3).map((insight) => {
+              const getIcon = () => {
+                const iconColor = insight.color === 'red' ? 'text-red-500' :
+                                 insight.color === 'amber' ? 'text-amber-500' :
+                                 insight.color === 'emerald' ? 'text-emerald-500' :
+                                 insight.color === 'indigo' ? 'text-indigo-500' :
+                                 'text-blue-500'
+                switch (insight.type) {
+                  case 'economic': return <AlertTriangle className={`w-4 h-4 ${iconColor}`} />
+                  case 'causal': return <Lightbulb className={`w-4 h-4 ${iconColor}`} />
+                  case 'recommendation': return <Target className={`w-4 h-4 ${iconColor}`} />
+                  case 'comparison': return <TrendingUp className={`w-4 h-4 ${iconColor}`} />
+                  case 'pattern': return <BarChart3 className={`w-4 h-4 ${iconColor}`} />
+                  default: return <Info className={`w-4 h-4 ${iconColor}`} />
+                }
+              }
+
+              return (
+                <div
+                  key={insight.id}
+                  className={`p-4 rounded-xl border transition-all ${
+                    insight.color === 'red' ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800' :
+                    insight.color === 'amber' ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800' :
+                    insight.color === 'emerald' ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800' :
+                    insight.color === 'indigo' ? 'bg-indigo-50 dark:bg-indigo-950/20 border-indigo-200 dark:border-indigo-800' :
+                    'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      insight.color === 'red' ? 'bg-red-500/20' :
+                      insight.color === 'amber' ? 'bg-amber-500/20' :
+                      insight.color === 'emerald' ? 'bg-emerald-500/20' :
+                      insight.color === 'indigo' ? 'bg-indigo-500/20' :
+                      'bg-blue-500/20'
                     }`}>
-                      {insight.title}
-                    </p>
-                    {insight.detail && (
-                      <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
-                        {insight.detail}
-                      </p>
-                    )}
-                    {insight.cta && (
-                      <button
-                        onClick={() => {
-                          if (insight.cta.action?.type === 'navigate') {
-                            router.push(insight.cta.action.href)
-                          } else if (insight.cta.action?.type === 'chat_prefill') {
-                            localStorage.setItem('chat_prefill', insight.cta.action.text || '')
-                            router.push('/chat')
-                          }
-                        }}
-                        className="mt-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 transition-all active:scale-95"
-                      >
-                        {insight.cta.label}
-                      </button>
-                    )}
+                      {getIcon()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <p className={`text-sm font-medium ${
+                          insight.color === 'red' ? 'text-red-700 dark:text-red-300' :
+                          insight.color === 'amber' ? 'text-amber-700 dark:text-amber-300' :
+                          insight.color === 'emerald' ? 'text-emerald-700 dark:text-emerald-300' :
+                          insight.color === 'indigo' ? 'text-indigo-700 dark:text-indigo-300' :
+                          'text-blue-700 dark:text-blue-300'
+                        }`}>
+                          {insight.title}
+                        </p>
+                        {insight.value && (
+                          <span className={`text-sm font-bold ${
+                            insight.color === 'red' ? 'text-red-600 dark:text-red-400' :
+                            insight.color === 'amber' ? 'text-amber-600 dark:text-amber-400' :
+                            insight.color === 'emerald' ? 'text-emerald-600 dark:text-emerald-400' :
+                            insight.color === 'indigo' ? 'text-indigo-600 dark:text-indigo-400' :
+                            'text-blue-600 dark:text-blue-400'
+                          }`}>
+                            {insight.value}
+                          </span>
+                        )}
+                      </div>
+                      {insight.detail && (
+                        <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
+                          {insight.detail}
+                        </p>
+                      )}
+                      {insight.cta && (
+                        <div className="flex items-center gap-2 mt-2">
+                          <button
+                            onClick={() => {
+                              if (insight.cta.action?.type === 'navigate') {
+                                router.push(insight.cta.action.href)
+                              } else if (insight.cta.action?.type === 'chat_prefill') {
+                                localStorage.setItem('chat_prefill', insight.cta.action.text || '')
+                                router.push('/chat')
+                              } else if (insight.cta.action?.type === 'mark_habitual') {
+                                localStorage.setItem('chat_prefill', `Marcar "${insight.cta.action.data?.motivo}" como habitual`)
+                                router.push('/chat')
+                              }
+                            }}
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 transition-all active:scale-95"
+                          >
+                            {insight.cta.label}
+                          </button>
+                          <button
+                            onClick={() => {
+                              // Dismiss for 14 days
+                              import('@/lib/gasti').then(({ dismissCTA }) => {
+                                dismissCTA(insight.id)
+                                setGastiInsights(prev => prev.filter(i => i.id !== insight.id))
+                              })
+                            }}
+                            className="px-2 py-1.5 rounded-lg text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
+                          >
+                            Ignorar
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
 

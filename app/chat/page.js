@@ -8,7 +8,7 @@ import { getRatoneandoAlertForChat } from '@/lib/alerts/ratoneando-alerts'
 import { generatePayoff, calculatePayoffContext, updateMonthlyStats } from '@/lib/payoff'
 import { quickPriceCheck } from '@/lib/mira-precios'
 import { getDietSuggestionForChat, initDietSystem } from '@/lib/dieta'
-import { getChatContextSuggestion, recordAndProcess } from '@/lib/gasti'
+import { getChatContextSuggestion, recordAndProcess, markAsHabitual } from '@/lib/gasti'
 import TopBar from '@/components/ui/TopBar'
 import Button from '@/components/ui/Button'
 import {
@@ -49,6 +49,7 @@ export default function ChatPage() {
   const [alertContext, setAlertContext] = useState(null)
   const [ratoneandoContext, setRatoneandoContext] = useState(null)
   const [payoffToast, setPayoffToast] = useState(null)
+  const [pendingHabitual, setPendingHabitual] = useState(null)
   const messagesEndRef = useRef(null)
   const payoffTimerRef = useRef(null)
   const inputRef = useRef(null)
@@ -297,9 +298,28 @@ export default function ChatPage() {
       if (movimiento.tipo === 'gasto') {
         const allMovimientos = await getMovimientos()
         const processResult = await recordAndProcess(movimiento, allMovimientos)
-        // If pattern detected, could show suggestion (future enhancement)
-        if (processResult?.suggestion) {
-          console.log('Pattern suggestion:', processResult.suggestion)
+
+        // Show habitual suggestion if detected
+        if (processResult?.habitualSuggestion) {
+          setPendingHabitual({ motivo: processResult.habitualSuggestion.motivo, monto: movimiento.monto })
+          setTimeout(() => {
+            setMessages(prev => [...prev, {
+              from: 'gaston',
+              text: processResult.habitualSuggestion.question,
+              hint: processResult.habitualSuggestion.impact,
+              needsHabitualConfirm: true
+            }])
+          }, 800)
+        }
+        // Show cumulative alert if significant
+        else if (processResult?.cumulativeAlert?.severity === 'high') {
+          setTimeout(() => {
+            setMessages(prev => [...prev, {
+              from: 'gaston',
+              text: processResult.cumulativeAlert.message,
+              hint: 'Alerta de gasto acumulado'
+            }])
+          }, 800)
         }
       }
 
@@ -488,6 +508,23 @@ export default function ChatPage() {
   function handleExampleClick(text) {
     setInput(text)
     inputRef.current?.focus()
+  }
+
+  function handleConfirmHabitual() {
+    if (!pendingHabitual) return
+
+    markAsHabitual({
+      motivo: pendingHabitual.motivo,
+      monto: pendingHabitual.monto
+    })
+
+    setMessages(prev => [...prev, { from: 'gaston', text: 'Marcado como habitual' }])
+    setPendingHabitual(null)
+  }
+
+  function handleDismissHabitual() {
+    setPendingHabitual(null)
+    setMessages(prev => [...prev, { from: 'gaston', text: 'Entendido' }])
   }
 
   function handleQuickAction(prefix) {
@@ -679,6 +716,24 @@ export default function ChatPage() {
                     >
                       Cancelar
                     </Button>
+                  </div>
+                )}
+
+                {/* Habitual Confirmation UI */}
+                {m.needsHabitualConfirm && pendingHabitual && i === messages.length - 1 && (
+                  <div className="flex gap-2 mt-2 pl-12">
+                    <button
+                      onClick={handleConfirmHabitual}
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white transition-all active:scale-95"
+                    >
+                      Sí, marcar
+                    </button>
+                    <button
+                      onClick={handleDismissHabitual}
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition-all active:scale-95"
+                    >
+                      No
+                    </button>
                   </div>
                 )}
               </div>
