@@ -1,6 +1,7 @@
 import './globals.css'
 import AppShell from '@/components/ui/AppShell'
 import BottomTabs from '@/components/ui/BottomTabs'
+import QuickActions from '@/components/ui/QuickActions'
 
 export default function RootLayout({ children }) {
   return (
@@ -14,6 +15,7 @@ export default function RootLayout({ children }) {
             {children}
           </div>
           <BottomTabs />
+          <QuickActions />
         </AppShell>
       </body>
     </html>

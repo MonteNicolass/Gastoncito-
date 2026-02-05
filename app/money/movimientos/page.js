@@ -3,11 +3,13 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { initDB, getMovimientos, deleteMovimiento, updateMovimiento, getCategorias, addMovimiento, updateSaldo, getWallets } from '@/lib/storage'
 import { seedPredefinedCategories } from '@/lib/seed-categories'
+import { getPresets, savePresets } from '@/lib/quick-presets'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
+import Toast from '@/components/ui/Toast'
 
 const vibrate = (pattern) => {
   if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -69,6 +71,7 @@ export default function MovimientosPage() {
   const [categorias, setCategorias] = useState([])
   const [isCategoriesSeeded, setIsCategoriesSeeded] = useState(false)
   const [lastActionSignal, setLastActionSignal] = useState(null)
+  const [toast, setToast] = useState(null)
 
   const loadMovimientos = useCallback(async () => {
     const data = await getMovimientos()
@@ -267,14 +270,18 @@ export default function MovimientosPage() {
 
   const handleOpenAddModal = useCallback(() => {
     setShowAddModal(true)
-    // Preseleccionar: 1) Primary wallet, 2) Wallet más frecuente, 3) Efectivo
-    const suggestedWallet = wallets.find(w => w.is_primary)?.wallet || mostFrequentWallet || 'Efectivo'
+    const presets = getPresets()
+
+    // Preseleccionar: 1) Primary wallet, 2) Preset guardado, 3) Wallet más frecuente, 4) Efectivo
+    const suggestedWallet = wallets.find(w => w.is_primary)?.wallet || presets.lastWallet || mostFrequentWallet || 'Efectivo'
+    const suggestedCategory = presets.lastCategory || ''
+
     setAddForm({
       monto: '',
       motivo: '',
       tipo: 'gasto',
       metodo: suggestedWallet,
-      categoria: '',
+      categoria: suggestedCategory,
       fecha: new Date().toISOString().slice(0, 10),
       recurrent: false,
     })
@@ -322,10 +329,17 @@ export default function MovimientosPage() {
       await updateSaldo(movimiento.metodo, movimiento.tipo === 'gasto' ? -movimiento.monto : movimiento.monto)
     }
 
+    // Guardar presets para próxima vez
+    savePresets({
+      lastWallet: movimiento.metodo,
+      lastCategory: movimiento.categoria || null
+    })
+
     setShowAddModal(false)
     await loadMovimientos()
 
     setLastActionSignal('movement_created')
+    setToast({ message: 'Guardado', type: 'success' })
   }, [addForm, loadMovimientos])
 
   // Autocompletar descripción cuando cambia categoría
@@ -807,6 +821,15 @@ export default function MovimientosPage() {
         >
           Movimiento creado
         </div>
+      )}
+
+      {/* Toast feedback */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
       )}
     </div>
   )

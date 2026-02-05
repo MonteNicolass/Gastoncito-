@@ -2,19 +2,29 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { initDB, getNotes, addNote, deleteNote } from '@/lib/storage'
+import { getPresets, savePreset } from '@/lib/quick-presets'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Select from '@/components/ui/Select'
+import Toast from '@/components/ui/Toast'
 
 export default function NotasPage() {
   const [notes, setNotes] = useState([])
   const [text, setText] = useState('')
   const [type, setType] = useState('')
   const [filterType, setFilterType] = useState('all')
+  const [toast, setToast] = useState(null)
 
   useEffect(() => {
-    initDB().then(loadNotes)
+    initDB().then(() => {
+      loadNotes()
+      // Cargar último tipo usado
+      const presets = getPresets()
+      if (presets.lastNoteType) {
+        setType(presets.lastNoteType)
+      }
+    })
   }, [])
 
   const loadNotes = useCallback(async () => {
@@ -25,9 +35,13 @@ export default function NotasPage() {
   const handleSave = useCallback(async () => {
     if (!text.trim()) return
     await addNote({ text: text.trim(), type: type || null })
+
+    // Guardar preset
+    if (type) savePreset('lastNoteType', type)
+
     setText('')
-    setType('')
     await loadNotes()
+    setToast({ message: 'Guardado', type: 'success' })
   }, [text, type, loadNotes])
 
   const handleDelete = useCallback(async (id) => {
@@ -171,6 +185,15 @@ export default function NotasPage() {
           )}
         </div>
       </div>
+
+      {/* Toast feedback */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   )
 }
