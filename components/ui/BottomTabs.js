@@ -110,8 +110,7 @@ export default function BottomTabs() {
     { name: 'Money', href: '/money', emoji: '💰', key: 'money' },
     { name: 'Objetivos', href: '/objetivos', emoji: '🎯', key: 'objetivos' },
     { name: 'Notas', href: '/notas', emoji: '📝', key: 'notas' },
-    { name: 'Insights', href: '/insights', emoji: '📊', key: 'insights' },
-    { name: 'Backup', href: '/mas/backup', emoji: '💾', key: 'backup' }
+    { name: 'Insights', href: '/insights', emoji: '📊', key: 'insights' }
   ]
 
   return (

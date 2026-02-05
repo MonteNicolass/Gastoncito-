@@ -9,6 +9,13 @@ export default function HerramientasPage() {
 
   const tools = [
     {
+      emoji: '💹',
+      title: 'Herramientas Financieras',
+      description: 'Calculadoras, precios, comparadores',
+      href: '/herramientas/financieras',
+      available: true
+    },
+    {
       emoji: '🍔',
       title: 'Comida',
       description: 'Registro de comidas y análisis',
@@ -23,17 +30,17 @@ export default function HerramientasPage() {
       available: true
     },
     {
+      emoji: '📚',
+      title: 'Aprendizaje',
+      description: 'Trackeo de estudio y temas',
+      href: '/aprendizaje',
+      available: true
+    },
+    {
       emoji: '📊',
       title: 'Reportes',
       description: 'Exportación y análisis',
       href: '/historia',
-      available: true
-    },
-    {
-      emoji: '⚙️',
-      title: 'Ajustes',
-      description: 'Configuración general',
-      href: '/mas',
       available: true
     }
   ]

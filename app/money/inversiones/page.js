@@ -120,7 +120,7 @@ export default function InversionesPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <TopBar title="Inversiones" />
+      <TopBar title="Inversiones" backHref="/money" />
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {/* Portfolio Summary */}

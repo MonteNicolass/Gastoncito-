@@ -92,7 +92,7 @@ export default function ComidaPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <TopBar title="Comida" />
+      <TopBar title="Comida" backHref="/fisico" />
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {/* Info Card */}
