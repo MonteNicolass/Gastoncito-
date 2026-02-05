@@ -431,14 +431,28 @@ export default function VisionGeneralPage() {
         {/* Objetivos */}
         {data?.goals && data.goals.total > 0 && allCards.objetivos.render()}
 
-        {/* Link a insights detallados */}
-        <a href="/insights">
-          <Card className="p-4 text-center hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer">
-            <div className="text-sm text-zinc-600 dark:text-zinc-400">
-              Ver análisis cruzados →
-            </div>
-          </Card>
-        </a>
+        {/* Links a secciones adicionales */}
+        <div className="grid grid-cols-2 gap-2">
+          <a href="/historia">
+            <Card className="p-4 text-center hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer">
+              <div className="text-2xl mb-1">📖</div>
+              <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Historia</div>
+              <div className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
+                Evolución y score
+              </div>
+            </Card>
+          </a>
+
+          <a href="/insights">
+            <Card className="p-4 text-center hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer">
+              <div className="text-2xl mb-1">📊</div>
+              <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Insights</div>
+              <div className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
+                Análisis cruzados
+              </div>
+            </Card>
+          </a>
+        </div>
       </div>
     </div>
   )
