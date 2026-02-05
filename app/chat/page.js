@@ -140,7 +140,24 @@ export default function ChatPage() {
   async function executeAction(routing, originalText) {
     const { brain, intent, money, entry } = routing
 
-    if (brain === 'money' && (intent === 'add_expense' || intent === 'add_income' || intent === 'add_subscription')) {
+    if (brain === 'money' && intent === 'adjust_balance') {
+      if (!money?.amount) {
+        setMessages(prev => [...prev, { from: 'gaston', text: 'No pude identificar el monto' }])
+        return
+      }
+
+      const walletName = money.merchant || 'efectivo'
+
+      // Update balance directly (set, not add/subtract)
+      await updateSaldo(walletName, money.amount, true)
+
+      setMessages(prev => [...prev, {
+        from: 'gaston',
+        text: `Saldo actualizado: ${walletName}`,
+        hint: 'Ajuste de billetera'
+      }])
+
+    } else if (brain === 'money' && (intent === 'add_expense' || intent === 'add_income' || intent === 'add_subscription')) {
       if (!money?.amount) {
         setMessages(prev => [...prev, { from: 'gaston', text: 'No pude identificar el monto' }])
         return

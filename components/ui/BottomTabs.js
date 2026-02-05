@@ -104,6 +104,7 @@ export default function BottomTabs() {
     { name: 'Historia', href: '/historia', emoji: '📖', key: 'historia' },
     { name: 'Eventos', href: '/eventos', emoji: '📋', key: 'eventos' },
     { name: 'Búsqueda', href: '/busqueda', emoji: '🔍', key: 'busqueda' },
+    { name: 'Herramientas', href: '/herramientas', emoji: '🛠️', key: 'herramientas' },
     { name: 'Mental', href: '/mental', emoji: '🧠', key: 'mental' },
     { name: 'Físico', href: '/fisico', emoji: '💪', key: 'fisico' },
     { name: 'Money', href: '/money', emoji: '💰', key: 'money' },
