@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { initDB, getMovimientos, getLifeEntries, getNotes, getGoals } from '@/lib/storage'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
+import { Search, HelpCircle, Wallet, StickyNote, Brain, Target } from 'lucide-react'
 
 export default function BusquedaPage() {
   const [query, setQuery] = useState('')
@@ -134,7 +135,9 @@ export default function BusquedaPage() {
         {/* Resultados */}
         {!query.trim() ? (
           <Card className="p-8 text-center">
-            <div className="text-4xl mb-4">🔍</div>
+            <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+              <Search className="w-7 h-7 text-blue-500 dark:text-blue-400" />
+            </div>
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
               Buscar en todo
             </h3>
@@ -144,7 +147,9 @@ export default function BusquedaPage() {
           </Card>
         ) : totalResults === 0 ? (
           <Card className="p-8 text-center">
-            <div className="text-4xl mb-4">🤷</div>
+            <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+              <HelpCircle className="w-7 h-7 text-zinc-400 dark:text-zinc-500" />
+            </div>
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
               Sin resultados
             </h3>
@@ -157,8 +162,8 @@ export default function BusquedaPage() {
             {/* Movimientos */}
             {results.movimientos.length > 0 && (
               <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1">
-                  💰 Movimientos ({results.movimientos.length})
+                <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1 flex items-center gap-2">
+                  <Wallet className="w-4 h-4 text-emerald-500" /> Movimientos ({results.movimientos.length})
                 </h3>
                 {results.movimientos.map((m) => (
                   <Card key={m.id} className="p-3">
@@ -183,8 +188,8 @@ export default function BusquedaPage() {
             {/* Notas */}
             {results.notas.length > 0 && (
               <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1">
-                  📝 Notas ({results.notas.length})
+                <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1 flex items-center gap-2">
+                  <StickyNote className="w-4 h-4 text-blue-500" /> Notas ({results.notas.length})
                 </h3>
                 {results.notas.map((n) => (
                   <Card key={n.id} className="p-3">
@@ -207,8 +212,8 @@ export default function BusquedaPage() {
             {/* Estados Mentales */}
             {results.estados.length > 0 && (
               <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1">
-                  🧠 Estados Mentales ({results.estados.length})
+                <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1 flex items-center gap-2">
+                  <Brain className="w-4 h-4 text-purple-500" /> Estados Mentales ({results.estados.length})
                 </h3>
                 {results.estados.map((e) => (
                   <Card key={e.id} className="p-3">
@@ -235,8 +240,8 @@ export default function BusquedaPage() {
             {/* Objetivos */}
             {results.objetivos.length > 0 && (
               <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1">
-                  🎯 Objetivos ({results.objetivos.length})
+                <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1 flex items-center gap-2">
+                  <Target className="w-4 h-4 text-indigo-500" /> Objetivos ({results.objetivos.length})
                 </h3>
                 {results.objetivos.map((g) => (
                   <a key={g.id} href="/objetivos">

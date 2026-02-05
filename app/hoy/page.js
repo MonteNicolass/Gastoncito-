@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { initDB, getMovimientos, getLifeEntries, getNotes } from '@/lib/storage'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
+import { Sunrise, Dumbbell, MessageCircle } from 'lucide-react'
 
 export default function HoyPage() {
   const [todayData, setTodayData] = useState({
@@ -127,7 +128,9 @@ export default function HoyPage() {
       <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 space-y-4">
         {!hasData ? (
           <Card className="p-8 text-center bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200/50 dark:border-purple-800/50">
-            <div className="text-5xl mb-4">🌅</div>
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+              <Sunrise className="w-8 h-8 text-amber-500 dark:text-amber-400" />
+            </div>
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
               Tu día empieza acá
             </h3>
@@ -138,6 +141,7 @@ export default function HoyPage() {
               href="/chat"
               className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-semibold rounded-xl shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 transition-all active:scale-95"
             >
+              <MessageCircle className="w-4 h-4" />
               Empezar a registrar
             </a>
           </Card>
@@ -269,7 +273,7 @@ export default function HoyPage() {
                   {todayData.physicalEntries.map((entry) => (
                     <div key={entry.id} className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center flex-shrink-0">
-                        <span className="text-lg">💪</span>
+                        <Dumbbell className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
