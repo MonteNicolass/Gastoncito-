@@ -18,6 +18,7 @@ export default function MoneyPage() {
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         <Card className="overflow-hidden">
+          <ListRow label="Resumen Mensual" href="/money/resumen" />
           <ListRow label="Movimientos" href="/money/movimientos" />
           <ListRow label="Billeteras" href="/money/billeteras" />
           <ListRow label="Presupuestos" href="/money/presupuestos" />
