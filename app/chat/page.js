@@ -6,6 +6,7 @@ import { getPriorityAlertForChat, actOnAlert } from '@/lib/alerts'
 import { runRatoneandoEngine } from '@/lib/ratoneando'
 import { getRatoneandoAlertForChat } from '@/lib/alerts/ratoneando-alerts'
 import { generatePayoff, calculatePayoffContext, updateMonthlyStats } from '@/lib/payoff'
+import { quickPriceCheck } from '@/lib/mira-precios'
 import TopBar from '@/components/ui/TopBar'
 import Button from '@/components/ui/Button'
 import {
@@ -268,7 +269,18 @@ export default function ChatPage() {
 
       // Show payoff for expense/income
       if (movimiento.tipo === 'gasto') {
-        showPayoff('expense_logged', { amount: movimiento.monto, category: money.category })
+        // Check for price insights (MiráPrecios)
+        const priceCheck = quickPriceCheck(money.description || originalText, movimiento.monto)
+        if (priceCheck.notable) {
+          // Show price insight instead of generic payoff
+          showPayoff('price_insight', {
+            isHigh: priceCheck.isHigh,
+            label: priceCheck.label,
+            emoji: priceCheck.emoji
+          })
+        } else {
+          showPayoff('expense_logged', { amount: movimiento.monto, category: money.category })
+        }
       } else {
         showPayoff('income_logged', { amount: movimiento.monto })
       }
