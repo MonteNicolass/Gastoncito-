@@ -15,14 +15,20 @@ export default function Toast({ message, type = 'success', onClose, duration = 2
   }, [duration, onClose])
 
   const bgColor = {
-    success: 'bg-green-600 dark:bg-green-500',
-    error: 'bg-red-600 dark:bg-red-500',
-    info: 'bg-blue-600 dark:bg-blue-500'
-  }[type] || 'bg-zinc-600 dark:bg-zinc-500'
+    success: 'bg-black dark:bg-white',
+    error: 'bg-black dark:bg-white',
+    info: 'bg-black dark:bg-white'
+  }[type] || 'bg-black dark:bg-white'
+
+  const textColor = {
+    success: 'text-white dark:text-black',
+    error: 'text-white dark:text-black',
+    info: 'text-white dark:text-black'
+  }[type] || 'text-white dark:text-black'
 
   return (
-    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[70] animate-slide-up">
-      <div className={`${bgColor} text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2`}>
+    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[70] animate-fade-in">
+      <div className={`${bgColor} ${textColor} px-6 py-3 flex items-center gap-2`}>
         {type === 'success' && (
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />

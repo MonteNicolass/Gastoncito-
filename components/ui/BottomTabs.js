@@ -105,7 +105,7 @@ export default function BottomTabs() {
   ]
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 backdrop-blur-xl bg-zinc-50/95 dark:bg-zinc-950/95 border-t border-zinc-200/50 dark:border-zinc-800/50">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-black border-t border-gray-200 dark:border-gray-800">
       <div className="flex items-center justify-between px-1 py-1.5 pb-safe max-w-lg mx-auto overflow-x-auto scrollbar-hide">
         {tabs.map((tab) => {
           const baseSection = tab.href.split('/')[1]
@@ -118,14 +118,14 @@ export default function BottomTabs() {
             <Link
               key={tab.href}
               href={tab.href}
-              className={`relative flex flex-col items-center gap-0.5 py-1.5 px-2.5 rounded-xl transition-all active:scale-95 min-w-[52px] ${
+              className={`relative flex flex-col items-center gap-0.5 py-1.5 px-2.5 transition-all active:scale-95 min-w-[52px] ${
                 isActive
-                  ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
-                  : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50'
+                  ? 'bg-black dark:bg-white text-white dark:text-black'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white'
               }`}
             >
               {hasPriority && !isActive && (
-                <span className="absolute top-0.5 right-1.5 w-1.5 h-1.5 bg-orange-500 dark:bg-orange-400 rounded-full" />
+                <span className="absolute top-0.5 right-1.5 w-1.5 h-1.5 bg-black dark:bg-white rounded-full" />
               )}
               <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
               <span className={`text-[9px] ${isActive ? 'font-bold' : 'font-medium'}`}>{tab.name}</span>

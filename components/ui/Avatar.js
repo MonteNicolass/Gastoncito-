@@ -40,29 +40,29 @@ export default function Avatar({
   // State-based styling
   const stateStyles = {
     great: {
-      bgGradient: 'from-emerald-500/20 to-teal-500/20',
-      faceColor: '#10b981',
+      bgGradient: 'from-gray-200 to-gray-300 dark:from-gray-800 dark:to-gray-700',
+      faceColor: '#000000',
       eyeY: 0,
       mouthCurve: 4,
       postureY: 0
     },
     good: {
-      bgGradient: 'from-blue-500/20 to-indigo-500/20',
-      faceColor: '#3b82f6',
+      bgGradient: 'from-gray-200 to-gray-300 dark:from-gray-800 dark:to-gray-700',
+      faceColor: '#333333',
       eyeY: 0,
       mouthCurve: 2,
       postureY: 0
     },
     neutral: {
-      bgGradient: 'from-zinc-500/20 to-zinc-600/20',
-      faceColor: '#71717a',
+      bgGradient: 'from-gray-300 to-gray-400 dark:from-gray-700 dark:to-gray-600',
+      faceColor: '#666666',
       eyeY: 1,
       mouthCurve: 0,
       postureY: 2
     },
     low: {
-      bgGradient: 'from-orange-500/20 to-red-500/20',
-      faceColor: '#f97316',
+      bgGradient: 'from-gray-400 to-gray-500 dark:from-gray-600 dark:to-gray-500',
+      faceColor: '#888888',
       eyeY: 2,
       mouthCurve: -2,
       postureY: 4
@@ -163,11 +163,11 @@ export default function Avatar({
 
       {/* Status indicator dot */}
       <div
-        className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white dark:border-zinc-900 ${
-          state === 'great' ? 'bg-emerald-500' :
-          state === 'good' ? 'bg-blue-500' :
-          state === 'neutral' ? 'bg-zinc-400' :
-          'bg-orange-500'
+        className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white dark:border-black ${
+          state === 'great' ? 'bg-black dark:bg-white' :
+          state === 'good' ? 'bg-gray-600 dark:bg-gray-400' :
+          state === 'neutral' ? 'bg-gray-500 dark:bg-gray-500' :
+          'bg-gray-700 dark:bg-gray-300'
         }`}
       />
     </div>

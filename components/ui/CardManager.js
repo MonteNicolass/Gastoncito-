@@ -46,7 +46,7 @@ export default function CardManager({ section, cards, preferences, onUpdate }) {
     return (
       <button
         onClick={() => setShowModal(true)}
-        className="fixed bottom-20 right-4 z-40 w-12 h-12 bg-blue-600 dark:bg-blue-500 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
+        className="fixed bottom-20 right-4 z-40 w-12 h-12 bg-black dark:bg-white text-white dark:text-black rounded-full flex items-center justify-center hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
         aria-label="Personalizar"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,16 +57,16 @@ export default function CardManager({ section, cards, preferences, onUpdate }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 backdrop-blur-sm">
-      <div className="w-full max-w-[420px] bg-white dark:bg-zinc-900 rounded-t-3xl shadow-xl animate-slide-up max-h-[80vh] overflow-hidden flex flex-col">
-        <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
+    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40">
+      <div className="w-full max-w-[420px] bg-white dark:bg-black max-h-[80vh] overflow-hidden flex flex-col">
+        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+            <h3 className="text-lg font-bold text-black dark:text-white">
               Personalizar cards
             </h3>
             <button
               onClick={() => setShowModal(false)}
-              className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+              className="text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -87,17 +87,17 @@ export default function CardManager({ section, cards, preferences, onUpdate }) {
             return (
               <div
                 key={cardId}
-                className={`flex items-center gap-3 p-3 rounded-lg border ${
+                className={`flex items-center gap-3 p-3 border ${
                   isVisible
-                    ? 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700'
-                    : 'bg-zinc-100 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-600 opacity-50'
+                    ? 'bg-white dark:bg-black border-gray-200 dark:border-gray-800'
+                    : 'bg-gray-100 dark:bg-gray-900 border-gray-300 dark:border-gray-700 opacity-50'
                 }`}
               >
                 <div className="flex flex-col gap-1">
                   <button
                     onClick={() => handleMoveUp(cardId)}
                     disabled={isFirst}
-                    className="p-1 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="p-1 text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
@@ -106,7 +106,7 @@ export default function CardManager({ section, cards, preferences, onUpdate }) {
                   <button
                     onClick={() => handleMoveDown(cardId)}
                     disabled={isLast}
-                    className="p-1 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="p-1 text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -115,11 +115,11 @@ export default function CardManager({ section, cards, preferences, onUpdate }) {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  <div className="text-sm font-medium text-black dark:text-white">
                     {card.title}
                   </div>
                   {card.description && (
-                    <div className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                    <div className="text-xs text-gray-600 dark:text-gray-400 truncate">
                       {card.description}
                     </div>
                   )}
@@ -129,12 +129,12 @@ export default function CardManager({ section, cards, preferences, onUpdate }) {
                   onClick={() => handleToggleVisibility(cardId)}
                   className={`flex-shrink-0 w-10 h-6 rounded-full transition-colors ${
                     isVisible
-                      ? 'bg-blue-600 dark:bg-blue-500'
-                      : 'bg-zinc-300 dark:bg-zinc-600'
+                      ? 'bg-black dark:bg-white'
+                      : 'bg-gray-300 dark:bg-gray-600'
                   }`}
                 >
                   <div
-                    className={`w-4 h-4 bg-white rounded-full transition-transform ${
+                    className={`w-4 h-4 bg-white dark:bg-black rounded-full transition-transform ${
                       isVisible ? 'translate-x-5' : 'translate-x-1'
                     }`}
                   />
@@ -144,7 +144,7 @@ export default function CardManager({ section, cards, preferences, onUpdate }) {
           })}
         </div>
 
-        <div className="p-4 border-t border-zinc-200 dark:border-zinc-800">
+        <div className="p-4 border-t border-gray-200 dark:border-gray-800">
           <Button
             onClick={() => setShowModal(false)}
             variant="primary"

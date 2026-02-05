@@ -107,10 +107,10 @@ export default function QuickActionsInline({ onActionComplete }) {
           className="flex flex-col items-center gap-1 group"
           title="Registrar gasto"
         >
-          <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center group-hover:bg-green-200 dark:group-hover:bg-green-900/50 transition-colors">
+          <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center group-hover:bg-gray-300 dark:group-hover:bg-gray-700 transition-colors">
             <span className="text-2xl">💸</span>
           </div>
-          <span className="text-xs text-zinc-600 dark:text-zinc-400">Gasto</span>
+          <span className="text-xs text-gray-600 dark:text-gray-400">Gasto</span>
         </button>
 
         <button
@@ -118,10 +118,10 @@ export default function QuickActionsInline({ onActionComplete }) {
           className="flex flex-col items-center gap-1 group"
           title="Registrar estado mental"
         >
-          <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center group-hover:bg-purple-200 dark:group-hover:bg-purple-900/50 transition-colors">
+          <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center group-hover:bg-gray-300 dark:group-hover:bg-gray-700 transition-colors">
             <span className="text-2xl">🧠</span>
           </div>
-          <span className="text-xs text-zinc-600 dark:text-zinc-400">Estado</span>
+          <span className="text-xs text-gray-600 dark:text-gray-400">Estado</span>
         </button>
 
         <button
@@ -129,10 +129,10 @@ export default function QuickActionsInline({ onActionComplete }) {
           className="flex flex-col items-center gap-1 group"
           title="Registrar hábito"
         >
-          <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center group-hover:bg-orange-200 dark:group-hover:bg-orange-900/50 transition-colors">
+          <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center group-hover:bg-gray-300 dark:group-hover:bg-gray-700 transition-colors">
             <span className="text-2xl">💪</span>
           </div>
-          <span className="text-xs text-zinc-600 dark:text-zinc-400">Hábito</span>
+          <span className="text-xs text-gray-600 dark:text-gray-400">Hábito</span>
         </button>
 
         <button
@@ -140,17 +140,17 @@ export default function QuickActionsInline({ onActionComplete }) {
           className="flex flex-col items-center gap-1 group"
           title="Guardar nota"
         >
-          <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors">
+          <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center group-hover:bg-gray-300 dark:group-hover:bg-gray-700 transition-colors">
             <span className="text-2xl">📝</span>
           </div>
-          <span className="text-xs text-zinc-600 dark:text-zinc-400">Nota</span>
+          <span className="text-xs text-gray-600 dark:text-gray-400">Nota</span>
         </button>
       </div>
 
       {/* Toast feedback */}
       {showToast && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[70] animate-slide-up">
-          <div className="bg-zinc-800 dark:bg-zinc-700 text-white px-4 py-2 rounded-full shadow-lg">
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[70] animate-fade-in">
+          <div className="bg-black dark:bg-white text-white dark:text-black px-4 py-2">
             <span className="text-sm font-medium">{toastMessage}</span>
           </div>
         </div>
