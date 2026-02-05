@@ -7,6 +7,8 @@ import { getAllBehaviorInsights } from '@/lib/insights/behaviorInsights'
 import { getAllSilentAlerts } from '@/lib/silent-alerts'
 import { getUserPreferences, updateSectionPreferences } from '@/lib/user-preferences'
 import { getSpendingByMood, getMoodByExercise, getImpulsiveSpendingByExercise } from '@/lib/insights/crossInsights'
+import { detectAllAnomalies } from '@/lib/anomaly-detection'
+import { evaluateUserRules } from '@/lib/user-rules'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 
@@ -39,13 +41,22 @@ export default function VisionGeneralPage() {
       const overview = getAllOverviewData(movimientos, lifeEntries, categorias, goals, behaviorInsights, wallets)
       const silentAlerts = getAllSilentAlerts(movimientos, lifeEntries, budgets, categorias)
 
+      // Detectar anomalías automáticas
+      const anomalies = detectAllAnomalies(movimientos, lifeEntries, categorias, goals)
+
+      // Evaluar reglas de usuario
+      const userRuleAlerts = evaluateUserRules(movimientos, lifeEntries, budgets)
+
+      // Combinar todas las alertas (anomalías primero, luego reglas, luego silent alerts)
+      const allAlerts = [...anomalies, ...userRuleAlerts, ...silentAlerts]
+
       // Calculate cross insights
       const spendingByMood = getSpendingByMood(movimientos, lifeEntries, 30)
       const moodByExercise = getMoodByExercise(lifeEntries, 30)
       const impulsiveByExercise = getImpulsiveSpendingByExercise(movimientos, lifeEntries, 30)
 
       setData(overview)
-      setAlerts(silentAlerts)
+      setAlerts(allAlerts)
       setCrossInsights({ spendingByMood, moodByExercise, impulsiveByExercise })
       setPreferences(getUserPreferences().vision)
     } catch (error) {
