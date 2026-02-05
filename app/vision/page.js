@@ -309,28 +309,28 @@ export default function ResumenPage() {
 
         {/* Cards Resumidas */}
         <div className="space-y-3">
-          {/* Money Card */}
+          {/* Money Card - Billetera Tech Style */}
           {widgetConfig.money && (
           <a href="/money" className="block">
-            <Card className="p-5 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200/50 dark:border-green-800/50 hover:shadow-md transition-shadow">
+            <Card className="p-5 bg-gradient-to-br from-zinc-900 to-zinc-800 dark:from-zinc-800 dark:to-zinc-900 border-zinc-700 hover:shadow-lg hover:shadow-zinc-900/20 transition-all">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-10 h-10 rounded-2xl bg-green-100 dark:bg-green-900/40 flex items-center justify-center">
-                      <span className="text-xl">💰</span>
+                    <div className="w-10 h-10 rounded-2xl bg-zinc-700 flex items-center justify-center">
+                      <span className="text-xl">💳</span>
                     </div>
-                    <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Money</span>
+                    <span className="text-sm font-semibold text-zinc-400">Money</span>
                   </div>
-                  <div className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-1">
+                  <div className="text-3xl font-bold text-white font-mono tracking-tight mb-1">
                     {formatAmount(data.gastoTotal)}
                   </div>
-                  <div className="text-sm text-zinc-500 dark:text-zinc-400">Gasto total</div>
+                  <div className="text-sm text-zinc-500">Gasto total</div>
                 </div>
                 {data.gastoDiff !== 0 && (
                   <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
                     data.gastoDiff > 0
-                      ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                      : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                      ? 'bg-red-500/20 text-red-400'
+                      : 'bg-emerald-500/20 text-emerald-400'
                   }`}>
                     {data.gastoDiff > 0 ? '+' : ''}{data.gastoDiff.toFixed(0)}%
                   </div>

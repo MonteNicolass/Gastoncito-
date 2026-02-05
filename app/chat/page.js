@@ -318,10 +318,18 @@ export default function ChatPage() {
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {messages.length === 0 && (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center px-8">
-              Escribí algo que quieras registrar…
-            </p>
+          <div className="flex flex-col items-center justify-center h-full gap-4">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 flex items-center justify-center">
+              <span className="text-3xl">💬</span>
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                Todo empieza acá
+              </p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 px-8">
+                Escribí lo que quieras registrar en tu día
+              </p>
+            </div>
           </div>
         )}
 
@@ -379,8 +387,11 @@ export default function ChatPage() {
       {/* Link rápido a Hoy */}
       <div className="px-4 pb-3">
         <a href="/hoy" className="block">
-          <div className="text-center text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors py-2">
-            Ver todo lo de hoy →
+          <div className="text-center text-xs font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors py-2 flex items-center justify-center gap-1">
+            <span>Ver todo lo de hoy</span>
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </div>
         </a>
       </div>
@@ -443,15 +454,13 @@ export default function ChatPage() {
             }}
             data-testid="chat-input"
           />
-          <Button
+          <button
             onClick={handleSend}
-            variant="primary"
-            size="md"
-            className="rounded-2xl px-6 active:scale-95"
+            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm font-semibold rounded-2xl shadow-lg shadow-purple-500/20 active:scale-95 transition-all"
             data-testid="chat-send-btn"
           >
             Enviar
-          </Button>
+          </button>
         </div>
       </div>
 

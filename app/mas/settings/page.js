@@ -108,7 +108,7 @@ export default function SettingsPage() {
             <div className="h-px bg-zinc-200 dark:bg-zinc-800" />
             <div>
               <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Base de datos</div>
-              <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">IndexedDB v11</div>
+              <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">IndexedDB v12</div>
             </div>
             <div className="h-px bg-zinc-200 dark:bg-zinc-800" />
             <div>

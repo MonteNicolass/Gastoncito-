@@ -414,6 +414,7 @@ export default function PresupuestosPage() {
             </Card>
           ))
         )}
+        </div>
       </div>
 
       {/* Modal de crear/editar */}
