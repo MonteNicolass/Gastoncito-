@@ -385,8 +385,8 @@ export default function MovimientosPage() {
         }
       />
 
-      {/* Botón Agregar */}
-      <div className="px-4 pt-4">
+      {/* Botones de acción */}
+      <div className="px-4 pt-4 space-y-2">
         <Button
           onClick={handleOpenAddModal}
           variant="primary"
@@ -396,6 +396,20 @@ export default function MovimientosPage() {
         >
           {isCategoriesSeeded ? 'Agregar movimiento' : 'Inicializando...'}
         </Button>
+
+        <a
+          href="https://www.ratoneando.com.ar"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block w-full"
+        >
+          <Button
+            variant="ghost"
+            className="w-full border border-zinc-200 dark:border-zinc-700"
+          >
+            🛒 Comparar precios
+          </Button>
+        </a>
       </div>
 
       {/* Filtros */}
