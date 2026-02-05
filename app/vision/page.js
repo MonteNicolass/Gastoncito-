@@ -149,6 +149,13 @@ export default function ResumenPage() {
       const moodByExercise = getMoodByExercise(lifeEntries, 30)
       const impulsiveByExercise = getImpulsiveSpendingByExercise(movimientos, lifeEntries, 30)
 
+      // Calculate goals stats
+      const activeGoals = goals.filter(g => g.status === 'active')
+      const completedGoals = goals.filter(g => g.status === 'completed')
+      const goalsProgress = activeGoals.length > 0
+        ? Math.round(activeGoals.reduce((sum, g) => sum + Math.min(100, (g.progress / g.target) * 100), 0) / activeGoals.length)
+        : null
+
       setData({
         gastoTotal,
         gastoDiff,
@@ -156,7 +163,10 @@ export default function ResumenPage() {
         mentalAvg,
         mentalTrend,
         physicalDays,
-        physicalStreak
+        physicalStreak,
+        activeGoals: activeGoals.length,
+        completedGoals: completedGoals.length,
+        goalsProgress
       })
       setAlerts(allAlerts)
       setCrossInsights({ spendingByMood, moodByExercise, impulsiveByExercise })
@@ -182,10 +192,53 @@ export default function ResumenPage() {
     })
   }
 
+  // Calcular estado global para payoff
+  const getGlobalStatus = () => {
+    if (!data) return null
+
+    let score = 0
+    let factors = 0
+
+    // Mental contribuye
+    if (data.mentalAvg !== null) {
+      score += data.mentalAvg >= 7 ? 2 : data.mentalAvg >= 5 ? 1 : 0
+      factors++
+    }
+
+    // Físico contribuye
+    if (data.physicalDays > 0) {
+      score += data.physicalDays >= 3 ? 2 : data.physicalDays >= 1 ? 1 : 0
+      factors++
+    }
+
+    // Money contribuye (menos gasto = mejor)
+    if (data.gastoDiff !== 0) {
+      score += data.gastoDiff <= 0 ? 2 : data.gastoDiff <= 20 ? 1 : 0
+      factors++
+    }
+
+    // Objetivos contribuyen
+    if (data.goalsProgress !== null) {
+      score += data.goalsProgress >= 50 ? 2 : data.goalsProgress >= 25 ? 1 : 0
+      factors++
+    }
+
+    if (factors === 0) return null
+
+    const avg = score / factors
+
+    if (avg >= 1.5) return { text: 'Todo en orden', icon: '✨', color: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' }
+    if (avg >= 1) return { text: 'Vas bien', icon: '✓', color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' }
+    if (avg >= 0.5) return { text: 'Seguí así', icon: '→', color: 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300' }
+    return { text: 'Revisá tus áreas', icon: '!', color: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300' }
+  }
+
+  const globalStatus = getGlobalStatus()
+
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen">
-        <TopBar title="Resumen" />
+        <TopBar title="Inicio" />
         <div className="flex-1 flex items-center justify-center">
           <p className="text-sm text-zinc-500 dark:text-zinc-400">Cargando...</p>
         </div>
@@ -245,6 +298,14 @@ export default function ResumenPage() {
             Mes
           </button>
         </div>
+
+        {/* Payoff global - estado general */}
+        {globalStatus && (
+          <div className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl ${globalStatus.color}`}>
+            <span className="text-sm">{globalStatus.icon}</span>
+            <span className="text-sm font-semibold">{globalStatus.text}</span>
+          </div>
+        )}
 
         {/* Cards Resumidas */}
         <div className="space-y-3">

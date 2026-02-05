@@ -199,21 +199,85 @@ export default function ObjetivosPage() {
     return budget ? budget.name : null
   }
 
-  return (
-    <div className="flex flex-col min-h-screen">
-      <TopBar title="Objetivos" />
+  // Calcular estadísticas
+  const activeGoals = goals.filter(g => g.status === 'active')
+  const completedGoals = goals.filter(g => g.status === 'completed')
+  const avgProgress = activeGoals.length > 0
+    ? Math.round(activeGoals.reduce((sum, g) => sum + getProgressPercent(g), 0) / activeGoals.length)
+    : 0
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+  const getOverallStatus = () => {
+    if (completedGoals.length > 0 && activeGoals.length === 0) {
+      return { text: 'Todos cumplidos', icon: '✨', color: 'text-green-600 dark:text-green-400' }
+    }
+    if (avgProgress >= 75) {
+      return { text: 'Casi listo', icon: '🎯', color: 'text-green-600 dark:text-green-400' }
+    }
+    if (avgProgress >= 50) {
+      return { text: 'Buen avance', icon: '✓', color: 'text-blue-600 dark:text-blue-400' }
+    }
+    if (activeGoals.length > 0) {
+      return { text: 'En progreso', icon: '→', color: 'text-zinc-500 dark:text-zinc-400' }
+    }
+    return null
+  }
+
+  const overallStatus = getOverallStatus()
+
+  return (
+    <div className="flex flex-col min-h-screen pb-24">
+      <TopBar title="Tus metas" />
+
+      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
+        {/* Resumen de objetivos */}
+        {goals.length > 0 && (
+          <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-blue-200/50 dark:border-blue-800/50">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h2 className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1">
+                  Progreso general
+                </h2>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-bold text-zinc-900 dark:text-zinc-100">
+                    {avgProgress}%
+                  </span>
+                  <span className="text-lg text-zinc-400 dark:text-zinc-500">promedio</span>
+                </div>
+              </div>
+              {overallStatus && (
+                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/60 dark:bg-zinc-800/60 ${overallStatus.color}`}>
+                  <span className="text-sm">{overallStatus.icon}</span>
+                  <span className="text-xs font-semibold">{overallStatus.text}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Stats rápidos */}
+            <div className="flex gap-4 pt-4 border-t border-blue-200/50 dark:border-blue-700/50">
+              <div className="flex items-center gap-2">
+                <span className="text-blue-600 dark:text-blue-400 font-bold">{activeGoals.length}</span>
+                <span className="text-sm text-zinc-600 dark:text-zinc-400">activos</span>
+              </div>
+              {completedGoals.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-green-600 dark:text-green-400 font-bold">{completedGoals.length}</span>
+                  <span className="text-sm text-zinc-600 dark:text-zinc-400">cumplidos</span>
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
+
         <Button
           onClick={handleOpenCreate}
           variant="primary"
           className="w-full"
         >
-          Nuevo objetivo
+          + Nuevo objetivo
         </Button>
 
         <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1">
+          <h2 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1">
             Mis objetivos
           </h2>
           {goals.length === 0 ? (
@@ -227,17 +291,32 @@ export default function ObjetivosPage() {
               </p>
             </Card>
           ) : (
-            goals.map((goal) => (
-              <Card key={goal.id} className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
-                <div className="space-y-3">
+            goals.map((goal) => {
+              const percent = getProgressPercent(goal)
+              const isAlmostDone = percent >= 80 && goal.status === 'active'
+
+              return (
+              <Card key={goal.id} className={`p-5 transition-all ${
+                goal.status === 'completed'
+                  ? 'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200/50 dark:border-green-800/50'
+                  : goal.status === 'failed'
+                  ? 'bg-zinc-50 dark:bg-zinc-800/30'
+                  : 'hover:shadow-md'
+              }`}>
+                <div className="space-y-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <div className="text-base font-semibold text-zinc-900 dark:text-zinc-100 mb-1.5">
+                      <div className="flex items-center gap-2 mb-2">
+                        {getTypeBadge(goal.type)}
+                        {isAlmostDone && (
+                          <span className="text-xs font-medium text-green-600 dark:text-green-400">Casi listo ✨</span>
+                        )}
+                      </div>
+                      <div className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-1">
                         {goal.name}
                       </div>
                       <div className="flex items-center gap-2 flex-wrap">
                         {getStatusBadge(goal.status)}
-                        {getTypeBadge(goal.type)}
                         {goal.budget_id && (
                           <span className="text-xs text-zinc-500 dark:text-zinc-400">
                             → {getBudgetName(goal.budget_id)}
@@ -320,35 +399,39 @@ export default function ObjetivosPage() {
                   </div>
 
                   {/* Progress bar */}
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between items-baseline text-xs">
-                      <span className="text-zinc-500 dark:text-zinc-400">
-                        {goal.progress} / {goal.target}
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                        {goal.progress} de {goal.target}
                       </span>
-                      <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-                        {getProgressPercent(goal)}%
+                      <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+                        {percent}%
                       </span>
                     </div>
-                    <div className="h-2.5 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                    <div className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
                       <div
-                        className={`h-full transition-all ${
+                        className={`h-full transition-all rounded-full ${
                           goal.status === 'completed'
-                            ? 'bg-green-500'
+                            ? 'bg-gradient-to-r from-green-500 to-emerald-500'
                             : goal.status === 'failed'
-                            ? 'bg-red-500'
-                            : 'bg-blue-500'
+                            ? 'bg-zinc-400 dark:bg-zinc-600'
+                            : percent >= 80
+                            ? 'bg-gradient-to-r from-green-500 to-emerald-500'
+                            : percent >= 50
+                            ? 'bg-gradient-to-r from-blue-500 to-indigo-500'
+                            : 'bg-gradient-to-r from-blue-400 to-blue-500'
                         }`}
-                        style={{ width: `${getProgressPercent(goal)}%` }}
+                        style={{ width: `${percent}%` }}
                       />
                     </div>
                   </div>
 
                   {/* Quick update for active goals */}
                   {goal.status === 'active' && (
-                    <div className="flex gap-2 pt-1">
+                    <div className="flex gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
                       <Input
                         type="number"
-                        placeholder="Nuevo progreso"
+                        placeholder="Actualizar progreso..."
                         className="flex-1"
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && e.target.value) {
@@ -359,9 +442,19 @@ export default function ObjetivosPage() {
                       />
                     </div>
                   )}
+
+                  {/* Payoff para completados */}
+                  {goal.status === 'completed' && (
+                    <div className="flex items-center gap-2 pt-2 border-t border-green-200/50 dark:border-green-700/50">
+                      <span className="text-green-600 dark:text-green-400">✓</span>
+                      <span className="text-sm font-medium text-green-700 dark:text-green-300">
+                        Objetivo cumplido
+                      </span>
+                    </div>
+                  )}
                 </div>
               </Card>
-            ))
+            )})
           )}
         </div>
       </div>
