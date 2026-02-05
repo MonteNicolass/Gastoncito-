@@ -87,10 +87,13 @@ export default function MesPage() {
         <TopBar title="Este Mes" />
         <div className="flex-1 overflow-y-auto px-4 py-4">
           <Card className="p-8 text-center">
-            <div className="text-4xl mb-4">📅</div>
+            <div className="text-4xl mb-4">🗓️</div>
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
-              Sin datos este mes
+              Todavía no hay datos de este mes
             </h3>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              Esta vista resume el mes actual completo
+            </p>
           </Card>
         </div>
       </div>

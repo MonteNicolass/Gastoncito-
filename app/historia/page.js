@@ -21,7 +21,6 @@ export default function HistoriaPage() {
   const [globalScore, setGlobalScore] = useState(null)
   const [events, setEvents] = useState([])
   const [allData, setAllData] = useState({})
-  const [showExportMenu, setShowExportMenu] = useState(false)
 
   useEffect(() => {
     loadHistoria()
@@ -64,8 +63,6 @@ export default function HistoriaPage() {
       else if (type === 'month') exportMonthCSV(movimientos)
       else if (type === 'all') exportAllCSV(movimientos)
     }
-
-    setShowExportMenu(false)
   }
 
   if (loading) {

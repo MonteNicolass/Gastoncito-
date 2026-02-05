@@ -109,10 +109,13 @@ export default function HoyPage() {
           <Card className="p-8 text-center">
             <div className="text-4xl mb-4">📅</div>
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
-              Nada registrado hoy aún
+              Todavía no registraste nada hoy
             </h3>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Empezá registrando algo en Chat
+            <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-3">
+              Esta vista muestra todo lo que cargues en el día
+            </p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              Podés registrar escribiendo en Chat
             </p>
           </Card>
         ) : (

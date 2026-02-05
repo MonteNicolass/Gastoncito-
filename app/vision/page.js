@@ -9,7 +9,6 @@ import { getUserPreferences, updateSectionPreferences } from '@/lib/user-prefere
 import { getSpendingByMood, getMoodByExercise, getImpulsiveSpendingByExercise } from '@/lib/insights/crossInsights'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
-import CardManager from '@/components/ui/CardManager'
 
 function getBudgetsFromLocalStorage() {
   if (typeof window === 'undefined') return []
