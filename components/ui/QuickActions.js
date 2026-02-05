@@ -120,52 +120,6 @@ export default function QuickActions() {
           </div>
         </div>
       </div>
-    />
-
-      {/* Menu */}
-      <div className="fixed inset-x-0 bottom-0 z-[61] flex items-end justify-center">
-        <div className="w-full max-w-[420px] bg-white dark:bg-zinc-900 rounded-t-3xl shadow-xl animate-slide-up pb-safe">
-          <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
-                Acciones rápidas
-              </h3>
-              <button
-                onClick={() => setShowMenu(false)}
-                className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <div className="p-4 space-y-2">
-            {actions.map((action) => (
-              <button
-                key={action.id}
-                onClick={() => handleAction(action.href)}
-                className="w-full"
-              >
-                <Card className={`p-4 ${action.color} hover:shadow-md transition-all active:scale-98`}>
-                  <div className="flex items-center gap-3">
-                    <div className="text-3xl">{action.icon}</div>
-                    <div className="text-left">
-                      <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                        {action.label}
-                      </div>
-                      <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                        Crear nuevo
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
     </>
   )
 }
