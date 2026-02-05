@@ -7,6 +7,7 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
+import { CreditCard } from 'lucide-react'
 
 // Opciones de billeteras (nombre = proveedor)
 const WALLET_OPTIONS = [
@@ -172,13 +173,15 @@ export default function BilleterasPage() {
             Mis billeteras
           </h3>
           {visibleWallets.length === 0 ? (
-            <Card className="p-8 text-center bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-zinc-800 border-zinc-200 dark:border-zinc-700">
-              <div className="text-4xl mb-4">💳</div>
+            <Card className="p-8 text-center">
+              <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                <CreditCard className="w-7 h-7 text-zinc-400 dark:text-zinc-500" />
+              </div>
               <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
                 Sin billeteras
               </h3>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                Agregá tu primera billetera para empezar
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                Agregá una billetera para empezar a organizar tus cuentas
               </p>
             </Card>
           ) : (

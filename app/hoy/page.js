@@ -5,6 +5,7 @@ import { initDB, getMovimientos, getLifeEntries, getNotes } from '@/lib/storage'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import { Sunrise, Dumbbell, MessageCircle } from 'lucide-react'
+import { Skeleton, SkeletonList } from '@/components/ui/Skeleton'
 
 export default function HoyPage() {
   const [todayData, setTodayData] = useState({
@@ -109,8 +110,50 @@ export default function HoyPage() {
     return (
       <div className="flex flex-col min-h-screen">
         <TopBar title="Hoy" />
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">Cargando...</p>
+        <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 space-y-4">
+          {/* Progress skeleton */}
+          <div className="flex items-center gap-3 px-1">
+            <div className="flex gap-1">
+              {[...Array(4)].map((_, i) => (
+                <Skeleton key={i} className="w-3 h-3 rounded-full" />
+              ))}
+            </div>
+            <Skeleton className="w-20 h-4 rounded-lg" />
+          </div>
+
+          {/* Section skeleton */}
+          <div className="space-y-2">
+            <Skeleton className="w-16 h-3 rounded-lg" />
+            <div className="p-4 bg-zinc-900 dark:bg-zinc-800 rounded-2xl">
+              <Skeleton className="w-24 h-3 mb-2 bg-zinc-700" />
+              <Skeleton className="w-32 h-8 mb-4 bg-zinc-700" />
+              <div className="space-y-3 pt-3 border-t border-zinc-700">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <Skeleton className="w-3/4 h-4 mb-1 bg-zinc-700" />
+                      <Skeleton className="w-1/2 h-3 bg-zinc-700" />
+                    </div>
+                    <Skeleton className="w-20 h-5 bg-zinc-700" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Mental skeleton */}
+          <div className="space-y-2">
+            <Skeleton className="w-16 h-3 rounded-lg" />
+            <div className="p-4 bg-purple-50 dark:bg-purple-950/20 rounded-2xl border border-purple-200/50 dark:border-purple-800/50">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <Skeleton className="w-3/4 h-4 mb-2" />
+                  <Skeleton className="w-20 h-3" />
+                </div>
+                <Skeleton className="w-12 h-10 rounded-lg" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     )

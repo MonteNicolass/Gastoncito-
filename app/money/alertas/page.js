@@ -8,6 +8,7 @@ import { detectRecurringMovements, isSubscriptionAlreadyExists, formatCadence } 
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
+import { CheckCircle, Search } from 'lucide-react'
 
 export default function AlertasPage() {
   const router = useRouter()
@@ -168,11 +169,13 @@ export default function AlertasPage() {
 
           {alerts.length === 0 ? (
             <Card className="p-8 text-center">
-              <div className="text-4xl mb-4">✅</div>
+              <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                <CheckCircle className="w-7 h-7 text-green-500 dark:text-green-400" />
+              </div>
               <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
                 Todo en orden
               </h3>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
                 No hay alertas activas en este momento
               </p>
             </Card>
@@ -223,11 +226,13 @@ export default function AlertasPage() {
 
           {detectedSubscriptions.length === 0 ? (
             <Card className="p-8 text-center">
-              <div className="text-4xl mb-4">🔍</div>
+              <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                <Search className="w-7 h-7 text-zinc-400 dark:text-zinc-500" />
+              </div>
               <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
                 Sin suscripciones nuevas
               </h3>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
                 No se detectaron movimientos recurrentes que puedan ser suscripciones
               </p>
             </Card>

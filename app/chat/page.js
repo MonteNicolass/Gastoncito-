@@ -327,20 +327,76 @@ export default function ChatPage() {
     <div className="flex flex-col h-screen pb-20">
       <TopBar title="Chat" />
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+      {/* Hero Input Section */}
+      <div className="px-4 pt-6 pb-4">
+        <div className="max-w-lg mx-auto">
+          <div className="relative">
+            <input
+              ref={inputRef}
+              className="w-full px-5 py-4 pr-14 bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-700 rounded-2xl text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-all text-base shadow-sm"
+              placeholder="¿Qué querés registrar?"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') handleSend()
+              }}
+              data-testid="chat-input"
+            />
+            <button
+              onClick={handleSend}
+              disabled={!input.trim()}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:bg-zinc-800 dark:hover:bg-zinc-200 active:scale-95 transition-all"
+              data-testid="chat-send-btn"
+            >
+              <Send className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Pills de acciones rápidas */}
+          <div className="flex items-center gap-2 mt-3 overflow-x-auto scrollbar-hide pb-1">
+            <button
+              onClick={() => setInput('Gasté ')}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-xs font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900/50 active:scale-95 transition-all whitespace-nowrap"
+            >
+              <Wallet className="w-3.5 h-3.5" />
+              <span>Gasto</span>
+            </button>
+
+            <button
+              onClick={() => setInput('Hoy me sentí ')}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium hover:bg-purple-100 dark:hover:bg-purple-900/50 active:scale-95 transition-all whitespace-nowrap"
+            >
+              <Brain className="w-3.5 h-3.5" />
+              <span>Estado</span>
+            </button>
+
+            <button
+              onClick={() => setInput('Fui al ')}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-full text-xs font-medium hover:bg-orange-100 dark:hover:bg-orange-900/50 active:scale-95 transition-all whitespace-nowrap"
+            >
+              <Dumbbell className="w-3.5 h-3.5" />
+              <span>Hábito</span>
+            </button>
+
+            <button
+              onClick={() => setInput('Nota: ')}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium hover:bg-blue-100 dark:hover:bg-blue-900/50 active:scale-95 transition-all whitespace-nowrap"
+            >
+              <StickyNote className="w-3.5 h-3.5" />
+              <span>Nota</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 flex items-center justify-center">
-              <MessageCircle className="w-8 h-8 text-purple-600 dark:text-purple-400" />
-            </div>
-            <div className="text-center">
-              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                Todo empieza acá
-              </p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 px-8">
-                Escribí lo que quieras registrar en tu día
-              </p>
-            </div>
+          <div className="flex flex-col items-center justify-center h-full gap-3 opacity-60">
+            <MessageCircle className="w-10 h-10 text-zinc-400 dark:text-zinc-500" />
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center px-8">
+              Escribí arriba y presioná Enter para guardar
+            </p>
           </div>
         )}
 
@@ -348,20 +404,20 @@ export default function ChatPage() {
           <div key={i}>
             <div className={`flex ${m.from === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div
-                className={`max-w-[300px] px-4 py-3 rounded-2xl shadow-sm ${
+                className={`max-w-[300px] px-4 py-3 rounded-2xl ${
                   m.from === 'user'
-                    ? 'bg-blue-600 text-white rounded-br-lg'
-                    : 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-bl-lg border border-zinc-200/50 dark:border-zinc-700/50'
+                    ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-br-md'
+                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-bl-md'
                 }`}
               >
                 <p className="text-sm leading-relaxed">{m.text}</p>
                 {m.hint && (
-                  <p className={`text-xs mt-2 font-medium ${
+                  <p className={`text-xs mt-1.5 ${
                     m.from === 'user'
-                      ? 'text-blue-200'
-                      : 'text-blue-600 dark:text-blue-400'
+                      ? 'text-zinc-400 dark:text-zinc-500'
+                      : 'text-zinc-500 dark:text-zinc-400'
                   }`}>
-                    ↳ {m.hint}
+                    {m.hint}
                   </p>
                 )}
               </div>
@@ -396,82 +452,13 @@ export default function ChatPage() {
       </div>
 
       {/* Link rápido a Hoy */}
-      <div className="px-4 pb-3">
+      <div className="px-4 py-3 border-t border-zinc-100 dark:border-zinc-800">
         <a href="/hoy" className="block">
-          <div className="text-center text-xs font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors py-2 flex items-center justify-center gap-1">
+          <div className="text-center text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors flex items-center justify-center gap-1">
             <span>Ver todo lo de hoy</span>
             <ChevronRight className="w-3 h-3" />
           </div>
         </a>
-      </div>
-
-      {/* Acciones rápidas */}
-      <div className="px-4 pb-3">
-        <div className="flex items-center justify-center gap-3">
-          <button
-            onClick={() => setInput('Gasté ')}
-            className="flex flex-col items-center gap-1.5 group"
-          >
-            <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center shadow-sm group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900/60 group-active:scale-95 transition-all">
-              <Wallet className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-            </div>
-            <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Gasto</span>
-          </button>
-
-          <button
-            onClick={() => setInput('Hoy me sentí ')}
-            className="flex flex-col items-center gap-1.5 group"
-          >
-            <div className="w-14 h-14 rounded-2xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center shadow-sm group-hover:bg-purple-200 dark:group-hover:bg-purple-900/60 group-active:scale-95 transition-all">
-              <Brain className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-            </div>
-            <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Estado</span>
-          </button>
-
-          <button
-            onClick={() => setInput('Fui al ')}
-            className="flex flex-col items-center gap-1.5 group"
-          >
-            <div className="w-14 h-14 rounded-2xl bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center shadow-sm group-hover:bg-orange-200 dark:group-hover:bg-orange-900/60 group-active:scale-95 transition-all">
-              <Dumbbell className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-            </div>
-            <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Hábito</span>
-          </button>
-
-          <button
-            onClick={() => setInput('Nota: ')}
-            className="flex flex-col items-center gap-1.5 group"
-          >
-            <div className="w-14 h-14 rounded-2xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center shadow-sm group-hover:bg-blue-200 dark:group-hover:bg-blue-900/60 group-active:scale-95 transition-all">
-              <StickyNote className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            </div>
-            <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Nota</span>
-          </button>
-        </div>
-      </div>
-
-      <div className="sticky bottom-20 backdrop-blur-xl bg-zinc-50/90 dark:bg-zinc-950/90 border-t border-zinc-200/50 dark:border-zinc-800/50 px-4 py-4">
-        <div className="flex gap-3 items-end max-w-lg mx-auto">
-          <input
-            ref={inputRef}
-            className="flex-1 px-5 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200/50 dark:border-zinc-700/50 rounded-2xl text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 transition-all text-sm"
-            placeholder="Escribí algo que quieras registrar…"
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === 'Enter') handleSend()
-            }}
-            data-testid="chat-input"
-          />
-          <button
-            onClick={handleSend}
-            className="px-5 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm font-semibold rounded-2xl shadow-lg shadow-purple-500/20 active:scale-95 transition-all flex items-center gap-2"
-            data-testid="chat-send-btn"
-          >
-            <Send className="w-4 h-4" />
-            <span>Enviar</span>
-          </button>
-        </div>
       </div>
 
       {/* Undo Toast */}

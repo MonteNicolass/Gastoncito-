@@ -5,6 +5,8 @@ import { initDB, getMovimientos, getCategorias } from '@/lib/storage'
 import { getAllMonthlyInsights } from '@/lib/monthly-insights'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { BarChart3, TrendingUp } from 'lucide-react'
 
 // Helper para obtener presupuestos de localStorage
 function getBudgetsFromLocalStorage() {
@@ -62,9 +64,57 @@ export default function ResumenMensualPage() {
     return (
       <div className="flex flex-col min-h-screen">
         <TopBar title="Resumen Mensual" backHref="/money" />
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-          <Card className="p-4 animate-pulse">
-            <div className="h-32 bg-zinc-200 dark:bg-zinc-800 rounded" />
+        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
+          {/* Month title */}
+          <div className="text-center">
+            <Skeleton className="w-32 h-6 mx-auto rounded-lg" />
+          </div>
+
+          {/* Balance card */}
+          <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-2xl border border-blue-200 dark:border-blue-800">
+            <Skeleton className="w-24 h-4 mb-4" />
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <Skeleton className="w-16 h-4" />
+                <Skeleton className="w-28 h-7" />
+              </div>
+              <div className="flex justify-between">
+                <Skeleton className="w-16 h-4" />
+                <Skeleton className="w-28 h-7" />
+              </div>
+              <div className="h-px bg-blue-200 dark:bg-blue-800" />
+              <div className="flex justify-between">
+                <Skeleton className="w-16 h-4" />
+                <Skeleton className="w-32 h-9" />
+              </div>
+            </div>
+          </div>
+
+          {/* Comparison card */}
+          <Card className="p-4">
+            <Skeleton className="w-28 h-3 mb-3" />
+            <div className="space-y-2">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="flex justify-between">
+                  <Skeleton className="w-24 h-4" />
+                  <Skeleton className="w-20 h-5" />
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          {/* Top categories */}
+          <Card className="p-4">
+            <Skeleton className="w-28 h-3 mb-3" />
+            <div className="space-y-2">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <Skeleton className="w-6 h-6 rounded-full" />
+                  <Skeleton className="flex-1 h-4" />
+                  <Skeleton className="w-20 h-5" />
+                </div>
+              ))}
+            </div>
           </Card>
         </div>
       </div>
@@ -77,12 +127,14 @@ export default function ResumenMensualPage() {
         <TopBar title="Resumen Mensual" backHref="/money" />
         <div className="flex-1 overflow-y-auto px-4 py-4">
           <Card className="p-8 text-center">
-            <div className="text-4xl mb-4">📊</div>
+            <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+              <BarChart3 className="w-7 h-7 text-zinc-400 dark:text-zinc-500" />
+            </div>
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
-              Sin datos
+              Sin datos todavía
             </h3>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Registra algunos movimientos para ver el resumen mensual
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Cuando registres movimientos, acá vas a ver el resumen del mes
             </p>
           </Card>
         </div>
@@ -302,12 +354,14 @@ export default function ResumenMensualPage() {
         {/* Sin datos */}
         {summary.totalGastos === 0 && summary.totalIngresos === 0 && (
           <Card className="p-8 text-center">
-            <div className="text-4xl mb-4">📊</div>
+            <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+              <TrendingUp className="w-7 h-7 text-zinc-400 dark:text-zinc-500" />
+            </div>
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
               Sin movimientos este mes
             </h3>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Registra gastos o ingresos para ver el resumen
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Registrá gastos o ingresos para ver el resumen
             </p>
           </Card>
         )}

@@ -8,6 +8,7 @@ import { detectAllEvents } from '@/lib/events-detection'
 import { getAllSilentAlerts } from '@/lib/silent-alerts'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
+import { ClipboardList } from 'lucide-react'
 
 function getBudgetsFromLocalStorage() {
   if (typeof window === 'undefined') return []
@@ -165,12 +166,14 @@ export default function EventosPage() {
         {/* Lista de eventos */}
         {filteredEvents.length === 0 ? (
           <Card className="p-8 text-center">
-            <div className="text-4xl mb-4">📋</div>
+            <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+              <ClipboardList className="w-7 h-7 text-zinc-400 dark:text-zinc-500" />
+            </div>
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
               Sin eventos en este filtro
             </h3>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Los eventos detectados aparecerán aquí
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Cuando se detecten patrones o anomalías, van a aparecer acá
             </p>
           </Card>
         ) : (

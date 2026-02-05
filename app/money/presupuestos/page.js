@@ -7,6 +7,7 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
+import { PieChart } from 'lucide-react'
 
 // LocalStorage helpers para presupuestos
 const STORAGE_KEY = 'gaston_budgets'
@@ -299,13 +300,15 @@ export default function PresupuestosPage() {
             Mis presupuestos
           </h3>
           {budgetsWithProgress.length === 0 ? (
-            <Card className="p-8 text-center bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-zinc-800 border-zinc-200 dark:border-zinc-700">
-              <div className="text-4xl mb-4">📊</div>
+            <Card className="p-8 text-center">
+              <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                <PieChart className="w-7 h-7 text-zinc-400 dark:text-zinc-500" />
+              </div>
               <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
                 Sin presupuestos
               </h2>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                Creá límites de gasto para tener más control
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                Definí límites de gasto para cada categoría o billetera
               </p>
             </Card>
           ) : (

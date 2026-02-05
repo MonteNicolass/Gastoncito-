@@ -6,6 +6,7 @@ import { initDB, getLifeEntriesByDomain, deleteLifeEntry } from '@/lib/storage'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
+import { BookOpen } from 'lucide-react'
 
 export default function DiarioMentalPage() {
   const router = useRouter()
@@ -83,11 +84,13 @@ export default function DiarioMentalPage() {
           </h3>
           {entries.length === 0 ? (
             <Card className="p-8 text-center bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200/50 dark:border-purple-800/50">
-              <div className="text-4xl mb-4">📝</div>
+              <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                <BookOpen className="w-7 h-7 text-purple-500 dark:text-purple-400" />
+              </div>
               <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
                 Tu diario está vacío
               </h3>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
                 Empezá registrando cómo te sentís hoy
               </p>
             </Card>
