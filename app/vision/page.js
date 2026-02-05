@@ -7,6 +7,8 @@ import { runAlertEngine, dismissAlert, buildUserContext, getSuggestionIcon, getS
 import { getSpendingByMood, getMoodByExercise, getImpulsiveSpendingByExercise } from '@/lib/insights/crossInsights'
 import { getCachedRates } from '@/lib/services/market-rates'
 import { runRatoneandoEngine, getSavingsSummary, learnFromGasto } from '@/lib/ratoneando'
+import { calculateMonthlyState, getDomainProgressions, getHistoricalTrend, getStateDisplay, saveProgressionToHistory, formatMonth } from '@/lib/progression'
+import { getMonthlyStats, getMonthlySummaryPayoff } from '@/lib/payoff'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import ProgressRing from '@/components/ui/ProgressRing'
@@ -34,7 +36,11 @@ import {
   MessageCircle,
   Bell,
   HelpCircle,
-  Info
+  Info,
+  Minus,
+  Shield,
+  PiggyBank,
+  Trophy
 } from 'lucide-react'
 
 function getBudgetsFromLocalStorage() {
@@ -52,6 +58,10 @@ export default function ResumenPage() {
   const [suggestions, setSuggestions] = useState([])
   const [crossInsights, setCrossInsights] = useState(null)
   const [savingsInsight, setSavingsInsight] = useState(null)
+  const [monthlyState, setMonthlyState] = useState(null)
+  const [domainProgressions, setDomainProgressions] = useState(null)
+  const [progressHistory, setProgressHistory] = useState(null)
+  const [monthlyAchievements, setMonthlyAchievements] = useState(null)
   const [showConfigModal, setShowConfigModal] = useState(false)
   const [expandedAlertId, setExpandedAlertId] = useState(null)
   const [widgetConfig, setWidgetConfig] = useState(() => {
@@ -211,6 +221,31 @@ export default function ResumenPage() {
       }
       moneyHealth = Math.min(100, Math.max(0, moneyHealth))
 
+      // Calculate progressions
+      const monthlyStateResult = calculateMonthlyState({
+        movimientos,
+        lifeEntries,
+        budgets,
+        goals,
+        alertsResolved: alertResult.counts?.total || 0,
+        alertsActive: allAlerts.length
+      })
+
+      const progressionsResult = getDomainProgressions({
+        movimientos,
+        lifeEntries,
+        budgets,
+        goals
+      })
+
+      // Save to history if on 'mes' view
+      if (period === 'mes') {
+        saveProgressionToHistory(monthlyStateResult, progressionsResult)
+      }
+
+      const historyResult = getHistoricalTrend()
+      const achievements = getMonthlySummaryPayoff()
+
       setData({
         gastoTotal,
         gastoDiff,
@@ -228,6 +263,10 @@ export default function ResumenPage() {
       setSuggestions(allSuggestions)
       setCrossInsights({ spendingByMood, moodByExercise, impulsiveByExercise })
       setSavingsInsight(savingsSummary)
+      setMonthlyState(monthlyStateResult)
+      setDomainProgressions(progressionsResult)
+      setProgressHistory(historyResult)
+      setMonthlyAchievements(achievements)
     } catch (error) {
       console.error('Error loading data:', error)
     } finally {
@@ -434,6 +473,169 @@ export default function ResumenPage() {
             </button>
           ))}
         </div>
+
+        {/* Monthly State Banner (only on 'mes') */}
+        {period === 'mes' && monthlyState && (
+          <div className={`p-4 rounded-2xl border ${
+            monthlyState.state === 'excellent' ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800' :
+            monthlyState.state === 'stable' ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800' :
+            monthlyState.state === 'improving' ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800' :
+            'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800'
+          }`}>
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                monthlyState.state === 'excellent' ? 'bg-emerald-500/20' :
+                monthlyState.state === 'stable' ? 'bg-blue-500/20' :
+                monthlyState.state === 'improving' ? 'bg-amber-500/20' :
+                'bg-red-500/20'
+              }`}>
+                {monthlyState.state === 'excellent' && <TrendingUp className="w-5 h-5 text-emerald-500" />}
+                {monthlyState.state === 'stable' && <Minus className="w-5 h-5 text-blue-500" />}
+                {monthlyState.state === 'improving' && <TrendingUp className="w-5 h-5 text-amber-500" />}
+                {monthlyState.state === 'at_risk' && <AlertTriangle className="w-5 h-5 text-red-500" />}
+              </div>
+              <div className="flex-1">
+                <p className={`text-sm font-semibold ${
+                  monthlyState.state === 'excellent' ? 'text-emerald-700 dark:text-emerald-300' :
+                  monthlyState.state === 'stable' ? 'text-blue-700 dark:text-blue-300' :
+                  monthlyState.state === 'improving' ? 'text-amber-700 dark:text-amber-300' :
+                  'text-red-700 dark:text-red-300'
+                }`}>
+                  Este mes: {getStateDisplay(monthlyState.state).label}
+                </p>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
+                  Score general: {monthlyState.score}/100
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Domain Progressions */}
+        {domainProgressions && (
+          <div className="space-y-2">
+            <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1 flex items-center gap-2">
+              <BarChart3 className="w-3 h-3" />
+              Progreso del mes
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              {/* Money Progression */}
+              <div className="p-3 rounded-xl bg-white dark:bg-zinc-800/50 border border-zinc-200/60 dark:border-zinc-700/60">
+                <div className="flex items-center gap-2 mb-2">
+                  <Wallet className="w-4 h-4 text-emerald-500" />
+                  <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Money</span>
+                  {domainProgressions.money?.trend === 'up' && <TrendingUp className="w-3 h-3 text-emerald-500 ml-auto" />}
+                  {domainProgressions.money?.trend === 'down' && <TrendingDown className="w-3 h-3 text-red-500 ml-auto" />}
+                </div>
+                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  {domainProgressions.money?.label || '–'}
+                </p>
+                {domainProgressions.money?.value !== null && (
+                  <div className="mt-2 h-1.5 bg-zinc-100 dark:bg-zinc-700 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${
+                        domainProgressions.money.value >= 70 ? 'bg-emerald-500' :
+                        domainProgressions.money.value >= 40 ? 'bg-amber-500' : 'bg-red-500'
+                      }`}
+                      style={{ width: `${Math.min(100, domainProgressions.money.value)}%` }}
+                    />
+                  </div>
+                )}
+                <p className="text-[10px] text-zinc-500 mt-1">{domainProgressions.money?.detail}</p>
+              </div>
+
+              {/* Mental Progression */}
+              <div className="p-3 rounded-xl bg-white dark:bg-zinc-800/50 border border-zinc-200/60 dark:border-zinc-700/60">
+                <div className="flex items-center gap-2 mb-2">
+                  <Brain className="w-4 h-4 text-purple-500" />
+                  <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Mental</span>
+                  {domainProgressions.mental?.trend === 'up' && <TrendingUp className="w-3 h-3 text-emerald-500 ml-auto" />}
+                  {domainProgressions.mental?.trend === 'down' && <TrendingDown className="w-3 h-3 text-red-500 ml-auto" />}
+                </div>
+                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  {domainProgressions.mental?.label || '–'}
+                </p>
+                {domainProgressions.mental?.value !== null && (
+                  <div className="mt-2 h-1.5 bg-zinc-100 dark:bg-zinc-700 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${
+                        domainProgressions.mental.value >= 70 ? 'bg-purple-500' :
+                        domainProgressions.mental.value >= 40 ? 'bg-amber-500' : 'bg-red-500'
+                      }`}
+                      style={{ width: `${Math.min(100, domainProgressions.mental.value)}%` }}
+                    />
+                  </div>
+                )}
+                <p className="text-[10px] text-zinc-500 mt-1">{domainProgressions.mental?.detail}</p>
+              </div>
+
+              {/* Physical Progression */}
+              <div className="p-3 rounded-xl bg-white dark:bg-zinc-800/50 border border-zinc-200/60 dark:border-zinc-700/60">
+                <div className="flex items-center gap-2 mb-2">
+                  <Dumbbell className="w-4 h-4 text-orange-500" />
+                  <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Físico</span>
+                  {domainProgressions.physical?.trend === 'up' && <TrendingUp className="w-3 h-3 text-emerald-500 ml-auto" />}
+                  {domainProgressions.physical?.trend === 'down' && <TrendingDown className="w-3 h-3 text-red-500 ml-auto" />}
+                </div>
+                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  {domainProgressions.physical?.label || '–'}
+                </p>
+                {domainProgressions.physical?.value > 0 && (
+                  <div className="flex items-center gap-1 mt-2">
+                    <Flame className="w-3 h-3 text-orange-500" />
+                    <span className="text-[10px] text-orange-600 dark:text-orange-400 font-medium">
+                      {domainProgressions.physical.value}d racha
+                    </span>
+                  </div>
+                )}
+                <p className="text-[10px] text-zinc-500 mt-1">{domainProgressions.physical?.detail}</p>
+              </div>
+
+              {/* Goals Progression */}
+              <div className="p-3 rounded-xl bg-white dark:bg-zinc-800/50 border border-zinc-200/60 dark:border-zinc-700/60">
+                <div className="flex items-center gap-2 mb-2">
+                  <Target className="w-4 h-4 text-indigo-500" />
+                  <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Objetivos</span>
+                  {domainProgressions.goals?.trend === 'up' && <TrendingUp className="w-3 h-3 text-emerald-500 ml-auto" />}
+                  {domainProgressions.goals?.trend === 'down' && <TrendingDown className="w-3 h-3 text-red-500 ml-auto" />}
+                </div>
+                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  {domainProgressions.goals?.label || '–'}
+                </p>
+                {domainProgressions.goals?.value !== null && (
+                  <div className="mt-2 h-1.5 bg-zinc-100 dark:bg-zinc-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-indigo-500 rounded-full transition-all"
+                      style={{ width: `${Math.min(100, domainProgressions.goals.value)}%` }}
+                    />
+                  </div>
+                )}
+                <p className="text-[10px] text-zinc-500 mt-1">{domainProgressions.goals?.detail}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Monthly Achievements (Payoff Summary) */}
+        {monthlyAchievements && monthlyAchievements.length > 0 && (
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/20 dark:to-purple-500/20 border border-indigo-200/50 dark:border-indigo-500/30">
+            <h3 className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+              <Trophy className="w-3 h-3" />
+              Este mes
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {monthlyAchievements.map((achievement, idx) => (
+                <div key={idx} className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/60 dark:bg-zinc-800/60 rounded-lg">
+                  {achievement.icon === 'PiggyBank' && <PiggyBank className="w-3.5 h-3.5 text-emerald-500" />}
+                  {achievement.icon === 'Shield' && <Shield className="w-3.5 h-3.5 text-blue-500" />}
+                  {achievement.icon === 'Flame' && <Flame className="w-3.5 h-3.5 text-orange-500" />}
+                  {achievement.icon === 'Trophy' && <Trophy className="w-3.5 h-3.5 text-indigo-500" />}
+                  <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">{achievement.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Proactive Suggestions Section */}
         {suggestions.length > 0 && (
@@ -762,6 +964,53 @@ export default function ResumenPage() {
                 <ChevronRight className="w-4 h-4 text-zinc-400 flex-shrink-0" />
               </button>
             )}
+          </div>
+        )}
+
+        {/* 3-Month Progress History */}
+        {progressHistory && progressHistory.data && progressHistory.data.length > 1 && widgetConfig.historial && (
+          <div className="space-y-2">
+            <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1 flex items-center gap-2">
+              <Calendar className="w-3 h-3" />
+              Tendencia
+            </h3>
+            <div className="p-4 rounded-xl bg-white dark:bg-zinc-800/50 border border-zinc-200/60 dark:border-zinc-700/60">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs text-zinc-500">Últimos meses</span>
+                <div className="flex items-center gap-1">
+                  {progressHistory.trend === 'up' && <TrendingUp className="w-4 h-4 text-emerald-500" />}
+                  {progressHistory.trend === 'down' && <TrendingDown className="w-4 h-4 text-red-500" />}
+                  {progressHistory.trend === 'neutral' && <Minus className="w-4 h-4 text-zinc-400" />}
+                  <span className={`text-xs font-medium ${
+                    progressHistory.trend === 'up' ? 'text-emerald-600 dark:text-emerald-400' :
+                    progressHistory.trend === 'down' ? 'text-red-600 dark:text-red-400' :
+                    'text-zinc-500'
+                  }`}>
+                    {progressHistory.trend === 'up' ? 'Mejorando' :
+                     progressHistory.trend === 'down' ? 'Bajando' : 'Estable'}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-end gap-3 h-12">
+                {progressHistory.data.slice().reverse().map((month, idx) => {
+                  const height = Math.max(20, (month.score / 100) * 48)
+                  return (
+                    <div key={month.month} className="flex-1 flex flex-col items-center gap-1">
+                      <div
+                        className={`w-full rounded-t transition-all ${
+                          month.state === 'excellent' ? 'bg-emerald-500' :
+                          month.state === 'stable' ? 'bg-blue-500' :
+                          month.state === 'improving' ? 'bg-amber-500' :
+                          'bg-red-500'
+                        }`}
+                        style={{ height: `${height}px` }}
+                      />
+                      <span className="text-[10px] text-zinc-500">{formatMonth(month.month)}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
           </div>
         )}
 

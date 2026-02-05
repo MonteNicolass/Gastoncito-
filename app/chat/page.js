@@ -5,6 +5,7 @@ import { initDB, addMovimiento, updateSaldo, addNote, addLifeEntry, deleteMovimi
 import { getPriorityAlertForChat, actOnAlert } from '@/lib/alerts'
 import { runRatoneandoEngine } from '@/lib/ratoneando'
 import { getRatoneandoAlertForChat } from '@/lib/alerts/ratoneando-alerts'
+import { generatePayoff, calculatePayoffContext, updateMonthlyStats } from '@/lib/payoff'
 import TopBar from '@/components/ui/TopBar'
 import Button from '@/components/ui/Button'
 import {
@@ -19,7 +20,13 @@ import {
   AlertTriangle,
   Heart,
   Bell,
-  PiggyBank
+  PiggyBank,
+  Flame,
+  TrendingUp,
+  Shield,
+  Target,
+  Trophy,
+  Plus
 } from 'lucide-react'
 
 // Ejemplos clickeables para el estado inicial
@@ -38,7 +45,9 @@ export default function ChatPage() {
   const [isTyping, setIsTyping] = useState(false)
   const [alertContext, setAlertContext] = useState(null)
   const [ratoneandoContext, setRatoneandoContext] = useState(null)
+  const [payoffToast, setPayoffToast] = useState(null)
   const messagesEndRef = useRef(null)
+  const payoffTimerRef = useRef(null)
   const inputRef = useRef(null)
   const undoTimerRef = useRef(null)
 
@@ -257,6 +266,13 @@ export default function ChatPage() {
       })
       showUndoToast()
 
+      // Show payoff for expense/income
+      if (movimiento.tipo === 'gasto') {
+        showPayoff('expense_logged', { amount: movimiento.monto, category: money.category })
+      } else {
+        showPayoff('income_logged', { amount: movimiento.monto })
+      }
+
       const typeLabel = movimiento.tipo === 'ingreso' ? 'Ingreso registrado' : 'Gasto registrado'
       setTimeout(() => {
         setIsTyping(false)
@@ -280,6 +296,13 @@ export default function ChatPage() {
         data: { text: entry.text || originalText, domain: entry.domain, meta: entry.meta || {} }
       })
       showUndoToast()
+
+      // Show payoff for mood or activity
+      if (entry.domain === 'mental' && entry.meta?.mood_score) {
+        showPayoff('mood_logged', { score: entry.meta.mood_score })
+      } else if (entry.domain === 'physical') {
+        showPayoff('activity_logged', { activityType: entry.text || originalText })
+      }
 
       const labels = {
         general: 'Guardado',
@@ -338,6 +361,36 @@ export default function ChatPage() {
       setShowUndo(false)
       setLastAction(null)
     }, 8000)
+  }
+
+  function showPayoff(actionType, context) {
+    const payoff = generatePayoff(actionType, context)
+    if (!payoff || payoff.type === 'logged') return // Don't show generic payoffs
+
+    setPayoffToast(payoff)
+
+    if (payoffTimerRef.current) {
+      clearTimeout(payoffTimerRef.current)
+    }
+
+    payoffTimerRef.current = setTimeout(() => {
+      setPayoffToast(null)
+    }, 4000)
+  }
+
+  function getPayoffIcon(iconName) {
+    const icons = {
+      'Check': Check,
+      'PiggyBank': PiggyBank,
+      'Flame': Flame,
+      'TrendingUp': TrendingUp,
+      'Shield': Shield,
+      'Target': Target,
+      'Trophy': Trophy,
+      'Plus': Plus,
+      'Zap': Sparkles
+    }
+    return icons[iconName] || Check
   }
 
   async function handleUndo() {
@@ -685,6 +738,40 @@ export default function ChatPage() {
               <Undo2 className="w-4 h-4" />
               <span>Deshacer</span>
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Payoff Toast */}
+      {payoffToast && !showUndo && (
+        <div className="fixed bottom-28 left-4 right-4 z-[70] animate-slide-up">
+          <div className={`px-5 py-4 rounded-2xl shadow-2xl flex items-center gap-3 max-w-md mx-auto ${
+            payoffToast.color === 'emerald' ? 'bg-emerald-600' :
+            payoffToast.color === 'purple' ? 'bg-purple-600' :
+            payoffToast.color === 'orange' ? 'bg-orange-600' :
+            payoffToast.color === 'indigo' ? 'bg-indigo-600' :
+            payoffToast.color === 'blue' ? 'bg-blue-600' :
+            'bg-zinc-800'
+          }`}>
+            <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
+              payoffToast.color === 'emerald' ? 'bg-white/20' :
+              payoffToast.color === 'purple' ? 'bg-white/20' :
+              payoffToast.color === 'orange' ? 'bg-white/20' :
+              payoffToast.color === 'indigo' ? 'bg-white/20' :
+              payoffToast.color === 'blue' ? 'bg-white/20' :
+              'bg-white/10'
+            }`}>
+              {(() => {
+                const IconComponent = getPayoffIcon(payoffToast.icon)
+                return <IconComponent className="w-5 h-5 text-white" />
+              })()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-white">{payoffToast.message}</p>
+              {payoffToast.detail && (
+                <p className="text-xs text-white/80 mt-0.5">{payoffToast.detail}</p>
+              )}
+            </div>
           </div>
         </div>
       )}
