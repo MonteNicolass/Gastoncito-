@@ -11,6 +11,7 @@ export default function FisicoPage() {
 
       <div className="flex-1 overflow-y-auto px-4 py-4">
         <Card className="overflow-hidden">
+          <ListRow label="📊 Resumen Mensual" href="/fisico/resumen" />
           <ListRow label="Hábitos" href="/fisico/habitos" />
           <ListRow label="Salud" href="/fisico/salud" />
           <ListRow label="Entrenos" href="/fisico/entrenos" />

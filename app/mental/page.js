@@ -11,6 +11,7 @@ export default function MentalPage() {
 
       <div className="flex-1 overflow-y-auto px-4 py-4">
         <Card className="overflow-hidden">
+          <ListRow label="📊 Resumen Mensual" href="/mental/resumen" />
           <ListRow label="Estado" href="/mental/estado" />
           <ListRow label="Diario" href="/mental/diario" />
           <ListRow label="Objetivos" href="/mental/objetivos" />

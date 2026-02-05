@@ -81,7 +81,7 @@ export default function VisionGeneralPage() {
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen">
-        <TopBar title="Visión General" />
+        <TopBar title="Resumen General" />
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
           <Card className="p-4 animate-pulse">
             <div className="h-24 bg-zinc-200 dark:bg-zinc-800 rounded" />
