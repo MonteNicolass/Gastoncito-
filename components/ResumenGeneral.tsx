@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { initDB, getMovimientos, getLifeEntries, getSubscriptions } from '@/lib/storage'
+import { initDB, getMovimientos, getLifeEntries, getSubscriptions, getGoals, getNotes } from '@/lib/storage'
 import { getStoredPrices } from '@/lib/ratoneando/price-storage'
 import {
   getGeneralAlerts,
@@ -18,13 +18,17 @@ import {
   type PhysicalSnapshot,
   type GeneralProgress,
 } from '@/lib/general-engine'
+import { getGoalsSnapshot, type GoalsOverview } from '@/lib/goals-engine'
+import { getRecentNotes, type NotePreview } from '@/lib/notes-engine'
 import type { Movimiento } from '@/lib/economic-alerts-engine'
 import type { MentalRecord } from '@/lib/mental-engine'
 import type { PhysicalRecord } from '@/lib/physical-engine'
 import AlertCard from '@/components/AlertCard'
+import GoalsProgress from '@/components/GoalsProgress'
+import NotesPreview from '@/components/NotesPreview'
 import Card from '@/components/ui/Card'
 import TopBar from '@/components/ui/TopBar'
-import { SkeletonHero, SkeletonCard } from '@/components/ui/Skeleton'
+import { Skeleton } from '@/components/ui/Skeleton'
 import {
   Brain,
   Dumbbell,
@@ -93,6 +97,63 @@ const STATUS_CONFIG = {
   },
 } as const
 
+// ── Skeleton Loaders ─────────────────────────────────────────
+
+function SkeletonState() {
+  return (
+    <div className="rounded-2xl p-5 bg-zinc-200 dark:bg-zinc-800 animate-pulse">
+      <div className="flex items-center gap-3">
+        <Skeleton className="w-6 h-6 rounded-lg bg-zinc-300 dark:bg-zinc-700" />
+        <Skeleton className="w-24 h-6 rounded-lg bg-zinc-300 dark:bg-zinc-700" />
+      </div>
+      <Skeleton className="w-48 h-4 mt-3 rounded-lg bg-zinc-300 dark:bg-zinc-700" />
+    </div>
+  )
+}
+
+function SkeletonAlerts() {
+  return (
+    <div className="space-y-2">
+      <Skeleton className="w-16 h-3 rounded-lg" />
+      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 p-3">
+        <div className="flex items-center gap-3">
+          <Skeleton className="w-5 h-5 rounded-lg" />
+          <Skeleton className="flex-1 h-4 rounded-lg" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function SkeletonSnapshots() {
+  return (
+    <div className="grid grid-cols-3 gap-3">
+      {[0, 1, 2].map(i => (
+        <Card key={i} className="p-3.5">
+          <div className="flex items-center gap-1.5 mb-2">
+            <Skeleton className="w-4 h-4 rounded" />
+            <Skeleton className="w-10 h-3 rounded" />
+          </div>
+          <Skeleton className="w-16 h-5 rounded mb-1.5" />
+          <Skeleton className="w-12 h-3 rounded" />
+        </Card>
+      ))}
+    </div>
+  )
+}
+
+function SkeletonGoals() {
+  return (
+    <Card className="p-4 space-y-3">
+      <div className="flex items-center justify-between mb-1.5">
+        <Skeleton className="w-32 h-4 rounded" />
+        <Skeleton className="w-8 h-3 rounded" />
+      </div>
+      <Skeleton className="w-full h-1.5 rounded-full" />
+    </Card>
+  )
+}
+
 // ── Component ────────────────────────────────────────────────
 
 export default function ResumenGeneral() {
@@ -104,6 +165,8 @@ export default function ResumenGeneral() {
   const [mentalSnap, setMentalSnap] = useState<MentalSnapshot | null>(null)
   const [physSnap, setPhysSnap] = useState<PhysicalSnapshot | null>(null)
   const [progress, setProgress] = useState<GeneralProgress | null>(null)
+  const [goalsOverview, setGoalsOverview] = useState<GoalsOverview | null>(null)
+  const [recentNotes, setRecentNotes] = useState<NotePreview[]>([])
 
   useEffect(() => {
     loadData()
@@ -117,6 +180,8 @@ export default function ResumenGeneral() {
       const movimientos: Movimiento[] = await getMovimientos()
       const lifeEntries: LifeEntry[] = await getLifeEntries()
       const subscriptions = await getSubscriptions()
+      const goals: any[] = await getGoals()
+      const notes: any[] = await getNotes()
       const priceHistory = (getStoredPrices() || []).map((p: any) => ({
         product_name: p.product_name,
         price: p.price,
@@ -140,6 +205,8 @@ export default function ResumenGeneral() {
       setMentalSnap(getMentalSnapshot(mentalRecords))
       setPhysSnap(getPhysicalSnapshot(physicalRecords))
       setProgress(getGeneralProgress(mentalRecords, physicalRecords, movimientos))
+      setGoalsOverview(getGoalsSnapshot(goals))
+      setRecentNotes(getRecentNotes(notes, 3))
     } catch (error) {
       console.error('Error loading resumen:', error)
     } finally {
@@ -152,13 +219,11 @@ export default function ResumenGeneral() {
     return (
       <div className="flex flex-col min-h-screen bg-zinc-50 dark:bg-zinc-950">
         <TopBar title="Resumen" action={null} backHref={null} />
-        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
-          <SkeletonHero />
-          <div className="grid grid-cols-3 gap-3">
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-          </div>
+        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-5">
+          <SkeletonState />
+          <SkeletonAlerts />
+          <SkeletonSnapshots />
+          <SkeletonGoals />
         </div>
       </div>
     )
@@ -175,7 +240,7 @@ export default function ResumenGeneral() {
 
         {/* ── 1. Estado General ── */}
         {state && (
-          <div className={`relative rounded-2xl p-5 overflow-hidden bg-gradient-to-br ${statusCfg.gradient}`}>
+          <div className={`relative rounded-2xl p-5 overflow-hidden bg-gradient-to-br ${statusCfg.gradient} transition-all duration-300`}>
             <div className="absolute inset-0 bg-black/10" />
             <div className="relative">
               <div className="flex items-center gap-3">
@@ -207,14 +272,17 @@ export default function ResumenGeneral() {
         {/* ── 3. Snapshots por pilar ── */}
         <div className="grid grid-cols-3 gap-3">
           {/* Economy */}
-          <button onClick={() => router.push('/money')} className="text-left">
-            <Card className="p-3.5">
+          <button
+            onClick={() => router.push('/money')}
+            className="text-left transition-transform active:scale-[0.97]"
+          >
+            <Card className="p-3.5 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
               <div className="flex items-center gap-1.5 mb-2">
                 <Wallet className="w-4 h-4 text-emerald-500" />
                 <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">Money</span>
               </div>
               <p className="text-base font-bold text-zinc-900 dark:text-zinc-100 font-mono leading-tight">
-                {econSnap ? formatARS(econSnap.monthlySpend) : '–'}
+                {econSnap ? formatARS(econSnap.monthlySpend) : '\u2013'}
               </p>
               <div className="flex items-center gap-1 mt-1.5">
                 {econSnap && econSnap.deltaVsAvgPercent > 10 && (
@@ -242,8 +310,11 @@ export default function ResumenGeneral() {
           </button>
 
           {/* Mental */}
-          <button onClick={() => router.push('/mental')} className="text-left">
-            <Card className="p-3.5">
+          <button
+            onClick={() => router.push('/mental')}
+            className="text-left transition-transform active:scale-[0.97]"
+          >
+            <Card className="p-3.5 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
               <div className="flex items-center gap-1.5 mb-2">
                 <Brain className="w-4 h-4 text-purple-500" />
                 <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">Mental</span>
@@ -252,7 +323,7 @@ export default function ResumenGeneral() {
                 <span className="text-base font-bold text-purple-600 dark:text-purple-400">
                   {mentalSnap?.avgMoodLast14 !== null && mentalSnap?.avgMoodLast14 !== undefined
                     ? mentalSnap.avgMoodLast14
-                    : '–'}
+                    : '\u2013'}
                 </span>
                 <span className="text-[10px] text-purple-400">/5</span>
               </div>
@@ -269,8 +340,11 @@ export default function ResumenGeneral() {
           </button>
 
           {/* Physical */}
-          <button onClick={() => router.push('/fisico')} className="text-left">
-            <Card className="p-3.5">
+          <button
+            onClick={() => router.push('/fisico')}
+            className="text-left transition-transform active:scale-[0.97]"
+          >
+            <Card className="p-3.5 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
               <div className="flex items-center gap-1.5 mb-2">
                 <Dumbbell className="w-4 h-4 text-orange-500" />
                 <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">F\u00edsico</span>
@@ -302,7 +376,10 @@ export default function ResumenGeneral() {
           </button>
         </div>
 
-        {/* ── 4. Progresión General ── */}
+        {/* ── 4. Objetivos activos ── */}
+        {goalsOverview && <GoalsProgress overview={goalsOverview} />}
+
+        {/* ── 5. Constancia de registro ── */}
         {progress && (
           <Card className="p-4">
             <div className="flex items-center justify-between mb-3">
@@ -318,7 +395,7 @@ export default function ResumenGeneral() {
             </div>
             <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all duration-500 ${
+                className={`h-full rounded-full transition-all duration-700 ease-out ${
                   progress.trackingConsistencyPercent >= 70
                     ? 'bg-emerald-500'
                     : progress.trackingConsistencyPercent >= 40
@@ -338,7 +415,10 @@ export default function ResumenGeneral() {
           </Card>
         )}
 
-        {/* ── Quick links ── */}
+        {/* ── 6. Notas recientes ── */}
+        <NotesPreview notes={recentNotes} />
+
+        {/* ── 7. Quick links ── */}
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => router.push('/chat')}
