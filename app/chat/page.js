@@ -7,6 +7,7 @@ import { runRatoneandoEngine } from '@/lib/ratoneando'
 import { getRatoneandoAlertForChat } from '@/lib/alerts/ratoneando-alerts'
 import { generatePayoff, calculatePayoffContext, updateMonthlyStats } from '@/lib/payoff'
 import { quickPriceCheck } from '@/lib/mira-precios'
+import { getDietSuggestionForChat, initDietSystem } from '@/lib/dieta'
 import TopBar from '@/components/ui/TopBar'
 import Button from '@/components/ui/Button'
 import {
@@ -78,6 +79,15 @@ export default function ChatPage() {
           if (ratoneandoAlert && !priorityAlert) {
             // Only show ratoneando if no higher priority alert
             setRatoneandoContext(ratoneandoAlert)
+          }
+
+          // Load diet suggestion (lower priority, only if no other context)
+          if (!priorityAlert && !ratoneandoAlert) {
+            await initDietSystem(ratoneandoResult?.patterns)
+            const dietSuggestion = getDietSuggestionForChat(ratoneandoResult?.patterns)
+            if (dietSuggestion) {
+              setRatoneandoContext(dietSuggestion) // Reuse same context slot
+            }
           }
         } catch (e) {
           console.warn('Could not load ratoneando context:', e)

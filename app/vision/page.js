@@ -9,6 +9,7 @@ import { getCachedRates } from '@/lib/services/market-rates'
 import { runRatoneandoEngine, getSavingsSummary, learnFromGasto } from '@/lib/ratoneando'
 import { calculateMonthlyState, getDomainProgressions, getHistoricalTrend, getStateDisplay, saveProgressionToHistory, formatMonth } from '@/lib/progression'
 import { getMonthlyStats, getMonthlySummaryPayoff } from '@/lib/payoff'
+import { getDietInsights, initDietSystem, shouldShowDietFeatures } from '@/lib/dieta'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import ProgressRing from '@/components/ui/ProgressRing'
@@ -62,6 +63,7 @@ export default function ResumenPage() {
   const [domainProgressions, setDomainProgressions] = useState(null)
   const [progressHistory, setProgressHistory] = useState(null)
   const [monthlyAchievements, setMonthlyAchievements] = useState(null)
+  const [dietInsights, setDietInsights] = useState(null)
   const [showConfigModal, setShowConfigModal] = useState(false)
   const [expandedAlertId, setExpandedAlertId] = useState(null)
   const [widgetConfig, setWidgetConfig] = useState(() => {
@@ -246,6 +248,12 @@ export default function ResumenPage() {
       const historyResult = getHistoricalTrend()
       const achievements = getMonthlySummaryPayoff()
 
+      // Initialize diet system and get insights (optional, won't fail if no diet data)
+      await initDietSystem(ratoneandoResult?.patterns)
+      const dietInsightsResult = shouldShowDietFeatures()
+        ? getDietInsights(ratoneandoResult?.patterns)
+        : null
+
       setData({
         gastoTotal,
         gastoDiff,
@@ -267,6 +275,7 @@ export default function ResumenPage() {
       setDomainProgressions(progressionsResult)
       setProgressHistory(historyResult)
       setMonthlyAchievements(achievements)
+      setDietInsights(dietInsightsResult)
     } catch (error) {
       console.error('Error loading data:', error)
     } finally {
