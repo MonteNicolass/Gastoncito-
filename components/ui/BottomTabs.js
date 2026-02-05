@@ -97,45 +97,40 @@ export default function BottomTabs() {
   }
 
   const tabs = [
-    { name: 'Resumen', href: '/vision', emoji: '🏠', key: 'vision' },
+    { name: 'Inicio', href: '/vision', emoji: '🏠', key: 'vision' },
     { name: 'Chat', href: '/chat', emoji: '💬', key: 'chat' },
-    { name: 'Mental', href: '/mental', emoji: '🧠', key: 'mental' },
-    { name: 'Físico', href: '/fisico', emoji: '💪', key: 'fisico' },
-    { name: 'Notas', href: '/notas', emoji: '📝', key: 'notas' },
-    { name: 'Objetivos', href: '/objetivos', emoji: '🎯', key: 'objetivos' },
     { name: 'Money', href: '/money', emoji: '💰', key: 'money' },
-    { name: 'Herramientas', href: '/herramientas', emoji: '🛠️', key: 'herramientas' }
+    { name: 'Yo', href: '/mental', emoji: '🧠', key: 'mental' },
+    { name: 'Más', href: '/mas', emoji: '•••', key: 'mas' }
   ]
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 backdrop-blur-xl bg-zinc-50/80 dark:bg-zinc-950/80 border-t border-zinc-200/50 dark:border-zinc-800/50">
-      <div className="overflow-x-auto scrollbar-hide">
-        <div className="flex items-center gap-1 px-2 pb-safe min-w-max">
-          {tabs.map((tab) => {
-            const baseSection = tab.href.split('/')[1]
-            const currentSection = pathname.split('/')[1]
-            const isActive = currentSection === baseSection || pathname === tab.href
-            const hasPriority = priorities[tab.key]
+    <nav className="fixed bottom-0 left-0 right-0 z-50 backdrop-blur-xl bg-zinc-50/90 dark:bg-zinc-950/90 border-t border-zinc-200/50 dark:border-zinc-800/50">
+      <div className="flex items-center justify-around px-2 py-2 pb-safe max-w-lg mx-auto">
+        {tabs.map((tab) => {
+          const baseSection = tab.href.split('/')[1]
+          const currentSection = pathname.split('/')[1]
+          const isActive = currentSection === baseSection || pathname === tab.href
+          const hasPriority = priorities[tab.key]
 
-            return (
-              <Link
-                key={tab.href}
-                href={tab.href}
-                className={`relative flex flex-col items-center gap-0.5 py-2 px-3 rounded-lg transition-all ${
-                  isActive
-                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                    : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                }`}
-              >
-                {hasPriority && !isActive && (
-                  <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-orange-500 dark:bg-orange-400 rounded-full" />
-                )}
-                <span className="text-xl">{tab.emoji}</span>
-                <span className="text-[10px] font-medium whitespace-nowrap">{tab.name}</span>
-              </Link>
-            )
-          })}
-        </div>
+          return (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              className={`relative flex flex-col items-center gap-1 py-2 px-4 rounded-2xl transition-all active:scale-95 ${
+                isActive
+                  ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50'
+              }`}
+            >
+              {hasPriority && !isActive && (
+                <span className="absolute top-1 right-2 w-2 h-2 bg-orange-500 dark:bg-orange-400 rounded-full shadow-sm" />
+              )}
+              <span className="text-2xl">{tab.emoji}</span>
+              <span className={`text-[11px] font-semibold ${isActive ? '' : 'font-medium'}`}>{tab.name}</span>
+            </Link>
+          )
+        })}
       </div>
     </nav>
   )

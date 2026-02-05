@@ -194,13 +194,13 @@ export default function ResumenPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen pb-24">
       <TopBar
-        title="Resumen"
+        title="Inicio"
         action={
           <button
             onClick={() => setShowConfigModal(true)}
-            className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+            className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors active:scale-95"
             aria-label="Configurar widgets"
           >
             <svg className="w-5 h-5 text-zinc-600 dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -211,35 +211,35 @@ export default function ResumenPage() {
         }
       />
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
         {/* Selector de Período */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 p-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-2xl">
           <button
             onClick={() => setPeriod('hoy')}
-            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+            className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all active:scale-95 ${
               period === 'hoy'
-                ? 'bg-blue-600 text-white'
-                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+                ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
             }`}
           >
             Hoy
           </button>
           <button
             onClick={() => setPeriod('semana')}
-            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+            className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all active:scale-95 ${
               period === 'semana'
-                ? 'bg-blue-600 text-white'
-                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+                ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
             }`}
           >
             Semana
           </button>
           <button
             onClick={() => setPeriod('mes')}
-            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+            className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all active:scale-95 ${
               period === 'mes'
-                ? 'bg-blue-600 text-white'
-                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+                ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
             }`}
           >
             Mes
@@ -247,95 +247,154 @@ export default function ResumenPage() {
         </div>
 
         {/* Cards Resumidas */}
-        <div className="grid grid-cols-1 gap-3">
+        <div className="space-y-3">
           {/* Money Card */}
           {widgetConfig.money && (
-          <Card className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xl">💰</span>
-              <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Money</span>
-            </div>
-            <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-              {formatAmount(data.gastoTotal)}
-            </div>
-            <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-2">Gasto total</div>
-            {data.gastoDiff !== 0 && (
-              <div className={`text-xs font-medium ${
-                data.gastoDiff > 0
-                  ? 'text-red-600 dark:text-red-400'
-                  : 'text-green-600 dark:text-green-400'
-              }`}>
-                {data.gastoDiff > 0 ? '+' : ''}{data.gastoDiff.toFixed(0)}% vs {period === 'hoy' ? 'ayer' : period === 'semana' ? 'semana anterior' : 'mes anterior'}
+          <a href="/money" className="block">
+            <Card className="p-5 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200/50 dark:border-green-800/50 hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-10 h-10 rounded-2xl bg-green-100 dark:bg-green-900/40 flex items-center justify-center">
+                      <span className="text-xl">💰</span>
+                    </div>
+                    <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Money</span>
+                  </div>
+                  <div className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-1">
+                    {formatAmount(data.gastoTotal)}
+                  </div>
+                  <div className="text-sm text-zinc-500 dark:text-zinc-400">Gasto total</div>
+                </div>
+                {data.gastoDiff !== 0 && (
+                  <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
+                    data.gastoDiff > 0
+                      ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                      : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                  }`}>
+                    {data.gastoDiff > 0 ? '+' : ''}{data.gastoDiff.toFixed(0)}%
+                  </div>
+                )}
               </div>
-            )}
-          </Card>
+            </Card>
+          </a>
           )}
 
           {/* Mental Card */}
           {widgetConfig.mental && data.mentalAvg !== null && (
-            <Card className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200 dark:border-purple-800">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xl">🧠</span>
-                <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Mental</span>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                  {Math.round(data.mentalAvg * 10) / 10}/10
+            <a href="/mental" className="block">
+              <Card className="p-5 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200/50 dark:border-purple-800/50 hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-10 h-10 rounded-2xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center">
+                        <span className="text-xl">🧠</span>
+                      </div>
+                      <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Mental</span>
+                    </div>
+                    <div className="flex items-baseline gap-2 mb-1">
+                      <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+                        {Math.round(data.mentalAvg * 10) / 10}
+                      </div>
+                      <div className="text-lg text-purple-400 dark:text-purple-500">/10</div>
+                    </div>
+                    <div className="text-sm text-zinc-500 dark:text-zinc-400">Promedio estado</div>
+                  </div>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl ${
+                    data.mentalTrend === '↑' ? 'bg-green-100 dark:bg-green-900/30' :
+                    data.mentalTrend === '↓' ? 'bg-red-100 dark:bg-red-900/30' :
+                    'bg-zinc-100 dark:bg-zinc-800'
+                  }`}>
+                    {data.mentalTrend}
+                  </div>
                 </div>
-                <div className="text-xl text-purple-600 dark:text-purple-400">
-                  {data.mentalTrend}
-                </div>
-              </div>
-              <div className="text-xs text-zinc-600 dark:text-zinc-400">Promedio estado</div>
-            </Card>
+              </Card>
+            </a>
           )}
 
           {/* Físico Card */}
           {widgetConfig.fisico && (
-          <Card className="p-4 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border-orange-200 dark:border-orange-800">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xl">💪</span>
-              <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Físico</span>
-            </div>
-            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-              {data.physicalDays} días
-            </div>
-            <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">Días activos</div>
-            {data.physicalStreak > 0 && (
-              <div className="text-xs font-medium text-orange-600 dark:text-orange-400">
-                🔥 Racha: {data.physicalStreak} {data.physicalStreak === 1 ? 'día' : 'días'}
+          <a href="/fisico" className="block">
+            <Card className="p-5 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border-orange-200/50 dark:border-orange-800/50 hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-10 h-10 rounded-2xl bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center">
+                      <span className="text-xl">💪</span>
+                    </div>
+                    <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Físico</span>
+                  </div>
+                  <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-1">
+                    {data.physicalDays} días
+                  </div>
+                  <div className="text-sm text-zinc-500 dark:text-zinc-400">Días activos</div>
+                </div>
+                {data.physicalStreak > 0 && (
+                  <div className="px-3 py-1.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs font-semibold">
+                    🔥 {data.physicalStreak}d racha
+                  </div>
+                )}
               </div>
-            )}
-          </Card>
+            </Card>
+          </a>
           )}
         </div>
 
         {/* Insights Cruzados */}
         {widgetConfig.insights && crossInsights && (crossInsights.spendingByMood?.insight || crossInsights.moodByExercise?.insight || crossInsights.impulsiveByExercise?.insight) && (
-          <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 px-1">💡 Insights</h3>
+          <div className="space-y-3">
+            <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1">Insights</h3>
 
             {crossInsights.spendingByMood?.insight && (
-              <Card className="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
-                <p className="text-sm text-zinc-900 dark:text-zinc-100">
-                  {crossInsights.spendingByMood.insight}
-                </p>
+              <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200/50 dark:border-blue-800/50">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center flex-shrink-0">
+                    <span className="text-base">💡</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 leading-relaxed">
+                      {crossInsights.spendingByMood.insight}
+                    </p>
+                    <a href="/insights" className="inline-block mt-2 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
+                      Ver más →
+                    </a>
+                  </div>
+                </div>
               </Card>
             )}
 
             {crossInsights.moodByExercise?.insight && (
-              <Card className="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
-                <p className="text-sm text-zinc-900 dark:text-zinc-100">
-                  {crossInsights.moodByExercise.insight}
-                </p>
+              <Card className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200/50 dark:border-purple-800/50">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center flex-shrink-0">
+                    <span className="text-base">🧠</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 leading-relaxed">
+                      {crossInsights.moodByExercise.insight}
+                    </p>
+                    <a href="/insights" className="inline-block mt-2 text-xs font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300">
+                      Ver más →
+                    </a>
+                  </div>
+                </div>
               </Card>
             )}
 
             {crossInsights.impulsiveByExercise?.insight && (
-              <Card className="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
-                <p className="text-sm text-zinc-900 dark:text-zinc-100">
-                  {crossInsights.impulsiveByExercise.insight}
-                </p>
+              <Card className="p-4 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border-orange-200/50 dark:border-orange-800/50">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center flex-shrink-0">
+                    <span className="text-base">💪</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 leading-relaxed">
+                      {crossInsights.impulsiveByExercise.insight}
+                    </p>
+                    <a href="/insights" className="inline-block mt-2 text-xs font-semibold text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300">
+                      Ver más →
+                    </a>
+                  </div>
+                </div>
               </Card>
             )}
           </div>
@@ -343,49 +402,79 @@ export default function ResumenPage() {
 
         {/* Alertas Tempranas */}
         {widgetConfig.alertas && alerts.length > 0 && (
-          <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 px-1">⚠️ Alertas</h3>
-            {alerts.map((alert, i) => (
-              <Card
-                key={i}
-                className={`p-4 ${
-                  alert.severity === 'high'
-                    ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800'
-                    : alert.severity === 'medium'
-                    ? 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800'
-                    : 'bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800'
-                }`}
-              >
-                <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
-                  {alert.title}
-                </div>
-                {alert.message && (
-                  <div className="text-xs text-zinc-600 dark:text-zinc-400">
-                    {alert.message}
+          <div className="space-y-3">
+            <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1">Alertas</h3>
+            {alerts.map((alert, i) => {
+              const severityStyles = {
+                high: {
+                  bg: 'bg-red-50 dark:bg-red-950/20 border-red-200/50 dark:border-red-800/50',
+                  icon: 'bg-red-100 dark:bg-red-900/40',
+                  cta: 'text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300'
+                },
+                medium: {
+                  bg: 'bg-orange-50 dark:bg-orange-950/20 border-orange-200/50 dark:border-orange-800/50',
+                  icon: 'bg-orange-100 dark:bg-orange-900/40',
+                  cta: 'text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300'
+                },
+                low: {
+                  bg: 'bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200/50 dark:border-yellow-800/50',
+                  icon: 'bg-yellow-100 dark:bg-yellow-900/40',
+                  cta: 'text-yellow-600 dark:text-yellow-400 hover:text-yellow-700 dark:hover:text-yellow-300'
+                }
+              }
+              const styles = severityStyles[alert.severity] || severityStyles.low
+              const alertHref = alert.domain === 'money' ? '/money' :
+                               alert.domain === 'mental' ? '/mental' :
+                               alert.domain === 'physical' ? '/fisico' :
+                               '/comportamiento'
+
+              return (
+                <Card key={i} className={`p-4 ${styles.bg}`}>
+                  <div className="flex items-start gap-3">
+                    <div className={`w-10 h-10 rounded-xl ${styles.icon} flex items-center justify-center flex-shrink-0`}>
+                      <span className="text-lg">
+                        {alert.severity === 'high' ? '⚠️' : alert.severity === 'medium' ? '⚡' : '💡'}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                        {alert.title}
+                      </p>
+                      {alert.message && (
+                        <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5 leading-relaxed">
+                          {alert.message}
+                        </p>
+                      )}
+                      {alert.date_range && (
+                        <p className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
+                          {formatDate(alert.date_range.start)} – {formatDate(alert.date_range.end)}
+                        </p>
+                      )}
+                      <a href={alertHref} className={`inline-block mt-2 text-xs font-semibold ${styles.cta}`}>
+                        Ver detalle →
+                      </a>
+                    </div>
                   </div>
-                )}
-                {alert.date_range && (
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                    {formatDate(alert.date_range.start)} – {formatDate(alert.date_range.end)}
-                  </div>
-                )}
-              </Card>
-            ))}
+                </Card>
+              )
+            })}
           </div>
         )}
 
         {/* Historial */}
         {widgetConfig.historial && (
         <a href="/historia" className="block">
-          <Card className="p-4 bg-gradient-to-br from-gray-50 to-slate-50 dark:from-gray-950/20 dark:to-slate-950/20 border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-900/30 transition-colors cursor-pointer">
+          <Card className="p-4 bg-zinc-50 dark:bg-zinc-800/30 border-zinc-200/50 dark:border-zinc-700/50 hover:shadow-md transition-all active:scale-[0.98]">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <span className="text-xl">📊</span>
+                <div className="w-10 h-10 rounded-xl bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
+                  <span className="text-lg">📊</span>
+                </div>
                 <div>
                   <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                     Historial
                   </div>
-                  <div className="text-xs text-zinc-600 dark:text-zinc-400">
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400">
                     Ver resúmenes y exportar datos
                   </div>
                 </div>
@@ -406,104 +495,116 @@ export default function ResumenPage() {
             className="w-full max-w-[420px] mx-auto bg-white dark:bg-zinc-900 rounded-t-3xl shadow-2xl animate-slide-up"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800">
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Configurar Resumen</h3>
+            <div className="flex items-center justify-between p-5 border-b border-zinc-200 dark:border-zinc-800">
+              <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Configurar Inicio</h3>
               <button
                 onClick={() => setShowConfigModal(false)}
-                className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                className="p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors active:scale-95"
               >
-                <svg className="w-6 h-6 text-zinc-600 dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg className="w-5 h-5 text-zinc-500 dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
-            <div className="p-4 space-y-3">
-              <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-4">
-                Seleccioná qué widgets querés ver en el Resumen
+            <div className="p-5 space-y-3">
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-5">
+                Seleccioná qué widgets querés ver
               </p>
 
-              <label className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+              <label className="flex items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors active:scale-[0.98]">
                 <input
                   type="checkbox"
                   checked={widgetConfig.money}
                   onChange={(e) => setWidgetConfig({ ...widgetConfig, money: e.target.checked })}
-                  className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-blue-600 focus:ring-blue-500"
+                  className="w-5 h-5 rounded-lg border-zinc-300 dark:border-zinc-600 text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
                 />
-                <div className="flex items-center gap-2 flex-1">
-                  <span className="text-lg">💰</span>
-                  <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Money</span>
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="w-9 h-9 rounded-xl bg-green-100 dark:bg-green-900/40 flex items-center justify-center">
+                    <span className="text-base">💰</span>
+                  </div>
+                  <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Money</span>
                 </div>
               </label>
 
-              <label className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+              <label className="flex items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors active:scale-[0.98]">
                 <input
                   type="checkbox"
                   checked={widgetConfig.mental}
                   onChange={(e) => setWidgetConfig({ ...widgetConfig, mental: e.target.checked })}
-                  className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-blue-600 focus:ring-blue-500"
+                  className="w-5 h-5 rounded-lg border-zinc-300 dark:border-zinc-600 text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
                 />
-                <div className="flex items-center gap-2 flex-1">
-                  <span className="text-lg">🧠</span>
-                  <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Mental</span>
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center">
+                    <span className="text-base">🧠</span>
+                  </div>
+                  <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Mental</span>
                 </div>
               </label>
 
-              <label className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+              <label className="flex items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors active:scale-[0.98]">
                 <input
                   type="checkbox"
                   checked={widgetConfig.fisico}
                   onChange={(e) => setWidgetConfig({ ...widgetConfig, fisico: e.target.checked })}
-                  className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-blue-600 focus:ring-blue-500"
+                  className="w-5 h-5 rounded-lg border-zinc-300 dark:border-zinc-600 text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
                 />
-                <div className="flex items-center gap-2 flex-1">
-                  <span className="text-lg">💪</span>
-                  <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Físico</span>
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="w-9 h-9 rounded-xl bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center">
+                    <span className="text-base">💪</span>
+                  </div>
+                  <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Físico</span>
                 </div>
               </label>
 
-              <label className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+              <label className="flex items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors active:scale-[0.98]">
                 <input
                   type="checkbox"
                   checked={widgetConfig.insights}
                   onChange={(e) => setWidgetConfig({ ...widgetConfig, insights: e.target.checked })}
-                  className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-blue-600 focus:ring-blue-500"
+                  className="w-5 h-5 rounded-lg border-zinc-300 dark:border-zinc-600 text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
                 />
-                <div className="flex items-center gap-2 flex-1">
-                  <span className="text-lg">💡</span>
-                  <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Insights</span>
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+                    <span className="text-base">💡</span>
+                  </div>
+                  <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Insights</span>
                 </div>
               </label>
 
-              <label className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+              <label className="flex items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors active:scale-[0.98]">
                 <input
                   type="checkbox"
                   checked={widgetConfig.alertas}
                   onChange={(e) => setWidgetConfig({ ...widgetConfig, alertas: e.target.checked })}
-                  className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-blue-600 focus:ring-blue-500"
+                  className="w-5 h-5 rounded-lg border-zinc-300 dark:border-zinc-600 text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
                 />
-                <div className="flex items-center gap-2 flex-1">
-                  <span className="text-lg">⚠️</span>
-                  <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Alertas</span>
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
+                    <span className="text-base">⚠️</span>
+                  </div>
+                  <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Alertas</span>
                 </div>
               </label>
 
-              <label className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+              <label className="flex items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors active:scale-[0.98]">
                 <input
                   type="checkbox"
                   checked={widgetConfig.historial}
                   onChange={(e) => setWidgetConfig({ ...widgetConfig, historial: e.target.checked })}
-                  className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-blue-600 focus:ring-blue-500"
+                  className="w-5 h-5 rounded-lg border-zinc-300 dark:border-zinc-600 text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
                 />
-                <div className="flex items-center gap-2 flex-1">
-                  <span className="text-lg">📊</span>
-                  <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Historial</span>
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="w-9 h-9 rounded-xl bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
+                    <span className="text-base">📊</span>
+                  </div>
+                  <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Historial</span>
                 </div>
               </label>
 
               <button
                 onClick={() => setShowConfigModal(false)}
-                className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-colors mt-4"
+                className="w-full py-3.5 px-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-colors mt-5 active:scale-[0.98]"
               >
                 Guardar
               </button>

@@ -93,10 +93,10 @@ export default function ResumenMensualPage() {
   const { summary, comparison, topCategories, highestDay, prediction, alerts } = insights
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen pb-24">
       <TopBar title="Resumen Mensual" backHref="/money" />
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
         {/* Mes actual */}
         <div className="text-center mb-2">
           <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 capitalize">
@@ -174,7 +174,7 @@ export default function ResumenMensualPage() {
         {/* Comparación con mes anterior */}
         {comparison.previous.totalGastos > 0 && (
           <Card className="p-4">
-            <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">
+            <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
               vs Mes anterior
             </h3>
             <div className="space-y-2">
@@ -211,7 +211,7 @@ export default function ResumenMensualPage() {
         {/* Predicción fin de mes */}
         {prediction && (
           <Card className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20 border-purple-200 dark:border-purple-800">
-            <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">
+            <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
               Proyección de cierre
             </h3>
             <div className="space-y-2">
@@ -250,7 +250,7 @@ export default function ResumenMensualPage() {
         {/* Top 5 categorías */}
         {topCategories.length > 0 && (
           <Card className="p-4">
-            <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">
+            <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
               Top 5 categorías
             </h3>
             <div className="space-y-2">
@@ -278,7 +278,7 @@ export default function ResumenMensualPage() {
         {/* Día con mayor gasto */}
         {highestDay && (
           <Card className="p-4">
-            <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">
+            <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
               Día con mayor gasto
             </h3>
             <div className="flex items-center justify-between">
