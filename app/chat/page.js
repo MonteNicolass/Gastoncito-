@@ -18,6 +18,16 @@ export default function ChatPage() {
 
   useEffect(() => {
     initDB()
+
+    // Check for prefill from insight actions
+    if (typeof window !== 'undefined') {
+      const prefill = localStorage.getItem('chat_prefill')
+      if (prefill) {
+        setInput(prefill)
+        localStorage.removeItem('chat_prefill')
+      }
+    }
+
     // Autofocus on input
     if (inputRef.current) {
       inputRef.current.focus()

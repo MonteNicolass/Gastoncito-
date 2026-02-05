@@ -24,6 +24,7 @@ export default function VisionGeneralPage() {
   const [preferences, setPreferences] = useState(null)
   const [crossInsights, setCrossInsights] = useState(null)
   const [showAllAlerts, setShowAllAlerts] = useState(false)
+  const [expandedAlertId, setExpandedAlertId] = useState(null)
 
   const loadOverview = useCallback(async () => {
     try {
@@ -70,6 +71,70 @@ export default function VisionGeneralPage() {
       currency: 'ARS',
       minimumFractionDigits: 0,
     }).format(amount)
+  }, [])
+
+  const getAlertExplanation = useCallback((alert) => {
+    switch (alert.type) {
+      case 'no_physical_activity':
+        return `En los últimos ${alert.data.daysSince} días no registraste actividad física. Esto rompe tu racha anterior.`
+
+      case 'low_physical_activity':
+        return `Han pasado ${alert.data.daysSince} días desde tu última actividad física registrada.`
+
+      case 'low_mood_streak':
+        return `Tu estado mental promedio de los últimos 7 días es ${Math.round(alert.data.average * 10) / 10}/10, por debajo de tu promedio habitual.`
+
+      case 'budget_at_risk':
+        const daysLeftAtRisk = Math.max(0, 30 - new Date().getDate())
+        return `Has gastado ${Math.round(alert.data.percentage)}% de tu presupuesto mensual para ${alert.data.budget.name}. Te quedan ${daysLeftAtRisk} días en el mes.`
+
+      case 'budget_exceeded':
+        const daysLeftExceeded = Math.max(0, 30 - new Date().getDate())
+        return `Has superado el presupuesto mensual de ${alert.data.budget.name} en un ${Math.round(alert.data.percentage - 100)}%. Quedan ${daysLeftExceeded} días en el mes.`
+
+      case 'spending_mood_correlation':
+        return `Los días con estado mental bajo gastas ${Math.abs(alert.data.deltaPercent)}% más que los días con estado normal o alto.`
+
+      case 'atypical_spending':
+        return `Tu gasto en ${alert.data.movimiento.categoria} fue ${Math.round((alert.data.movimiento.monto / alert.data.average - 1) * 100)}% superior a tu promedio semanal habitual.`
+
+      default:
+        return null
+    }
+  }, [])
+
+  const getAlertActions = useCallback((alert) => {
+    switch (alert.type) {
+      case 'no_physical_activity':
+      case 'low_physical_activity':
+        return [
+          { label: 'Registrar ejercicio', href: '/chat', prefill: 'Fui al gimnasio' }
+        ]
+
+      case 'low_mood_streak':
+        return [
+          { label: 'Registrar estado', href: '/chat', prefill: 'Hoy me sentí ' }
+        ]
+
+      case 'budget_at_risk':
+      case 'budget_exceeded':
+        return [
+          { label: 'Ver movimientos', href: '/money/movimientos' }
+        ]
+
+      case 'spending_mood_correlation':
+        return [
+          { label: 'Ver análisis', href: '/insights' }
+        ]
+
+      case 'atypical_spending':
+        return [
+          { label: 'Ver gastos', href: '/money/movimientos' }
+        ]
+
+      default:
+        return []
+    }
   }, [])
 
   // Definir todos los cards disponibles
@@ -162,31 +227,74 @@ export default function VisionGeneralPage() {
 
         return (
           <div className="space-y-2">
-            {displayAlerts.map((alert, i) => (
-              <Card
-                key={i}
-                className={`p-3 ${
-                  alert.severity === 'high'
-                    ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800'
-                    : alert.severity === 'medium'
-                    ? 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800'
-                    : 'bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                      {alert.title}
-                    </div>
-                    {alert.message && (
-                      <div className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
-                        {alert.message}
+            {displayAlerts.map((alert, i) => {
+              const alertId = `${alert.type}-${i}`
+              const isExpanded = expandedAlertId === alertId
+              const explanation = getAlertExplanation(alert)
+              const actions = getAlertActions(alert)
+
+              return (
+                <Card
+                  key={i}
+                  className={`p-3 cursor-pointer transition-all ${
+                    alert.severity === 'high'
+                      ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800'
+                      : alert.severity === 'medium'
+                      ? 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800'
+                      : 'bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800'
+                  }`}
+                  onClick={() => setExpandedAlertId(isExpanded ? null : alertId)}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                        {alert.title}
                       </div>
-                    )}
+                      {alert.message && (
+                        <div className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
+                          {alert.message}
+                        </div>
+                      )}
+
+                      {/* Expanded content */}
+                      {isExpanded && explanation && (
+                        <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700">
+                          <div className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                            {explanation}
+                          </div>
+
+                          {/* Actions */}
+                          {actions.length > 0 && (
+                            <div className="flex gap-2 mt-3">
+                              {actions.map((action, idx) => (
+                                <a
+                                  key={idx}
+                                  href={action.href}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    if (action.prefill && typeof window !== 'undefined') {
+                                      localStorage.setItem('chat_prefill', action.prefill)
+                                    }
+                                  }}
+                                  className="px-3 py-1.5 text-xs font-medium rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
+                                >
+                                  {action.label}
+                                </a>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Expand indicator */}
+                    <div className="text-zinc-400 dark:text-zinc-500 text-xs ml-2">
+                      {isExpanded ? '−' : '+'}
+                    </div>
                   </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              )
+            })}
 
             {hasMore && !showAllAlerts && (
               <button
