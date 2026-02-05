@@ -97,7 +97,7 @@ export default function BottomTabs() {
   }
 
   const tabs = [
-    { name: 'Inicio', href: '/vision', emoji: '🏠', key: 'vision' },
+    { name: 'Resumen', href: '/vision', emoji: '📊', key: 'vision' },
     { name: 'Chat', href: '/chat', emoji: '💬', key: 'chat' },
     { name: 'Money', href: '/money', emoji: '💰', key: 'money' },
     { name: 'Yo', href: '/mental', emoji: '🧠', key: 'mental' },

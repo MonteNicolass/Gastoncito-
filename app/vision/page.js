@@ -238,7 +238,7 @@ export default function ResumenPage() {
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen">
-        <TopBar title="Inicio" />
+        <TopBar title="Resumen" />
         <div className="flex-1 flex items-center justify-center">
           <p className="text-sm text-zinc-500 dark:text-zinc-400">Cargando...</p>
         </div>
@@ -249,7 +249,7 @@ export default function ResumenPage() {
   return (
     <div className="flex flex-col min-h-screen pb-24">
       <TopBar
-        title="Inicio"
+        title="Resumen"
         action={
           <button
             onClick={() => setShowConfigModal(true)}
@@ -600,7 +600,7 @@ export default function ResumenPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-5 border-b border-zinc-200 dark:border-zinc-800">
-              <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Configurar Inicio</h3>
+              <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Configurar Resumen</h3>
               <button
                 onClick={() => setShowConfigModal(false)}
                 className="p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors active:scale-95"
