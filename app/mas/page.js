@@ -15,8 +15,7 @@ export default function MasPage() {
             Secciones
           </h3>
           <Card className="overflow-hidden">
-            <ListRow label="💬 Chat" href="/chat" />
-            <ListRow label="🎯 Objetivos" href="/objetivos" />
+            <ListRow label="💰 Money" href="/money" />
             <ListRow label="🔍 Comportamiento" href="/comportamiento" />
             <ListRow label="📈 Insights" href="/insights" />
           </Card>

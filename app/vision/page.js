@@ -6,6 +6,7 @@ import { getAllOverviewData } from '@/lib/overview-insights'
 import { getAllBehaviorInsights } from '@/lib/insights/behaviorInsights'
 import { getAllSilentAlerts } from '@/lib/silent-alerts'
 import { getUserPreferences, updateSectionPreferences } from '@/lib/user-preferences'
+import { getSpendingByMood, getMoodByExercise, getImpulsiveSpendingByExercise } from '@/lib/insights/crossInsights'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import CardManager from '@/components/ui/CardManager'
@@ -21,6 +22,7 @@ export default function VisionGeneralPage() {
   const [data, setData] = useState(null)
   const [alerts, setAlerts] = useState([])
   const [preferences, setPreferences] = useState(null)
+  const [crossInsights, setCrossInsights] = useState(null)
 
   const loadOverview = useCallback(async () => {
     try {
@@ -36,8 +38,14 @@ export default function VisionGeneralPage() {
       const overview = getAllOverviewData(movimientos, lifeEntries, categorias, goals, behaviorInsights, wallets)
       const silentAlerts = getAllSilentAlerts(movimientos, lifeEntries, budgets, categorias)
 
+      // Calculate cross insights
+      const spendingByMood = getSpendingByMood(movimientos, lifeEntries, 30)
+      const moodByExercise = getMoodByExercise(lifeEntries, 30)
+      const impulsiveByExercise = getImpulsiveSpendingByExercise(movimientos, lifeEntries, 30)
+
       setData(overview)
       setAlerts(silentAlerts)
+      setCrossInsights({ spendingByMood, moodByExercise, impulsiveByExercise })
       setPreferences(getUserPreferences().vision)
     } catch (error) {
       console.error('Error loading overview:', error)
@@ -105,10 +113,16 @@ export default function VisionGeneralPage() {
       render: () => data?.mental && data.mental.average7d > 0 && (
         <a href="/mental">
           <Card className="p-4 bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-950/20 dark:to-violet-950/20 border-purple-200 dark:border-purple-800 hover:shadow-md transition-shadow cursor-pointer">
-            <div className="mb-2">
+            <div className="mb-2 flex items-center justify-between">
               <div className="text-xs text-zinc-600 dark:text-zinc-400">🧠 Mental</div>
+              {data.mental.trend === 'improving' && (
+                <span className="text-xs text-green-600 dark:text-green-400">↗ Mejorando</span>
+              )}
+              {data.mental.trend === 'declining' && (
+                <span className="text-xs text-orange-600 dark:text-orange-400">↘ Bajando</span>
+              )}
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 mb-3">
               <div>
                 <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">7 días</div>
                 <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
@@ -122,6 +136,13 @@ export default function VisionGeneralPage() {
                 </div>
               </div>
             </div>
+            {data.mental.lastEntry && (
+              <div className="pt-2 border-t border-purple-200 dark:border-purple-800">
+                <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                  Último: {data.mental.lastEntry.score}/10
+                </div>
+              </div>
+            )}
           </Card>
         </a>
       )
@@ -135,20 +156,29 @@ export default function VisionGeneralPage() {
             <div className="mb-2">
               <div className="text-xs text-zinc-600 dark:text-zinc-400">💪 Físico</div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">Días activos</div>
-                <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">
-                  {data.physical.activeDays}
-                </div>
-              </div>
+            <div className="grid grid-cols-2 gap-3 mb-3">
               <div>
                 <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">Racha</div>
                 <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">
                   {data.physical.streak}
                 </div>
               </div>
+              <div>
+                <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">Días activos (7d)</div>
+                <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">
+                  {data.physical.activeDays}
+                </div>
+              </div>
             </div>
+            {data.physical.daysSinceLastExercise !== null && (
+              <div className="pt-2 border-t border-orange-200 dark:border-orange-800">
+                <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                  {data.physical.daysSinceLastExercise === 0 ? 'Hoy hiciste ejercicio' :
+                   data.physical.daysSinceLastExercise === 1 ? 'Último ejercicio: ayer' :
+                   `Último ejercicio: hace ${data.physical.daysSinceLastExercise} días`}
+                </div>
+              </div>
+            )}
           </Card>
         </a>
       )
@@ -164,14 +194,22 @@ export default function VisionGeneralPage() {
             </div>
             <div className="space-y-2">
               <div className="flex justify-between items-baseline">
-                <span className="text-xs text-zinc-600 dark:text-zinc-400">Progreso promedio</span>
+                <span className="text-xs text-zinc-600 dark:text-zinc-400">Activos</span>
                 <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  {data.goals.total}
+                </span>
+              </div>
+              <div className="flex justify-between items-baseline">
+                <span className="text-xs text-zinc-600 dark:text-zinc-400">Progreso promedio</span>
+                <span className="text-lg font-semibold text-blue-600 dark:text-blue-400">
                   {data.goals.averageProgress}%
                 </span>
               </div>
               {data.goals.atRisk > 0 && (
-                <div className="text-xs text-orange-600 dark:text-orange-400">
-                  {data.goals.atRisk} en riesgo
+                <div className="pt-2 border-t border-blue-200 dark:border-blue-800">
+                  <div className="text-xs text-orange-600 dark:text-orange-400">
+                    {data.goals.atRisk} en riesgo
+                  </div>
                 </div>
               )}
             </div>
@@ -211,6 +249,117 @@ export default function VisionGeneralPage() {
             </Card>
           ))}
         </div>
+      )
+    },
+    crossMoodMoney: {
+      title: '🧠💰 Mental ↔ Money',
+      description: 'Gasto por estado mental',
+      render: () => crossInsights?.spendingByMood && (
+        <Card className="p-4 bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/20 dark:to-rose-950/20 border-pink-200 dark:border-pink-800">
+          <div className="mb-2">
+            <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">🧠💰 Mental × Money</div>
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              Gasto según estado mental
+            </h3>
+          </div>
+          <div className="space-y-2">
+            <div className="flex justify-between items-baseline">
+              <span className="text-xs text-zinc-600 dark:text-zinc-400">Estado bajo (≤4)</span>
+              <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                {formatAmount(crossInsights.spendingByMood.lowMoodAvg)}
+              </span>
+            </div>
+            <div className="flex justify-between items-baseline">
+              <span className="text-xs text-zinc-600 dark:text-zinc-400">Estado normal</span>
+              <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                {formatAmount(crossInsights.spendingByMood.normalMoodAvg)}
+              </span>
+            </div>
+            {Math.abs(crossInsights.spendingByMood.deltaPercent) > 10 && (
+              <div className="pt-2 border-t border-pink-200 dark:border-pink-800">
+                <div className="text-xs text-zinc-700 dark:text-zinc-300">
+                  {crossInsights.spendingByMood.deltaPercent > 0
+                    ? `Gastás ${crossInsights.spendingByMood.deltaPercent}% más cuando tu estado es bajo`
+                    : `Gastás ${Math.abs(crossInsights.spendingByMood.deltaPercent)}% menos cuando tu estado es bajo`}
+                </div>
+              </div>
+            )}
+          </div>
+        </Card>
+      )
+    },
+    crossExerciseMood: {
+      title: '💪🧠 Físico ↔ Mental',
+      description: 'Mood por ejercicio',
+      render: () => crossInsights?.moodByExercise && (
+        <Card className="p-4 bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-950/20 dark:to-cyan-950/20 border-teal-200 dark:border-teal-800">
+          <div className="mb-2">
+            <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">💪🧠 Físico × Mental</div>
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              Estado mental según ejercicio
+            </h3>
+          </div>
+          <div className="space-y-2">
+            <div className="flex justify-between items-baseline">
+              <span className="text-xs text-zinc-600 dark:text-zinc-400">Con ejercicio</span>
+              <span className="text-2xl font-bold text-teal-600 dark:text-teal-400">
+                {crossInsights.moodByExercise.avgWithExercise}
+              </span>
+            </div>
+            <div className="flex justify-between items-baseline">
+              <span className="text-xs text-zinc-600 dark:text-zinc-400">Sin ejercicio</span>
+              <span className="text-2xl font-bold text-teal-500 dark:text-teal-300">
+                {crossInsights.moodByExercise.avgWithoutExercise}
+              </span>
+            </div>
+            {Math.abs(crossInsights.moodByExercise.delta) > 0.5 && (
+              <div className="pt-2 border-t border-teal-200 dark:border-teal-800">
+                <div className="text-xs text-zinc-700 dark:text-zinc-300">
+                  {crossInsights.moodByExercise.delta > 0
+                    ? `Tu estado mejora ${crossInsights.moodByExercise.delta.toFixed(1)} puntos con ejercicio`
+                    : `Tu estado baja ${Math.abs(crossInsights.moodByExercise.delta).toFixed(1)} puntos con ejercicio`}
+                </div>
+              </div>
+            )}
+          </div>
+        </Card>
+      )
+    },
+    crossExerciseMoney: {
+      title: '💪💰 Físico ↔ Money',
+      description: 'Gasto impulsivo por ejercicio',
+      render: () => crossInsights?.impulsiveByExercise && (
+        <Card className="p-4 bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 border-amber-200 dark:border-amber-800">
+          <div className="mb-2">
+            <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">💪💰 Físico × Money</div>
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              Gasto impulsivo según ejercicio
+            </h3>
+          </div>
+          <div className="space-y-2">
+            <div className="flex justify-between items-baseline">
+              <span className="text-xs text-zinc-600 dark:text-zinc-400">Con ejercicio</span>
+              <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                {formatAmount(crossInsights.impulsiveByExercise.avgWithExercise)}
+              </span>
+            </div>
+            <div className="flex justify-between items-baseline">
+              <span className="text-xs text-zinc-600 dark:text-zinc-400">Sin ejercicio</span>
+              <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                {formatAmount(crossInsights.impulsiveByExercise.avgWithoutExercise)}
+              </span>
+            </div>
+            {Math.abs(crossInsights.impulsiveByExercise.deltaPercent) > 10 && (
+              <div className="pt-2 border-t border-amber-200 dark:border-amber-800">
+                <div className="text-xs text-zinc-700 dark:text-zinc-300">
+                  {crossInsights.impulsiveByExercise.deltaPercent > 0
+                    ? `Gastos impulsivos ${crossInsights.impulsiveByExercise.deltaPercent}% mayores con ejercicio`
+                    : `Gastos impulsivos ${Math.abs(crossInsights.impulsiveByExercise.deltaPercent)}% menores con ejercicio`}
+                </div>
+              </div>
+            )}
+          </div>
+        </Card>
       )
     },
     resumen: {
