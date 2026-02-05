@@ -4,12 +4,20 @@ import { useState, useEffect } from 'react'
 import { initDB, getMovimientos, getLifeEntries, getCategorias, getGoals, getWallets } from '@/lib/storage'
 import { getAllOverviewData } from '@/lib/overview-insights'
 import { getAllBehaviorInsights } from '@/lib/insights/behaviorInsights'
+import { getAllSilentAlerts } from '@/lib/silent-alerts'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
+
+function getBudgetsFromLocalStorage() {
+  if (typeof window === 'undefined') return []
+  const data = localStorage.getItem('gaston_budgets')
+  return data ? JSON.parse(data) : []
+}
 
 export default function VisionGeneralPage() {
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState(null)
+  const [alerts, setAlerts] = useState([])
 
   useEffect(() => {
     loadOverview()
@@ -23,11 +31,14 @@ export default function VisionGeneralPage() {
       const categorias = await getCategorias()
       const goals = await getGoals()
       const wallets = await getWallets()
+      const budgets = getBudgetsFromLocalStorage()
 
       const behaviorInsights = getAllBehaviorInsights(movimientos, lifeEntries)
       const overview = getAllOverviewData(movimientos, lifeEntries, categorias, goals, behaviorInsights, wallets)
+      const silentAlerts = getAllSilentAlerts(movimientos, lifeEntries, budgets, categorias)
 
       setData(overview)
+      setAlerts(silentAlerts)
     } catch (error) {
       console.error('Error loading overview:', error)
     } finally {
@@ -90,6 +101,110 @@ export default function VisionGeneralPage() {
             Resumen rápido de todas tus áreas
           </h2>
         </div>
+
+        {/* Alertas Silenciosas */}
+        {alerts.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 px-1">
+              ⚠️ Alertas
+            </h3>
+            {alerts.map((alert, i) => (
+              <Card
+                key={i}
+                className={`p-3 ${
+                  alert.severity === 'high'
+                    ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800'
+                    : alert.severity === 'medium'
+                    ? 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800'
+                    : 'bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800'
+                }`}
+              >
+                <div className="flex items-start gap-2">
+                  <div className="flex-1">
+                    <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                      {alert.title}
+                    </div>
+                    <div className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
+                      {alert.message}
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Resumen Semanal */}
+        {data?.weeklySummary && (
+          <Card className="p-4 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/20 dark:to-blue-950/20 border-indigo-200 dark:border-indigo-800">
+            <div className="mb-3">
+              <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">📅 Resumen Semanal</div>
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Esta semana vs anterior
+              </h3>
+            </div>
+
+            <div className="space-y-3">
+              {/* Money */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-zinc-600 dark:text-zinc-400">💰 Money</span>
+                  <span className={`text-xs font-semibold ${
+                    data.weeklySummary.money.trend === 'up' ? 'text-red-600 dark:text-red-400' :
+                    data.weeklySummary.money.trend === 'down' ? 'text-green-600 dark:text-green-400' :
+                    'text-zinc-600 dark:text-zinc-400'
+                  }`}>
+                    {data.weeklySummary.money.delta !== 0 && (
+                      `${data.weeklySummary.money.delta > 0 ? '+' : ''}${data.weeklySummary.money.delta}%`
+                    )}
+                    {data.weeklySummary.money.delta === 0 && '→'}
+                  </span>
+                </div>
+                <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
+                  {formatAmount(data.weeklySummary.money.thisWeek)}
+                </span>
+              </div>
+
+              {/* Mental */}
+              {data.weeklySummary.mental.thisWeek > 0 && (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-zinc-600 dark:text-zinc-400">🧠 Mental</span>
+                    <span className={`text-xs font-semibold ${
+                      data.weeklySummary.mental.trend === 'improving' ? 'text-green-600 dark:text-green-400' :
+                      data.weeklySummary.mental.trend === 'declining' ? 'text-red-600 dark:text-red-400' :
+                      'text-zinc-600 dark:text-zinc-400'
+                    }`}>
+                      {data.weeklySummary.mental.trend === 'improving' ? '↑' :
+                       data.weeklySummary.mental.trend === 'declining' ? '↓' : '→'}
+                    </span>
+                  </div>
+                  <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
+                    {data.weeklySummary.mental.thisWeek}/10
+                  </span>
+                </div>
+              )}
+
+              {/* Físico */}
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-zinc-600 dark:text-zinc-400">💪 Físico</span>
+                <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
+                  {data.weeklySummary.physical.activeDays} días activos
+                </span>
+              </div>
+
+              {/* Objetivos */}
+              {data.weeklySummary.goals.active > 0 && (
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-zinc-600 dark:text-zinc-400">🎯 Objetivos</span>
+                  <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
+                    {data.weeklySummary.goals.onTrack}/{data.weeklySummary.goals.active} en camino
+                  </span>
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
 
         {/* Money */}
         {data?.money && (
