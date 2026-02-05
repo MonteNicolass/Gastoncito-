@@ -268,26 +268,31 @@ export default function ObjetivosPage() {
           </Card>
         )}
 
-        <Button
+        {/* Acción principal - estilo crecimiento */}
+        <button
           onClick={handleOpenCreate}
-          variant="primary"
-          className="w-full"
+          className="w-full p-4 bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 rounded-2xl transition-all active:scale-[0.98] shadow-lg shadow-indigo-500/20"
         >
-          + Nuevo objetivo
-        </Button>
+          <div className="flex items-center justify-center gap-2 text-white">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            <span className="font-semibold">Nueva meta</span>
+          </div>
+        </button>
 
         <div className="space-y-3">
-          <h2 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1">
-            Mis objetivos
-          </h2>
+          <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1">
+            Mis metas
+          </h3>
           {goals.length === 0 ? (
-            <Card className="p-8 text-center">
+            <Card className="p-8 text-center bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-950/20 dark:to-violet-950/20 border-indigo-200/50 dark:border-indigo-800/50">
               <div className="text-4xl mb-4">🎯</div>
               <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
-                Sin objetivos aún
+                Definí tus metas
               </h3>
               <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                Creá tu primer objetivo para empezar a trackear tu progreso
+                Creá objetivos para ver tu progreso
               </p>
             </Card>
           ) : (

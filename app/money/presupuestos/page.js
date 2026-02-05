@@ -236,34 +236,79 @@ export default function PresupuestosPage() {
     }
   }
 
+  // Calcular totales
+  const totalBudgeted = budgetsWithProgress.reduce((sum, b) => sum + b.amount, 0)
+  const totalSpent = budgetsWithProgress.reduce((sum, b) => sum + b.spent, 0)
+  const totalPercentage = totalBudgeted > 0 ? (totalSpent / totalBudgeted) * 100 : 0
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen pb-24">
       <TopBar title="Presupuestos" backHref="/money" />
 
-      {/* Botón Agregar */}
-      <div className="px-4 pt-4">
-        <Button
-          onClick={handleOpenCreate}
-          variant="primary"
-          className="w-full"
-        >
-          Crear presupuesto
-        </Button>
-      </div>
-
-      {/* Lista de presupuestos */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-        {budgetsWithProgress.length === 0 ? (
-          <Card className="p-8 text-center">
-            <div className="text-4xl mb-4">📊</div>
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
-              Sin presupuestos
-            </h2>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Crea tu primer presupuesto para controlar tus gastos
-            </p>
+      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-5">
+        {/* Resumen general - estilo billetera tech */}
+        {budgetsWithProgress.length > 0 && (
+          <Card className="p-5 bg-gradient-to-br from-zinc-900 to-zinc-800 dark:from-zinc-800 dark:to-zinc-900 border-zinc-700">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1">
+                  Gastado este mes
+                </p>
+                <div className="text-2xl font-bold text-white font-mono tracking-tight">
+                  {formatAmount(totalSpent)}
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-zinc-500 mb-1">de {formatAmount(totalBudgeted)}</p>
+                <div className={`text-lg font-bold font-mono ${
+                  totalPercentage >= 100 ? 'text-red-400' :
+                  totalPercentage >= 75 ? 'text-yellow-400' :
+                  'text-green-400'
+                }`}>
+                  {totalPercentage.toFixed(0)}%
+                </div>
+              </div>
+            </div>
+            <div className="w-full h-2 bg-zinc-700 rounded-full overflow-hidden">
+              <div
+                className={`h-full transition-all duration-300 ${
+                  totalPercentage >= 100 ? 'bg-red-500' :
+                  totalPercentage >= 75 ? 'bg-yellow-500' :
+                  'bg-green-500'
+                }`}
+                style={{ width: `${Math.min(totalPercentage, 100)}%` }}
+              />
+            </div>
           </Card>
-        ) : (
+        )}
+
+        {/* Botón Agregar */}
+        <button
+          onClick={handleOpenCreate}
+          className="w-full p-4 bg-zinc-50 dark:bg-zinc-800/50 border border-dashed border-zinc-300 dark:border-zinc-600 rounded-2xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex items-center justify-center gap-2 active:scale-[0.98]"
+        >
+          <svg className="w-5 h-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          <span className="text-sm font-semibold text-zinc-600 dark:text-zinc-400">Nuevo presupuesto</span>
+        </button>
+
+        {/* Lista de presupuestos */}
+        <div className="space-y-3">
+          <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1">
+            Mis presupuestos
+          </h3>
+          {budgetsWithProgress.length === 0 ? (
+            <Card className="p-8 text-center bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-zinc-800 border-zinc-200 dark:border-zinc-700">
+              <div className="text-4xl mb-4">📊</div>
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
+                Sin presupuestos
+              </h2>
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                Creá límites de gasto para tener más control
+              </p>
+            </Card>
+          ) : (
           budgetsWithProgress.map((budget) => (
             <Card
               key={budget.created_at}
@@ -337,21 +382,33 @@ export default function PresupuestosPage() {
               {/* Stats */}
               <div className="flex items-center justify-between">
                 <div className="flex items-baseline gap-1">
-                  <span className={`text-sm font-semibold ${getStatusTextColor(budget.status)}`}>
+                  <span className={`text-base font-bold font-mono ${getStatusTextColor(budget.status)}`}>
                     {formatAmount(budget.spent)}
                   </span>
                   <span className="text-xs text-zinc-500 dark:text-zinc-400">
                     / {formatAmount(budget.amount)}
                   </span>
                 </div>
-                <div className={`text-sm font-bold ${getStatusTextColor(budget.status)}`}>
+                <div className={`text-sm font-bold font-mono px-2 py-0.5 rounded-lg ${
+                  budget.status === 'exceeded' ? 'bg-red-100 dark:bg-red-900/30' :
+                  budget.status === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30' :
+                  'bg-green-100 dark:bg-green-900/30'
+                } ${getStatusTextColor(budget.status)}`}>
                   {budget.percentage.toFixed(0)}%
                 </div>
               </div>
 
               {budget.status === 'exceeded' && (
-                <div className="mt-2 text-xs text-red-600 dark:text-red-400 font-medium">
-                  Presupuesto excedido por {formatAmount(budget.spent - budget.amount)}
+                <div className="mt-2 flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400 font-medium">
+                  <span>⚠️</span>
+                  <span>Excedido por {formatAmount(budget.spent - budget.amount)}</span>
+                </div>
+              )}
+
+              {budget.status === 'warning' && (
+                <div className="mt-2 flex items-center gap-1.5 text-xs text-yellow-600 dark:text-yellow-400">
+                  <span>💡</span>
+                  <span>Te queda {formatAmount(budget.amount - budget.spent)}</span>
                 </div>
               )}
             </Card>

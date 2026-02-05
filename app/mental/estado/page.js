@@ -68,125 +68,121 @@ export default function EstadoPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <TopBar title="Estado" backHref="/mental" />
+    <div className="flex flex-col min-h-screen pb-24">
+      <TopBar title="Tu estado" backHref="/mental" />
 
       <div className="flex-1 overflow-y-auto px-4 py-6">
-        <div className="max-w-md mx-auto space-y-8">
+        <div className="max-w-md mx-auto space-y-6">
           {/* Trends Section */}
           {!loadingTrends && trends && (trends.avg7 || trends.avg30) && (
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                Tendencias
+              <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1">
+                Cómo venís
               </h3>
 
-              {/* Promedios */}
-              {(trends.avg7 || trends.avg30) && (
-                <Card className="p-4">
-                  <div className="space-y-2">
-                    {trends.avg7 && (
-                      <div className="flex justify-between items-baseline">
-                        <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                          Promedio 7 días
-                        </span>
-                        <span className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                          {trends.avg7.average}/10
-                        </span>
-                      </div>
-                    )}
-                    {trends.avg30 && (
-                      <div className="flex justify-between items-baseline">
-                        <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                          Promedio 30 días
-                        </span>
-                        <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                          {trends.avg30.average}/10
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              )}
+              {/* Card unificado de tendencias */}
+              <Card className="p-5 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200/50 dark:border-purple-800/50">
+                <div className="space-y-4">
+                  {/* Promedios */}
+                  {(trends.avg7 || trends.avg30) && (
+                    <div className="flex items-center gap-4">
+                      {trends.avg7 && (
+                        <div className="flex-1">
+                          <span className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">
+                            Últimos 7 días
+                          </span>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                              {trends.avg7.average}
+                            </span>
+                            <span className="text-sm text-purple-400 dark:text-purple-500">/10</span>
+                          </div>
+                        </div>
+                      )}
+                      {trends.avg30 && (
+                        <div className="flex-1">
+                          <span className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">
+                            Último mes
+                          </span>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-xl font-semibold text-zinc-700 dark:text-zinc-300">
+                              {trends.avg30.average}
+                            </span>
+                            <span className="text-sm text-zinc-400 dark:text-zinc-500">/10</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
-              {/* Variabilidad */}
-              {trends.variability && (
-                <Card className="p-4">
-                  <div className="flex justify-between items-baseline">
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                      Variabilidad (7d)
-                    </span>
-                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                      {trends.variability.interpretation}
-                    </span>
-                  </div>
-                </Card>
-              )}
-
-              {/* Rachas */}
-              {(trends.streaks?.lowStreak || trends.streaks?.highStreak) && (
-                <Card className="p-4">
-                  <div className="space-y-2">
-                    {trends.streaks.lowStreak && (
-                      <div className="flex justify-between items-baseline">
-                        <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                          Racha días bajos (≤4)
-                        </span>
-                        <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                          {trends.streaks.lowStreak} días
+                  {/* Variabilidad y Tendencia */}
+                  <div className="flex items-center gap-3 pt-3 border-t border-purple-200/50 dark:border-purple-700/50">
+                    {trends.variability && (
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/60 dark:bg-zinc-800/60">
+                        <span className="text-xs text-zinc-600 dark:text-zinc-400">Estabilidad:</span>
+                        <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">
+                          {trends.variability.interpretation}
                         </span>
                       </div>
                     )}
-                    {trends.streaks.highStreak && (
-                      <div className="flex justify-between items-baseline">
-                        <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                          Racha días altos (≥7)
-                        </span>
-                        <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                          {trends.streaks.highStreak} días
+                    {trends.trend && (
+                      <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full ${
+                        trends.trend.trend === 'Mejorando'
+                          ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                          : trends.trend.trend === 'Bajando'
+                          ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                          : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
+                      }`}>
+                        <span className="text-xs font-semibold">
+                          {trends.trend.trend === 'Mejorando' ? '↑' : trends.trend.trend === 'Bajando' ? '↓' : '→'} {trends.trend.trend}
                         </span>
                       </div>
                     )}
                   </div>
-                </Card>
-              )}
 
-              {/* Tendencia */}
-              {trends.trend && (
-                <Card className="p-4">
-                  <div className="flex justify-between items-baseline">
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                      Tendencia
-                    </span>
-                    <span className={`text-sm font-medium ${
-                      trends.trend.trend === 'Mejorando'
-                        ? 'text-green-600 dark:text-green-400'
-                        : trends.trend.trend === 'Bajando'
-                        ? 'text-red-600 dark:text-red-400'
-                        : 'text-zinc-600 dark:text-zinc-400'
-                    }`}>
-                      {trends.trend.trend}
-                    </span>
-                  </div>
-                </Card>
-              )}
+                  {/* Rachas */}
+                  {(trends.streaks?.lowStreak > 0 || trends.streaks?.highStreak > 0) && (
+                    <div className="flex items-center gap-3">
+                      {trends.streaks?.highStreak > 0 && (
+                        <div className="flex items-center gap-1.5 text-xs">
+                          <span className="text-green-500">✨</span>
+                          <span className="text-zinc-600 dark:text-zinc-400">{trends.streaks.highStreak}d buenos</span>
+                        </div>
+                      )}
+                      {trends.streaks?.lowStreak > 0 && (
+                        <div className="flex items-center gap-1.5 text-xs">
+                          <span className="text-orange-500">•</span>
+                          <span className="text-zinc-600 dark:text-zinc-400">{trends.streaks.lowStreak}d difíciles</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </Card>
             </div>
           )}
 
           {/* Mood Score Selection */}
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 text-center">
-              ¿Cómo te sientes hoy?
-            </h2>
-            <div className="grid grid-cols-5 gap-2">
+          <div className="space-y-5">
+            <div className="text-center">
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 mb-1">
+                ¿Cómo te sentís hoy?
+              </h2>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                Elegí un número del 1 al 10
+              </p>
+            </div>
+
+            <div className="grid grid-cols-5 gap-2.5">
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => (
                 <button
                   key={score}
                   data-testid={`mood-btn-${score}`}
                   onClick={() => setMood(score)}
                   className={`
-                    h-14 rounded-xl font-bold text-lg transition-all
+                    h-14 rounded-2xl font-bold text-lg transition-all active:scale-95
                     ${mood === score
-                      ? 'bg-blue-600 text-white scale-105 shadow-lg'
+                      ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white scale-105 shadow-lg shadow-purple-500/30'
                       : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                     }
                   `}
@@ -195,15 +191,17 @@ export default function EstadoPage() {
                 </button>
               ))}
             </div>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center">
-              1 = Muy mal · 10 = Excelente
-            </p>
+
+            <div className="flex items-center justify-between text-xs text-zinc-400 dark:text-zinc-500 px-1">
+              <span>Muy mal</span>
+              <span>Excelente</span>
+            </div>
           </div>
 
           {/* Optional Note */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              Notas (opcional)
+            <label className="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1">
+              Nota opcional
             </label>
             <textarea
               data-testid="mood-note-input"
@@ -211,7 +209,7 @@ export default function EstadoPage() {
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={3}
-              className="w-full px-4 py-2.5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all resize-none"
+              className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all resize-none text-sm"
             />
           </div>
 
@@ -220,10 +218,10 @@ export default function EstadoPage() {
             data-testid="mood-submit-btn"
             onClick={handleSubmit}
             disabled={!mood || isSubmitting}
-            className="w-full"
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
             size="lg"
           >
-            {isSubmitting ? 'Guardando...' : 'Guardar'}
+            {isSubmitting ? 'Guardando...' : 'Guardar estado'}
           </Button>
         </div>
       </div>

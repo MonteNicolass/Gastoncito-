@@ -382,7 +382,7 @@ export default function ResumenPage() {
                     <div className="w-10 h-10 rounded-2xl bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center">
                       <span className="text-xl">💪</span>
                     </div>
-                    <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Físico</span>
+                    <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Tu cuerpo</span>
                   </div>
                   <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-1">
                     {data.physicalDays} días
@@ -397,6 +397,49 @@ export default function ResumenPage() {
               </div>
             </Card>
           </a>
+          )}
+
+          {/* Objetivos Card */}
+          {data.activeGoals > 0 && (
+            <a href="/objetivos" className="block">
+              <Card className="p-5 bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-950/20 dark:to-violet-950/20 border-indigo-200/50 dark:border-indigo-800/50 hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-10 h-10 rounded-2xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
+                        <span className="text-xl">🎯</span>
+                      </div>
+                      <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Objetivos</span>
+                    </div>
+                    <div className="flex items-baseline gap-2 mb-1">
+                      <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
+                        {data.activeGoals}
+                      </div>
+                      <div className="text-lg text-indigo-400 dark:text-indigo-500">activos</div>
+                    </div>
+                    {data.goalsProgress !== null && (
+                      <div className="mt-2">
+                        <div className="flex items-center justify-between text-xs mb-1">
+                          <span className="text-zinc-500 dark:text-zinc-400">Progreso promedio</span>
+                          <span className="font-semibold text-indigo-600 dark:text-indigo-400">{data.goalsProgress}%</span>
+                        </div>
+                        <div className="h-2 bg-indigo-100 dark:bg-indigo-900/40 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all"
+                            style={{ width: `${data.goalsProgress}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  {data.completedGoals > 0 && (
+                    <div className="px-3 py-1.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-semibold">
+                      ✓ {data.completedGoals} cumplidos
+                    </div>
+                  )}
+                </div>
+              </Card>
+            </a>
           )}
         </div>
 

@@ -374,28 +374,42 @@ export default function MovimientosPage() {
   const hasActiveFilters = filterType !== 'all' || filterWallet !== 'all' || filterCategory !== 'all'
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen pb-24">
       <TopBar
         title="Movimientos"
         backHref="/money"
         action={
-          <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-            {filtered.length} de {movimientos.length}
+          <div className="text-xs font-mono font-medium text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-lg">
+            {filtered.length}/{movimientos.length}
           </div>
         }
       />
 
-      {/* Botones de acción */}
-      <div className="px-4 pt-4 space-y-2">
-        <Button
+      {/* Acción principal - estilo billetera */}
+      <div className="px-4 pt-4 space-y-3">
+        <button
           onClick={handleOpenAddModal}
-          variant="primary"
-          className="w-full"
-          data-testid="add-movimiento-btn"
           disabled={!isCategoriesSeeded}
+          data-testid="add-movimiento-btn"
+          className="w-full p-4 bg-gradient-to-br from-zinc-900 to-zinc-800 dark:from-zinc-800 dark:to-zinc-900 rounded-2xl border border-zinc-700 hover:border-zinc-600 transition-all active:scale-[0.98] disabled:opacity-50"
         >
-          {isCategoriesSeeded ? 'Agregar movimiento' : 'Inicializando...'}
-        </Button>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
+                <span className="text-lg">💸</span>
+              </div>
+              <div className="text-left">
+                <p className="text-white font-semibold text-sm">
+                  {isCategoriesSeeded ? 'Nuevo movimiento' : 'Inicializando...'}
+                </p>
+                <p className="text-zinc-400 text-xs">Gasto, ingreso o transferencia</p>
+              </div>
+            </div>
+            <svg className="w-5 h-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          </div>
+        </button>
 
         <a
           href="https://www.ratoneando.com.ar"
@@ -403,12 +417,12 @@ export default function MovimientosPage() {
           rel="noopener noreferrer"
           className="block w-full"
         >
-          <Button
-            variant="ghost"
-            className="w-full border border-zinc-200 dark:border-zinc-700"
-          >
-            🛒 Comparar precios
-          </Button>
+          <Card className="p-3 bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+            <div className="flex items-center justify-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+              <span>🛒</span>
+              <span>Comparar precios</span>
+            </div>
+          </Card>
         </a>
       </div>
 
@@ -466,15 +480,15 @@ export default function MovimientosPage() {
       {/* Lista */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
         {filtered.length === 0 ? (
-          <Card className="p-8 text-center">
+          <Card className="p-8 text-center bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-zinc-800 border-zinc-200 dark:border-zinc-700">
             <div className="text-4xl mb-4">💸</div>
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
-              {movimientos.length === 0 ? 'Sin movimientos aún' : 'Sin resultados'}
+              {movimientos.length === 0 ? 'Sin movimientos' : 'Sin resultados'}
             </h3>
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
               {movimientos.length === 0
-                ? 'Agregá tu primer movimiento arriba'
-                : 'No hay movimientos con estos filtros'}
+                ? 'Registrá tu primer movimiento'
+                : 'Probá ajustando los filtros'}
             </p>
           </Card>
         ) : (
@@ -489,7 +503,7 @@ export default function MovimientosPage() {
                   className="flex-1 min-w-0 cursor-pointer"
                   onClick={() => handleEdit(mov)}
                 >
-                  <div className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+                  <div className="text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100 tracking-tight">
                     {formatAmount(mov.monto)}
                   </div>
                   <div className="text-sm text-zinc-600 dark:text-zinc-400 mt-0.5 truncate">

@@ -129,66 +129,96 @@ export default function BilleterasPage() {
   const visibleWallets = wallets.filter(w => !w.is_hidden)
   const hiddenWallets = wallets.filter(w => w.is_hidden)
 
+  // Calcular total de saldos visibles
+  const totalBalance = visibleWallets.reduce((sum, w) => sum + w.saldo, 0)
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen pb-24">
       <TopBar title="Billeteras" backHref="/money" />
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-5">
+        {/* Card de balance total - estilo billetera tech */}
+        {visibleWallets.length > 0 && (
+          <Card className="p-5 bg-gradient-to-br from-zinc-900 to-zinc-800 dark:from-zinc-800 dark:to-zinc-900 border-zinc-700">
+            <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1">
+              Balance total
+            </p>
+            <div className="text-3xl font-bold text-white font-mono tracking-tight">
+              {formatAmount(totalBalance)}
+            </div>
+            <div className="mt-3 flex items-center gap-2 text-xs text-zinc-500">
+              <span>{visibleWallets.length} {visibleWallets.length === 1 ? 'billetera' : 'billeteras'}</span>
+              {hiddenWallets.length > 0 && (
+                <span>· {hiddenWallets.length} ocultas</span>
+              )}
+            </div>
+          </Card>
+        )}
+
         {/* Botón agregar */}
-        <Button
+        <button
           onClick={() => handleOpenModal()}
-          variant="primary"
-          className="w-full"
+          className="w-full p-4 bg-zinc-50 dark:bg-zinc-800/50 border border-dashed border-zinc-300 dark:border-zinc-600 rounded-2xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex items-center justify-center gap-2 active:scale-[0.98]"
         >
-          Nueva billetera
-        </Button>
+          <svg className="w-5 h-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          <span className="text-sm font-semibold text-zinc-600 dark:text-zinc-400">Nueva billetera</span>
+        </button>
 
         {/* Lista de billeteras visibles */}
         <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1">
+          <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1">
             Mis billeteras
-          </h2>
+          </h3>
           {visibleWallets.length === 0 ? (
-            <Card className="p-8 text-center">
+            <Card className="p-8 text-center bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-zinc-800 border-zinc-200 dark:border-zinc-700">
               <div className="text-4xl mb-4">💳</div>
               <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
-                Sin billeteras aún
+                Sin billeteras
               </h3>
               <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                Creá tu primera billetera arriba
+                Agregá tu primera billetera para empezar
               </p>
             </Card>
           ) : (
             visibleWallets.map((w) => (
               <Card
                 key={w.wallet}
-                className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                className={`p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors ${w.is_primary ? 'ring-2 ring-green-500/30 dark:ring-green-400/30' : ''}`}
               >
                 <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-                        {w.wallet}
-                      </div>
-                      {w.is_primary && (
-                        <span className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
-                          Principal
-                        </span>
-                      )}
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-zinc-700 to-zinc-800 flex items-center justify-center flex-shrink-0">
+                      <span className="text-lg">💳</span>
                     </div>
-                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">
-                      {formatAmount(w.saldo)}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                          {w.wallet}
+                        </span>
+                        {w.is_primary && (
+                          <span className="inline-block px-2 py-0.5 text-[10px] font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
+                            Principal
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xl font-bold font-mono text-zinc-900 dark:text-zinc-100 mt-0.5 tracking-tight">
+                        {formatAmount(w.saldo)}
+                      </div>
                     </div>
                   </div>
                   {/* Menú contextual */}
                   <div className="relative flex-shrink-0">
                     <button
                       onClick={() => handleOpenModal(w)}
-                      className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+                      className="p-2 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl transition-colors"
                       aria-label="Opciones"
                     >
-                      <svg className="w-5 h-5 text-zinc-500" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                      <svg className="w-5 h-5 text-zinc-500" fill="currentColor" viewBox="0 0 16 16">
+                        <circle cx="8" cy="3" r="1.5"/>
+                        <circle cx="8" cy="8" r="1.5"/>
+                        <circle cx="8" cy="13" r="1.5"/>
                       </svg>
                     </button>
                   </div>
