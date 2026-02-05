@@ -5,16 +5,22 @@ import { initDB, addMovimiento, updateSaldo, addNote, addLifeEntry, deleteMovimi
 import TopBar from '@/components/ui/TopBar'
 import Button from '@/components/ui/Button'
 import {
-  MessageCircle,
   Wallet,
   Brain,
   Dumbbell,
   StickyNote,
   Send,
   Check,
-  ChevronRight,
-  Undo2
+  Undo2,
+  Sparkles
 } from 'lucide-react'
+
+// Ejemplos clickeables para el estado inicial
+const EXAMPLE_PROMPTS = [
+  { text: 'Gasté 1500 en el almuerzo', icon: Wallet, color: 'emerald' },
+  { text: 'Hoy me sentí con energía, 8/10', icon: Brain, color: 'purple' },
+  { text: 'Fui al gimnasio', icon: Dumbbell, color: 'orange' },
+]
 
 export default function ChatPage() {
   const [messages, setMessages] = useState([])
@@ -22,6 +28,7 @@ export default function ChatPage() {
   const [pendingAction, setPendingAction] = useState(null)
   const [lastAction, setLastAction] = useState(null)
   const [showUndo, setShowUndo] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
   const undoTimerRef = useRef(null)
@@ -39,9 +46,11 @@ export default function ChatPage() {
     }
 
     // Autofocus on input
-    if (inputRef.current) {
-      inputRef.current.focus()
-    }
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus()
+      }
+    }, 100)
   }, [])
 
   useEffect(() => {
@@ -54,11 +63,15 @@ export default function ChatPage() {
     const text = input
     setInput('')
     setMessages(prev => [...prev, { from: 'user', text }])
+    setIsTyping(true)
 
     // 1. Pre-filtro anti-prompter (client-side)
     const { isOutOfScope, getRejectionMessage } = await import('@/lib/anti-prompter')
     if (isOutOfScope(text)) {
-      setMessages(prev => [...prev, { from: 'gaston', text: getRejectionMessage() }])
+      setTimeout(() => {
+        setIsTyping(false)
+        setMessages(prev => [...prev, { from: 'gaston', text: getRejectionMessage() }])
+      }, 400)
       return
     }
 
@@ -97,9 +110,15 @@ export default function ChatPage() {
 
       if (noteText) {
         await addNote({ text: noteText, type: noteType })
-        setMessages(prev => [...prev, { from: 'gaston', text: 'Nota guardada.' }])
+        setTimeout(() => {
+          setIsTyping(false)
+          setMessages(prev => [...prev, { from: 'gaston', text: 'Listo, guardé tu nota' }])
+        }, 300)
       } else {
-        setMessages(prev => [...prev, { from: 'gaston', text: 'La nota está vacía.' }])
+        setTimeout(() => {
+          setIsTyping(false)
+          setMessages(prev => [...prev, { from: 'gaston', text: 'Mmm, la nota parece vacía' }])
+        }, 300)
       }
 
       return
@@ -121,7 +140,10 @@ export default function ChatPage() {
 
       // Handle out-of-scope from server
       if (routing.out_of_scope) {
-        setMessages(prev => [...prev, { from: 'gaston', text: 'Esto no parece algo de tu vida personal. Acá podés registrar gastos, emociones, hábitos o notas.' }])
+        setTimeout(() => {
+          setIsTyping(false)
+          setMessages(prev => [...prev, { from: 'gaston', text: 'Mmm, eso no lo puedo registrar. Probá con un gasto, cómo te sentís, o una actividad.' }])
+        }, 400)
         return
       }
 
@@ -129,21 +151,25 @@ export default function ChatPage() {
       const confidence = routing.confidence || 0
 
       if (confidence >= 0.50) {
-        // Auto-execute (media confidence o mayor)
         await executeAction(routing, text)
       } else {
-        // Low confidence => save as general note
         await addLifeEntry({
           text,
           domain: 'general',
           meta: {}
         })
-        setMessages(prev => [...prev, { from: 'gaston', text: 'Guardado como nota' }])
+        setTimeout(() => {
+          setIsTyping(false)
+          setMessages(prev => [...prev, { from: 'gaston', text: 'Lo guardé como nota' }])
+        }, 300)
       }
 
     } catch (error) {
       console.error('Chat error:', error)
-      setMessages(prev => [...prev, { from: 'gaston', text: 'Ocurrió un error. Probá de nuevo.' }])
+      setTimeout(() => {
+        setIsTyping(false)
+        setMessages(prev => [...prev, { from: 'gaston', text: 'Ups, algo falló. ¿Probamos de nuevo?' }])
+      }, 300)
     }
   }
 
@@ -152,24 +178,31 @@ export default function ChatPage() {
 
     if (brain === 'money' && intent === 'adjust_balance') {
       if (!money?.amount) {
-        setMessages(prev => [...prev, { from: 'gaston', text: 'No pude identificar el monto' }])
+        setTimeout(() => {
+          setIsTyping(false)
+          setMessages(prev => [...prev, { from: 'gaston', text: 'No encontré el monto' }])
+        }, 300)
         return
       }
 
       const walletName = money.merchant || 'efectivo'
-
-      // Update balance directly (set, not add/subtract)
       await updateSaldo(walletName, money.amount, true)
 
-      setMessages(prev => [...prev, {
-        from: 'gaston',
-        text: `Saldo actualizado: ${walletName}`,
-        hint: 'Ajuste de billetera'
-      }])
+      setTimeout(() => {
+        setIsTyping(false)
+        setMessages(prev => [...prev, {
+          from: 'gaston',
+          text: `Actualicé el saldo de ${walletName}`,
+          hint: 'Ajuste de billetera'
+        }])
+      }, 300)
 
     } else if (brain === 'money' && (intent === 'add_expense' || intent === 'add_income' || intent === 'add_subscription')) {
       if (!money?.amount) {
-        setMessages(prev => [...prev, { from: 'gaston', text: 'No pude identificar el monto' }])
+        setTimeout(() => {
+          setIsTyping(false)
+          setMessages(prev => [...prev, { from: 'gaston', text: 'No encontré el monto' }])
+        }, 300)
         return
       }
 
@@ -185,7 +218,6 @@ export default function ChatPage() {
       const result = await addMovimiento(movimiento)
       await updateSaldo(movimiento.metodo, movimiento.tipo === 'gasto' ? -movimiento.monto : movimiento.monto)
 
-      // Save for undo
       setLastAction({
         type: 'movimiento',
         id: result.id || result,
@@ -193,13 +225,15 @@ export default function ChatPage() {
       })
       showUndoToast()
 
-      const typeLabel = movimiento.tipo === 'ingreso' ? 'Ingreso' : 'Gasto'
-      const hint = 'Afecta Money hoy'
-      setMessages(prev => [...prev, {
-        from: 'gaston',
-        text: `${typeLabel} guardado`,
-        hint
-      }])
+      const typeLabel = movimiento.tipo === 'ingreso' ? 'Ingreso registrado' : 'Gasto registrado'
+      setTimeout(() => {
+        setIsTyping(false)
+        setMessages(prev => [...prev, {
+          from: 'gaston',
+          text: typeLabel,
+          hint: 'Impacta en Money'
+        }])
+      }, 300)
 
     } else if (intent === 'log_entry' && entry) {
       const result = await addLifeEntry({
@@ -208,7 +242,6 @@ export default function ChatPage() {
         meta: entry.meta || {}
       })
 
-      // Save for undo
       setLastAction({
         type: 'life_entry',
         id: result.id || result,
@@ -217,36 +250,37 @@ export default function ChatPage() {
       showUndoToast()
 
       const labels = {
-        general: 'Nota guardada',
-        physical: 'Hábito registrado',
-        mental: 'Estado mental registrado',
-        money: 'Money registrado'
+        general: 'Guardado',
+        physical: 'Actividad registrada',
+        mental: 'Estado registrado',
+        money: 'Registrado'
       }
 
       const hints = {
         general: null,
         physical: 'Impacta en Físico',
         mental: 'Impacta en Mental',
-        money: 'Afecta Money hoy'
+        money: 'Impacta en Money'
       }
 
-      const scoreText = entry.meta?.mood_score ? `: ${entry.meta.mood_score}/10` : ''
+      const scoreText = entry.meta?.mood_score ? ` (${entry.meta.mood_score}/10)` : ''
 
-      setMessages(prev => [...prev, {
-        from: 'gaston',
-        text: `${labels[entry.domain]}${scoreText}`,
-        hint: hints[entry.domain]
-      }])
+      setTimeout(() => {
+        setIsTyping(false)
+        setMessages(prev => [...prev, {
+          from: 'gaston',
+          text: `${labels[entry.domain]}${scoreText}`,
+          hint: hints[entry.domain]
+        }])
+      }, 300)
 
     } else {
-      // Unknown or unhandled
       const result = await addLifeEntry({
         text: originalText,
         domain: 'general',
         meta: {}
       })
 
-      // Save for undo
       setLastAction({
         type: 'life_entry',
         id: result.id || result,
@@ -254,19 +288,20 @@ export default function ChatPage() {
       })
       showUndoToast()
 
-      setMessages(prev => [...prev, { from: 'gaston', text: 'Guardado como nota' }])
+      setTimeout(() => {
+        setIsTyping(false)
+        setMessages(prev => [...prev, { from: 'gaston', text: 'Lo guardé como nota' }])
+      }, 300)
     }
   }
 
   function showUndoToast() {
     setShowUndo(true)
 
-    // Clear existing timer
     if (undoTimerRef.current) {
       clearTimeout(undoTimerRef.current)
     }
 
-    // Auto-hide after 8 seconds
     undoTimerRef.current = setTimeout(() => {
       setShowUndo(false)
       setLastAction(null)
@@ -279,7 +314,6 @@ export default function ChatPage() {
     try {
       if (lastAction.type === 'movimiento') {
         await deleteMovimiento(lastAction.id)
-        // Revert saldo
         const movimiento = lastAction.data
         await updateSaldo(movimiento.metodo, movimiento.tipo === 'gasto' ? movimiento.monto : -movimiento.monto)
       } else if (lastAction.type === 'life_entry') {
@@ -291,7 +325,7 @@ export default function ChatPage() {
       setMessages(prev => [...prev, { from: 'gaston', text: 'Deshecho' }])
     } catch (error) {
       console.error('Undo error:', error)
-      setMessages(prev => [...prev, { from: 'gaston', text: 'Error al deshacer' }])
+      setMessages(prev => [...prev, { from: 'gaston', text: 'No pude deshacer' }])
     } finally {
       setShowUndo(false)
       setLastAction(null)
@@ -301,164 +335,226 @@ export default function ChatPage() {
     }
   }
 
-
   async function handleConfirm() {
     if (!pendingAction) return
-
     await executeAction(pendingAction.routing, pendingAction.originalText)
     setPendingAction(null)
   }
 
   async function handleCancel() {
     if (!pendingAction) return
-
-    // Save as general note instead
     await addLifeEntry({
       text: pendingAction.originalText,
       domain: 'general',
       meta: {}
     })
-
     setMessages(prev => [...prev, { from: 'gaston', text: 'Guardado como nota' }])
     setPendingAction(null)
   }
 
+  function handleExampleClick(text) {
+    setInput(text)
+    inputRef.current?.focus()
+  }
+
+  function handleQuickAction(prefix) {
+    setInput(prefix)
+    inputRef.current?.focus()
+  }
+
+  const hasMessages = messages.length > 0
+
   return (
-    <div className="flex flex-col h-screen pb-20">
-      <TopBar title="Chat" />
+    <div className="flex flex-col h-screen bg-zinc-50 dark:bg-zinc-950">
+      <TopBar title="Gastoncito" />
 
-      {/* Hero Input Section */}
-      <div className="px-4 pt-6 pb-4">
-        <div className="max-w-lg mx-auto">
-          <div className="relative">
-            <input
-              ref={inputRef}
-              className="w-full px-5 py-4 pr-14 bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-700 rounded-2xl text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-all text-base shadow-sm"
-              placeholder="¿Qué querés registrar?"
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter') handleSend()
-              }}
-              data-testid="chat-input"
-            />
-            <button
-              onClick={handleSend}
-              disabled={!input.trim()}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:bg-zinc-800 dark:hover:bg-zinc-200 active:scale-95 transition-all"
-              data-testid="chat-send-btn"
-            >
-              <Send className="w-5 h-5" />
-            </button>
-          </div>
+      {/* Main Chat Container */}
+      <div className="flex-1 flex flex-col overflow-hidden px-4 py-4 pb-24">
+        {/* Chat Panel */}
+        <div className="flex-1 flex flex-col bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm overflow-hidden">
 
-          {/* Pills de acciones rápidas */}
-          <div className="flex items-center gap-2 mt-3 overflow-x-auto scrollbar-hide pb-1">
-            <button
-              onClick={() => setInput('Gasté ')}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-xs font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900/50 active:scale-95 transition-all whitespace-nowrap"
-            >
-              <Wallet className="w-3.5 h-3.5" />
-              <span>Gasto</span>
-            </button>
+          {/* Messages Area */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
 
-            <button
-              onClick={() => setInput('Hoy me sentí ')}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium hover:bg-purple-100 dark:hover:bg-purple-900/50 active:scale-95 transition-all whitespace-nowrap"
-            >
-              <Brain className="w-3.5 h-3.5" />
-              <span>Estado</span>
-            </button>
-
-            <button
-              onClick={() => setInput('Fui al ')}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-full text-xs font-medium hover:bg-orange-100 dark:hover:bg-orange-900/50 active:scale-95 transition-all whitespace-nowrap"
-            >
-              <Dumbbell className="w-3.5 h-3.5" />
-              <span>Hábito</span>
-            </button>
-
-            <button
-              onClick={() => setInput('Nota: ')}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium hover:bg-blue-100 dark:hover:bg-blue-900/50 active:scale-95 transition-all whitespace-nowrap"
-            >
-              <StickyNote className="w-3.5 h-3.5" />
-              <span>Nota</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
-        {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full gap-3 opacity-60">
-            <MessageCircle className="w-10 h-10 text-zinc-400 dark:text-zinc-500" />
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center px-8">
-              Escribí arriba y presioná Enter para guardar
-            </p>
-          </div>
-        )}
-
-        {messages.map((m, i) => (
-          <div key={i}>
-            <div className={`flex ${m.from === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div
-                className={`max-w-[300px] px-4 py-3 rounded-2xl ${
-                  m.from === 'user'
-                    ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-br-md'
-                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-bl-md'
-                }`}
-              >
-                <p className="text-sm leading-relaxed">{m.text}</p>
-                {m.hint && (
-                  <p className={`text-xs mt-1.5 ${
-                    m.from === 'user'
-                      ? 'text-zinc-400 dark:text-zinc-500'
-                      : 'text-zinc-500 dark:text-zinc-400'
-                  }`}>
-                    {m.hint}
+            {/* Welcome Message (always shown first) */}
+            <div className="flex gap-3">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/20">
+                <Sparkles className="w-4 h-4 text-white" />
+              </div>
+              <div className="flex-1">
+                <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl rounded-tl-md px-4 py-3 inline-block max-w-[280px]">
+                  <p className="text-sm text-zinc-900 dark:text-zinc-100 leading-relaxed">
+                    Hola, soy Gastoncito
                   </p>
-                )}
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+                    ¿Qué querés registrar hoy?
+                  </p>
+                </div>
               </div>
             </div>
 
-            {/* Confirmation UI */}
-            {m.needsConfirmation && pendingAction && i === messages.length - 1 && (
-              <div className="flex justify-start mt-2">
-                <div className="flex gap-2">
-                  <Button
-                    onClick={handleConfirm}
-                    variant="primary"
-                    size="sm"
-                    data-testid="chat-confirm-btn"
-                  >
-                    Confirmar
-                  </Button>
-                  <Button
-                    onClick={handleCancel}
-                    variant="ghost"
-                    size="sm"
-                    data-testid="chat-cancel-btn"
-                  >
-                    Cancelar
-                  </Button>
+            {/* Example Prompts (only when no messages) */}
+            {!hasMessages && (
+              <div className="pl-12 space-y-2 mt-4">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
+                  Probá con algo así:
+                </p>
+                {EXAMPLE_PROMPTS.map((example, i) => {
+                  const Icon = example.icon
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => handleExampleClick(example.text)}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm transition-all hover:scale-[1.02] active:scale-[0.98] ${
+                        example.color === 'emerald'
+                          ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30'
+                          : example.color === 'purple'
+                          ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30'
+                          : 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/30'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span>"{example.text}"</span>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* User & Assistant Messages */}
+            {messages.map((m, i) => (
+              <div key={i}>
+                {m.from === 'user' ? (
+                  <div className="flex justify-end">
+                    <div className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 px-4 py-3 rounded-2xl rounded-br-md max-w-[280px]">
+                      <p className="text-sm leading-relaxed">{m.text}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex gap-3">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/20">
+                      <Sparkles className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl rounded-tl-md px-4 py-3 inline-block max-w-[280px]">
+                        <p className="text-sm text-zinc-900 dark:text-zinc-100 leading-relaxed">{m.text}</p>
+                        {m.hint && (
+                          <p className="text-xs text-purple-600 dark:text-purple-400 mt-1.5 font-medium">
+                            {m.hint}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Confirmation UI */}
+                {m.needsConfirmation && pendingAction && i === messages.length - 1 && (
+                  <div className="flex gap-3 mt-2 pl-12">
+                    <Button
+                      onClick={handleConfirm}
+                      variant="primary"
+                      size="sm"
+                      data-testid="chat-confirm-btn"
+                    >
+                      Confirmar
+                    </Button>
+                    <Button
+                      onClick={handleCancel}
+                      variant="ghost"
+                      size="sm"
+                      data-testid="chat-cancel-btn"
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {/* Typing Indicator */}
+            {isTyping && (
+              <div className="flex gap-3">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-4 h-4 text-white" />
+                </div>
+                <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl rounded-tl-md px-4 py-3 inline-block">
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-2 h-2 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-2 h-2 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
                 </div>
               </div>
             )}
-          </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
 
-      {/* Link rápido a Hoy */}
-      <div className="px-4 py-3 border-t border-zinc-100 dark:border-zinc-800">
-        <a href="/hoy" className="block">
-          <div className="text-center text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors flex items-center justify-center gap-1">
-            <span>Ver todo lo de hoy</span>
-            <ChevronRight className="w-3 h-3" />
+            <div ref={messagesEndRef} />
           </div>
-        </a>
+
+          {/* Input Area - Inside the panel */}
+          <div className="border-t border-zinc-100 dark:border-zinc-800 p-4 bg-zinc-50/50 dark:bg-zinc-900/50">
+            {/* Quick Actions Pills */}
+            <div className="flex items-center gap-2 mb-3 overflow-x-auto scrollbar-hide">
+              <button
+                onClick={() => handleQuickAction('Gasté ')}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-full text-xs font-medium hover:border-emerald-300 dark:hover:border-emerald-700 hover:text-emerald-700 dark:hover:text-emerald-300 active:scale-95 transition-all whitespace-nowrap"
+              >
+                <Wallet className="w-3 h-3" />
+                <span>Gasto</span>
+              </button>
+
+              <button
+                onClick={() => handleQuickAction('Me siento ')}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-full text-xs font-medium hover:border-purple-300 dark:hover:border-purple-700 hover:text-purple-700 dark:hover:text-purple-300 active:scale-95 transition-all whitespace-nowrap"
+              >
+                <Brain className="w-3 h-3" />
+                <span>Estado</span>
+              </button>
+
+              <button
+                onClick={() => handleQuickAction('Hice ')}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-full text-xs font-medium hover:border-orange-300 dark:hover:border-orange-700 hover:text-orange-700 dark:hover:text-orange-300 active:scale-95 transition-all whitespace-nowrap"
+              >
+                <Dumbbell className="w-3 h-3" />
+                <span>Actividad</span>
+              </button>
+
+              <button
+                onClick={() => handleQuickAction('Nota: ')}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-full text-xs font-medium hover:border-blue-300 dark:hover:border-blue-700 hover:text-blue-700 dark:hover:text-blue-300 active:scale-95 transition-all whitespace-nowrap"
+              >
+                <StickyNote className="w-3 h-3" />
+                <span>Nota</span>
+              </button>
+            </div>
+
+            {/* Input */}
+            <div className="relative">
+              <input
+                ref={inputRef}
+                className="w-full px-4 py-3.5 pr-12 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50 transition-all text-[15px]"
+                placeholder="Escribí lo que quieras registrar..."
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSend()
+                  }
+                }}
+                data-testid="chat-input"
+              />
+              <button
+                onClick={handleSend}
+                disabled={!input.trim()}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:from-purple-600 hover:to-pink-600 active:scale-95 transition-all shadow-lg shadow-purple-500/20 disabled:shadow-none"
+                data-testid="chat-send-btn"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Undo Toast */}
