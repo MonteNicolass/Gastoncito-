@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { initDB, getMovimientos, getLifeEntries, getNotes } from '@/lib/storage'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
-import QuickActionsInline from '@/components/ui/QuickActionsInline'
 
 export default function HoyPage() {
   const [todayData, setTodayData] = useState({
@@ -106,11 +105,6 @@ export default function HoyPage() {
       <TopBar title="Hoy" />
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {/* Atajos rápidos */}
-        <div className="pb-2">
-          <QuickActionsInline onActionComplete={loadTodayData} />
-        </div>
-
         {!hasData ? (
           <Card className="p-8 text-center">
             <div className="text-4xl mb-4">📅</div>
