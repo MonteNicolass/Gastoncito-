@@ -22,6 +22,7 @@ export default function MoneyPage() {
           <ListRow label="Billeteras" href="/money/billeteras" />
           <ListRow label="Presupuestos" href="/money/presupuestos" />
           <ListRow label="Suscripciones" href="/money/suscripciones" />
+          <ListRow label="Alertas" href="/money/alertas" />
           <ListRow label="Insights" href="/money/insights" />
         </Card>
 

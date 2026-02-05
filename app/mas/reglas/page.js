@@ -22,6 +22,7 @@ export default function ReglasPage() {
   const [categorias, setCategorias] = useState([])
   const [editingId, setEditingId] = useState(null)
   const [isRecategorizing, setIsRecategorizing] = useState(false)
+  const [contextMenuId, setContextMenuId] = useState(null)
 
   const [form, setForm] = useState({
     nombre: '',
@@ -35,6 +36,15 @@ export default function ReglasPage() {
   useEffect(() => {
     loadData()
   }, [])
+
+  // Cerrar menú contextual al hacer click fuera
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (contextMenuId) setContextMenuId(null)
+    }
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [contextMenuId])
 
   const loadData = async () => {
     await initDB()
@@ -89,6 +99,13 @@ export default function ReglasPage() {
     if (!confirm('¿Eliminar esta regla?')) return
     await deleteRule(id)
     await loadData()
+    setContextMenuId(null)
+  }
+
+  const handleToggleEnabled = async (rule) => {
+    await updateRule(rule.id, { ...rule, enabled: !rule.enabled })
+    await loadData()
+    setContextMenuId(null)
   }
 
   const handleRecategorize = async () => {
@@ -240,21 +257,36 @@ export default function ReglasPage() {
             Reglas configuradas
           </h2>
           {rules.length === 0 ? (
-            <Card className="p-6 text-center">
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                No hay reglas configuradas.
+            <Card className="p-8 text-center">
+              <div className="text-4xl mb-4">📋</div>
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
+                Sin reglas
+              </h3>
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                Crea tu primera regla para categorizar automáticamente tus movimientos
               </p>
             </Card>
           ) : (
             rules.map((rule) => (
               <Card
                 key={rule.id}
-                className={`p-4 ${!rule.enabled ? 'opacity-60' : ''}`}
+                className={`p-4 ${!rule.enabled ? 'opacity-60' : ''} hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors`}
               >
                 <div className="flex justify-between items-start gap-3">
                   <div className="flex-1 min-w-0">
-                    <div className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-                      {rule.nombre}
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <div className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+                        {rule.nombre}
+                      </div>
+                      {rule.enabled ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
+                          Activa
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+                          Pausada
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                       <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-mono bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
@@ -271,26 +303,56 @@ export default function ReglasPage() {
                     </div>
                     <div className="flex items-center gap-3 mt-1.5 text-xs text-zinc-500 dark:text-zinc-400">
                       <span>Prioridad: {rule.priority}</span>
-                      <span>•</span>
-                      <span>{rule.enabled ? '✅ Activa' : '❌ Inactiva'}</span>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-1 flex-shrink-0">
-                    <Button
-                      onClick={() => handleEdit(rule)}
-                      variant="ghost"
-                      size="sm"
+
+                  {/* Menú contextual */}
+                  <div className="relative flex-shrink-0">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setContextMenuId(contextMenuId === rule.id ? null : rule.id)
+                      }}
+                      className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded transition-colors"
                     >
-                      Editar
-                    </Button>
-                    <Button
-                      onClick={() => handleDelete(rule.id)}
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-600 hover:text-red-700 dark:text-red-400"
-                    >
-                      Eliminar
-                    </Button>
+                      <svg className="w-5 h-5 text-zinc-600 dark:text-zinc-400" fill="currentColor" viewBox="0 0 16 16">
+                        <circle cx="8" cy="3" r="1.5"/>
+                        <circle cx="8" cy="8" r="1.5"/>
+                        <circle cx="8" cy="13" r="1.5"/>
+                      </svg>
+                    </button>
+                    {contextMenuId === rule.id && (
+                      <div className="absolute right-0 mt-1 w-36 bg-white dark:bg-zinc-800 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-700 z-10">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleEdit(rule)
+                            setContextMenuId(null)
+                          }}
+                          className="w-full px-3 py-2 text-left text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-t-lg"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleToggleEnabled(rule)
+                          }}
+                          className="w-full px-3 py-2 text-left text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                        >
+                          {rule.enabled ? 'Pausar' : 'Activar'}
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDelete(rule.id)
+                          }}
+                          className="w-full px-3 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-lg"
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </Card>
