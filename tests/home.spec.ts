@@ -29,6 +29,11 @@ function assertNoConsoleErrors() {
 
 test.beforeEach(async ({ page }) => {
   trackConsoleErrors(page)
+  // Skip onboarding for all tests
+  await page.goto('/')
+  await page.evaluate(() => {
+    localStorage.setItem('gaston_onboarding_done', '1')
+  })
 })
 
 // ── 1) Carga de la Home ─────────────────────────────────────
