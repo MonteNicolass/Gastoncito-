@@ -44,22 +44,23 @@ export function getEconomyHistory(movimientos: Movimiento[]): EconomyHistory {
   let trend: 'up' | 'down' | 'stable' = 'stable'
   if (avg30Daily > 0) {
     const ratio = avg7Daily / avg30Daily
-    if (ratio > 1.15) trend = 'up'
+    if (!isFinite(ratio)) trend = 'stable' as const
+    else if (ratio > 1.15) trend = 'up'
     else if (ratio < 0.85) trend = 'down'
   }
 
   let text: string
   if (trend === 'up') {
-    text = 'Gasto diario mayor que tu promedio mensual'
+    text = 'Gasto semanal por encima del promedio'
   } else if (trend === 'down') {
-    text = 'Gasto diario menor que tu promedio mensual'
+    text = 'Gasto semanal por debajo del promedio'
   } else {
     text = 'Gasto dentro de tu rango habitual'
   }
 
   return {
-    last7: Math.round(last7),
-    last30: Math.round(last30),
+    last7: isFinite(last7) ? Math.round(last7) : 0,
+    last30: isFinite(last30) ? Math.round(last30) : 0,
     avg30Daily: Math.round(avg30Daily),
     trend,
     text,

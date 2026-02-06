@@ -105,7 +105,7 @@ export function getMentalInsights(records: MentalRecord[]): MentalInsight[] {
   ) {
     insights.push({
       id: 'mental_trend_negative',
-      text: 'En la última semana el estado promedio fue más bajo que tu normal.',
+      text: 'Estado promedio menor que tu rango habitual esta semana.',
       type: 'trend',
     })
   }
@@ -248,6 +248,7 @@ export function getMentalSnapshot(records: MentalRecord[]): MentalSnapshot {
 
   const daysTracked = new Set(last14.map(r => r.date)).size
   const avgMood14 = avg(last14.map(r => r.moodLevel))
+  const safeMood = avgMood14 !== null && isFinite(avgMood14) ? Math.round(avgMood14 * 10) / 10 : null
 
   const avg7 = avg(last7.map(r => r.moodLevel))
   const avg30 = avg(last30.map(r => r.moodLevel))
@@ -260,7 +261,7 @@ export function getMentalSnapshot(records: MentalRecord[]): MentalSnapshot {
 
   return {
     daysTrackedLast14: daysTracked,
-    avgMoodLast14: avgMood14 !== null ? Math.round(avgMood14 * 10) / 10 : null,
+    avgMoodLast14: safeMood,
     trend,
   }
 }

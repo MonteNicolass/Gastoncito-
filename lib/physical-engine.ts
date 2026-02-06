@@ -174,6 +174,7 @@ export function getPhysicalAlerts(records: PhysicalRecord[]): PhysicalAlert[] {
   }
 
   const gap = daysSince(sorted[0].date)
+  if (!isFinite(gap)) return alerts.slice(0, 1)
 
   // 1) Inactividad crítica — ≥14 días
   if (gap >= 14) {

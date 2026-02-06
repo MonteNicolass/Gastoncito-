@@ -53,9 +53,9 @@ export function getMentalHistory(records: MentalRecord[]): MentalHistory {
   if (last7 === null) {
     text = 'Sin registros recientes'
   } else if (trend === 'down') {
-    text = 'Estado promedio menor que tu mes'
+    text = 'Estado promedio menor que tu mes anterior'
   } else if (trend === 'up') {
-    text = 'Estado promedio mejor que tu mes'
+    text = 'Estado promedio mejor que tu mes anterior'
   } else {
     text = 'Estado dentro de tu rango habitual'
   }

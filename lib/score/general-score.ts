@@ -58,7 +58,8 @@ function getEconomyScore(alerts: GeneralAlert[], econSnap: EconomySnapshot): num
   }
 
   // Penalize spending out of range (projected vs 3m average)
-  const delta = Math.abs(econSnap.deltaVsAvgPercent)
+  let delta = Math.abs(econSnap.deltaVsAvgPercent)
+  if (!isFinite(delta)) delta = 0
   if (delta > 30) score -= 20
   else if (delta > 20) score -= 10
   else if (delta > 10) score -= 5
@@ -143,7 +144,7 @@ export function getGeneralScore(input: ScoreInput): GeneralScore {
     physical * WEIGHTS.physical
   )
 
-  const clampedScore = clamp(score, 0, 100)
+  const clampedScore = clamp(isFinite(score) ? score : 50, 0, 100)
 
   let label: ScoreLabel
   if (clampedScore >= 65) label = 'bien'

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { initDB, getMovimientos, getLifeEntries, getSubscriptions, getGoals, getNotes } from '@/lib/storage'
 import { getStoredPrices } from '@/lib/ratoneando/price-storage'
@@ -10,13 +10,11 @@ import {
   getEconomySnapshot,
   getMentalSnapshot,
   getPhysicalSnapshot,
-  getGeneralProgress,
   type GeneralAlert,
   type GeneralState,
   type EconomySnapshot,
   type MentalSnapshot,
   type PhysicalSnapshot,
-  type GeneralProgress,
 } from '@/lib/general-engine'
 import { getGeneralScore, type GeneralScore } from '@/lib/score/general-score'
 import { getGoalsSnapshot, type GoalsOverview } from '@/lib/goals-engine'
@@ -24,14 +22,12 @@ import { getRecentNotes, type NotePreview } from '@/lib/notes-engine'
 import { getEconomyHistory, type EconomyHistory } from '@/lib/history/economy-history'
 import { getMentalHistory, type MentalHistory } from '@/lib/history/mental-history'
 import { getPhysicalHistory, type PhysicalHistory } from '@/lib/history/physical-history'
-import { getCrossInsights, type CrossInsight } from '@/lib/insights/cross-insights'
 import type { Movimiento } from '@/lib/economic-alerts-engine'
 import type { MentalRecord } from '@/lib/mental-engine'
 import type { PhysicalRecord } from '@/lib/physical-engine'
 import AlertCard from '@/components/AlertCard'
 import GoalsProgress from '@/components/GoalsProgress'
 import NotesPreview from '@/components/NotesPreview'
-import ScoreHeader from '@/components/ScoreHeader'
 import EmptyState from '@/components/EmptyState'
 import Card from '@/components/ui/Card'
 import TopBar from '@/components/ui/TopBar'
@@ -45,15 +41,17 @@ import {
   AlertTriangle,
   ChevronRight,
   Flame,
-  BarChart3,
   Activity,
   Layers,
   StickyNote,
+  Target,
+  CheckCircle,
 } from 'lucide-react'
 
 // ── Helpers ──────────────────────────────────────────────────
 
 function formatARS(amount: number): string {
+  if (!isFinite(amount)) return '$0'
   return new Intl.NumberFormat('es-AR', {
     style: 'currency',
     currency: 'ARS',
@@ -174,14 +172,12 @@ interface ResumenData {
   econSnap: EconomySnapshot
   mentalSnap: MentalSnapshot
   physSnap: PhysicalSnapshot
-  progress: GeneralProgress
   score: GeneralScore
   goalsOverview: GoalsOverview
   recentNotes: NotePreview[]
   econHistory: EconomyHistory
   mentalHistory: MentalHistory
   physHistory: PhysicalHistory
-  crossInsights: CrossInsight[]
   hasAnyData: boolean
 }
 
@@ -231,7 +227,6 @@ export default function ResumenGeneral() {
       const econSnap = getEconomySnapshot(movimientos)
       const mentalSnap = getMentalSnapshot(mentalRecords)
       const physSnap = getPhysicalSnapshot(physicalRecords)
-      const progress = getGeneralProgress(mentalRecords, physicalRecords, movimientos)
 
       const score = getGeneralScore({ alerts, econSnap, mentalSnap, physSnap })
       const goalsOverview = getGoalsSnapshot(goals)
@@ -239,7 +234,6 @@ export default function ResumenGeneral() {
       const econHistory = getEconomyHistory(movimientos)
       const mentalHistory = getMentalHistory(mentalRecords)
       const physHistory = getPhysicalHistory(physicalRecords)
-      const crossInsights = getCrossInsights({ movimientos, mentalRecords, physicalRecords })
 
       const hasAnyData = movimientos.length > 0 || lifeEntries.length > 0
 
@@ -249,14 +243,12 @@ export default function ResumenGeneral() {
         econSnap,
         mentalSnap,
         physSnap,
-        progress,
         score,
         goalsOverview,
         recentNotes,
         econHistory,
         mentalHistory,
         physHistory,
-        crossInsights,
         hasAnyData,
       })
     } catch (error) {
@@ -273,6 +265,10 @@ export default function ResumenGeneral() {
   }, [data])
 
   const StatusIcon = statusCfg.icon
+
+  const navigateTo = useCallback((path: string) => {
+    router.push(path)
+  }, [router])
 
   // ── Loading ──
   if (loading || !data) {
@@ -353,24 +349,31 @@ export default function ResumenGeneral() {
           </div>
         </div>
 
-        {/* ── 2. Alertas (max 3, hidden if empty) ── */}
-        {data.alerts.length > 0 && (
-          <div className="space-y-2">
-            <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1 flex items-center gap-2">
-              <AlertTriangle className="w-3 h-3" />
-              Alertas
-            </h3>
-            {data.alerts.map(alert => (
+        {/* ── 2. Alertas (max 3) ── */}
+        <div className="space-y-2">
+          <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1 flex items-center gap-2">
+            <AlertTriangle className="w-3 h-3" />
+            Alertas
+          </h3>
+          {data.alerts.length > 0 ? (
+            data.alerts.map(alert => (
               <AlertCard key={alert.id} alert={alert} />
-            ))}
-          </div>
-        )}
+            ))
+          ) : (
+            <Card className="px-4 py-3">
+              <div className="flex items-center gap-2.5">
+                <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                <span className="text-sm text-zinc-600 dark:text-zinc-400">Sin alertas activas</span>
+              </div>
+            </Card>
+          )}
+        </div>
 
-        {/* ── 3. Snapshots por pilar + history text ── */}
+        {/* ── 3. Snapshots por pilar ── */}
         <div className="grid grid-cols-3 gap-3">
           {/* Economy */}
           <button
-            onClick={() => router.push('/money')}
+            onClick={() => navigateTo('/money')}
             className="text-left transition-transform active:scale-[0.97]"
           >
             <Card className="p-3.5 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
@@ -404,7 +407,7 @@ export default function ResumenGeneral() {
 
           {/* Mental */}
           <button
-            onClick={() => router.push('/mental')}
+            onClick={() => navigateTo('/mental')}
             className="text-left transition-transform active:scale-[0.97]"
           >
             <Card className="p-3.5 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
@@ -437,7 +440,7 @@ export default function ResumenGeneral() {
 
           {/* Physical */}
           <button
-            onClick={() => router.push('/fisico')}
+            onClick={() => navigateTo('/fisico')}
             className="text-left transition-transform active:scale-[0.97]"
           >
             <Card className="p-3.5 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
@@ -477,84 +480,48 @@ export default function ResumenGeneral() {
           </button>
         </div>
 
-        {/* ── 4. Objetivos activos ── */}
-        {data.goalsOverview && <GoalsProgress overview={data.goalsOverview} />}
-
-        {/* ── 5. Cross Insights (max 2) ── */}
-        {data.crossInsights.length > 0 && (
+        {/* ── 4. Objetivos ── */}
+        {data.goalsOverview.activeCount > 0 ? (
+          <GoalsProgress overview={data.goalsOverview} />
+        ) : (
           <div className="space-y-2">
             <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1 flex items-center gap-2">
-              <Layers className="w-3 h-3" />
-              Patrones
+              <Target className="w-3 h-3" />
+              Objetivos
             </h3>
-            {data.crossInsights.map(insight => (
-              <Card key={insight.id} className="px-4 py-3">
-                <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-snug">
-                  {insight.text}
-                </p>
-              </Card>
-            ))}
+            <Card className="px-4 py-3">
+              <div className="flex items-center gap-2.5">
+                <Target className="w-4 h-4 text-zinc-400 flex-shrink-0" />
+                <span className="text-sm text-zinc-600 dark:text-zinc-400">Sin objetivos activos</span>
+              </div>
+            </Card>
           </div>
         )}
 
-        {/* ── 6. Constancia de registro ── */}
-        <Card className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-zinc-500" />
-              <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                Constancia de registro
-              </span>
-            </div>
-            <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
-              {data.progress.trackingConsistencyPercent}%
-            </span>
-          </div>
-          <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-700 ease-out ${
-                data.progress.trackingConsistencyPercent >= 70
-                  ? 'bg-emerald-500'
-                  : data.progress.trackingConsistencyPercent >= 40
-                  ? 'bg-blue-500'
-                  : 'bg-amber-500'
-              }`}
-              style={{ width: `${data.progress.trackingConsistencyPercent}%` }}
-            />
-          </div>
-          <p className="text-[11px] text-zinc-400 mt-2">
-            {data.progress.trackingConsistencyPercent >= 70
-              ? 'Buen ritmo de registro'
-              : data.progress.trackingConsistencyPercent >= 40
-              ? 'Registrando de forma intermitente'
-              : 'Pocos d\u00edas con registros'}
-          </p>
-        </Card>
-
-        {/* ── 7. Notas recientes ── */}
+        {/* ── 5. Notas ── */}
         {data.recentNotes.length > 0 ? (
           <NotesPreview notes={data.recentNotes} />
         ) : (
           <EmptyState
             icon={StickyNote}
-            title="No hay notas recientes"
+            title="Sin notas recientes"
             ctaLabel="Agregar nota"
             ctaPrefill="Nota: "
             compact
           />
         )}
 
-        {/* ── 8. Quick links ── */}
+        {/* ── 6. Quick links ── */}
         <div className="grid grid-cols-2 gap-3">
           <button
-            onClick={() => router.push('/chat')}
+            onClick={() => navigateTo('/chat')}
             className="p-3.5 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-semibold text-sm transition-all active:scale-[0.97] flex items-center justify-center gap-2"
           >
             Registrar
             <ChevronRight className="w-4 h-4" />
           </button>
           <button
-            onClick={() => router.push('/historia')}
+            onClick={() => navigateTo('/historia')}
             className="p-3.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-semibold text-sm transition-all active:scale-[0.97] flex items-center justify-center gap-2"
           >
             Historial

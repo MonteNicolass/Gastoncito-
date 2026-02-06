@@ -107,6 +107,7 @@ function gastosOnly(movimientos: Movimiento[]): Movimiento[] {
 }
 
 function formatARS(amount: number): string {
+  if (!isFinite(amount)) return '$0'
   return new Intl.NumberFormat('es-AR', {
     style: 'currency',
     currency: 'ARS',
@@ -131,11 +132,12 @@ function checkDailyAnomaly(gastos: Movimiento[]): EconomicAlert | null {
   const last30 = gastos.filter(g => toDate(g.fecha) >= thirtyDaysAgo)
   if (last30.length < 5) return null
 
-  const totalLast30 = last30.reduce((sum, g) => sum + g.monto, 0)
+  const totalLast30 = last30.reduce((sum, g) => sum + (g.monto || 0), 0)
   const avgDaily = totalLast30 / 30
+  if (!isFinite(avgDaily)) return null
 
   const todayGastos = gastos.filter(g => toDate(g.fecha) >= today)
-  const todayTotal = todayGastos.reduce((sum, g) => sum + g.monto, 0)
+  const todayTotal = todayGastos.reduce((sum, g) => sum + (g.monto || 0), 0)
 
   if (todayTotal <= 0 || avgDaily <= 0) return null
 
@@ -166,7 +168,7 @@ function checkMonthlyOverspend(gastos: Movimiento[]): EconomicAlert | null {
   const currentMonthStart = startOfMonth(now)
 
   const currentMonthGastos = gastos.filter(g => toDate(g.fecha) >= currentMonthStart)
-  const currentTotal = currentMonthGastos.reduce((sum, g) => sum + g.monto, 0)
+  const currentTotal = currentMonthGastos.reduce((sum, g) => sum + (g.monto || 0), 0)
   if (currentTotal <= 0) return null
 
   // Last 3 complete months
@@ -174,13 +176,14 @@ function checkMonthlyOverspend(gastos: Movimiento[]): EconomicAlert | null {
   for (let i = 1; i <= 3; i++) {
     const mStart = new Date(now.getFullYear(), now.getMonth() - i, 1)
     const mEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59)
-    const total = gastosPeriod(gastos, mStart, mEnd).reduce((sum, g) => sum + g.monto, 0)
+    const total = gastosPeriod(gastos, mStart, mEnd).reduce((sum, g) => sum + (g.monto || 0), 0)
     if (total > 0) monthTotals.push(total)
   }
 
   if (monthTotals.length === 0) return null
 
   const avg3m = monthTotals.reduce((a, b) => a + b, 0) / monthTotals.length
+  if (!isFinite(avg3m)) return null
 
   // Project current month
   const dayOfMonth = now.getDate()
@@ -214,14 +217,14 @@ function checkCategoryOverflow(gastos: Movimiento[]): EconomicAlert | null {
   const currentMonthStart = startOfMonth(now)
 
   const currentMonthGastos = gastos.filter(g => toDate(g.fecha) >= currentMonthStart)
-  const totalMes = currentMonthGastos.reduce((sum, g) => sum + g.monto, 0)
+  const totalMes = currentMonthGastos.reduce((sum, g) => sum + (g.monto || 0), 0)
   if (totalMes <= 0) return null
 
   // Group current month by category
   const currentByCategory: Record<string, number> = {}
   for (const g of currentMonthGastos) {
     const cat = g.categoria || 'Otro'
-    currentByCategory[cat] = (currentByCategory[cat] || 0) + g.monto
+    currentByCategory[cat] = (currentByCategory[cat] || 0) + (g.monto || 0)
   }
 
   // Last 3 months by category
@@ -233,7 +236,7 @@ function checkCategoryOverflow(gastos: Movimiento[]): EconomicAlert | null {
     for (const g of monthGastos) {
       const cat = g.categoria || 'Otro'
       if (!historicalByCategory[cat]) historicalByCategory[cat] = []
-      historicalByCategory[cat].push(g.monto)
+      historicalByCategory[cat].push(g.monto || 0)
     }
   }
 
@@ -265,6 +268,7 @@ function checkCategoryOverflow(gastos: Movimiento[]): EconomicAlert | null {
 
     const avgCat = avgByCategory[cat]
     if (!avgCat || avgCat <= 0) continue
+    if (!isFinite(avgCat)) continue
 
     // Project current category
     const dayOfMonth = now.getDate()
@@ -316,7 +320,7 @@ function checkHeavySubscriptions(
   for (let i = 1; i <= 3; i++) {
     const mStart = new Date(now.getFullYear(), now.getMonth() - i, 1)
     const mEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59)
-    const total = gastosPeriod(gastos, mStart, mEnd).reduce((sum, g) => sum + g.monto, 0)
+    const total = gastosPeriod(gastos, mStart, mEnd).reduce((sum, g) => sum + (g.monto || 0), 0)
     if (total > 0) monthTotals.push(total)
   }
 
@@ -377,6 +381,7 @@ function checkExpensivePrice(
       if (prices.length < 2) continue
 
       const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length
+      if (!isFinite(avgPrice)) continue
       const threshold = avgPrice * THRESHOLDS.EXPENSIVE_PRICE_MULTIPLIER
 
       if (g.monto > threshold) {
@@ -409,7 +414,7 @@ function checkNoRecords(gastos: Movimiento[]): EconomicAlert | null {
     return {
       id: 'econ_no_records',
       type: 'no_records',
-      text: `No hay gastos registrados. Registrá tu primer gasto para activar insights.`,
+      text: `Sin gastos registrados`,
       priority: 6,
       severity: 'low',
       cta: {

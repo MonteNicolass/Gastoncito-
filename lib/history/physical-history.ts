@@ -57,7 +57,7 @@ export function getPhysicalHistory(records: PhysicalRecord[]): PhysicalHistory {
   } else if (trend === 'down') {
     text = 'Menos actividad que tu promedio mensual'
   } else if (trend === 'up') {
-    text = 'Actividad por encima de tu promedio'
+    text = 'Actividad por encima del promedio'
   } else {
     text = 'Ritmo de actividad habitual'
   }
