@@ -145,7 +145,7 @@ export default function EstadoPage() {
                     <div className="flex items-center gap-3">
                       {trends.streaks?.highStreak > 0 && (
                         <div className="flex items-center gap-1.5 text-xs">
-                          <span className="text-green-500">✨</span>
+                          <span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" />
                           <span className="text-zinc-600 dark:text-zinc-400">{trends.streaks.highStreak}d buenos</span>
                         </div>
                       )}

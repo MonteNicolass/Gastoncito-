@@ -8,6 +8,7 @@ import { detectAllEvents } from '@/lib/events-detection'
 import { exportWeekJSON, exportMonthJSON, exportAllJSON, exportWeekCSV, exportMonthCSV, exportAllCSV } from '@/lib/export-utils'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
+import { Trophy } from 'lucide-react'
 
 function getBudgetsFromLocalStorage() {
   if (typeof window === 'undefined') return []
@@ -145,7 +146,7 @@ export default function HistoriaPage() {
             {events.map((event, i) => (
               <Card key={i} className="p-3 bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 border-amber-200 dark:border-amber-800">
                 <div className="flex items-start gap-2">
-                  <div className="text-2xl">🏆</div>
+                  <Trophy className="w-5 h-5 text-amber-500 dark:text-amber-400 mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                       {event.title}

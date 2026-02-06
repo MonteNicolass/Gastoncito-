@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { Dumbbell, PersonStanding } from 'lucide-react'
 import { initDB, getLifeEntriesByDomain, addLifeEntry, deleteLifeEntry, updateLifeEntry } from '@/lib/storage'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
@@ -109,7 +110,7 @@ export default function HabitosPage() {
           data-testid="add-habit-btn"
         >
           <div className="flex items-center justify-center gap-2 text-white">
-            <span className="text-xl">💪</span>
+            <Dumbbell className="w-5 h-5" />
             <span className="font-semibold">Registrar actividad</span>
           </div>
         </button>
@@ -121,7 +122,11 @@ export default function HabitosPage() {
           </h2>
           {habits.length === 0 ? (
             <Card className="p-8 text-center bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border-orange-200/50 dark:border-orange-800/50">
-              <div className="text-5xl mb-4">🏃</div>
+              <div className="flex justify-center mb-4">
+                <div className="w-14 h-14 rounded-2xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                  <PersonStanding className="w-7 h-7 text-orange-500" />
+                </div>
+              </div>
               <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
                 Empezá a moverte
               </h3>
@@ -138,7 +143,7 @@ export default function HabitosPage() {
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center flex-shrink-0">
-                    <span className="text-lg">💪</span>
+                    <Dumbbell className="w-5 h-5 text-orange-500" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-base font-medium text-zinc-900 dark:text-zinc-100 mb-0.5">

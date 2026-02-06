@@ -8,6 +8,7 @@ import {
 } from '@/lib/insights/crossInsights'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
+import { BarChart3 } from 'lucide-react'
 
 export default function MentalInsightsPage() {
   const [loading, setLoading] = useState(true)
@@ -152,7 +153,11 @@ export default function MentalInsightsPage() {
         {/* Sin datos suficientes */}
         {!insights.spendingByMood && !insights.moodByExercise && (
           <Card className="p-8 text-center">
-            <div className="text-3xl mb-3">📊</div>
+            <div className="flex justify-center mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                <BarChart3 className="w-7 h-7 text-zinc-500" />
+              </div>
+            </div>
             <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
               Faltan datos para cruzar
             </p>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Wallet, Brain, Dumbbell, StickyNote, Target } from 'lucide-react'
 import Card from './Card'
 
 /**
@@ -14,38 +15,43 @@ export default function QuickActions() {
   const actions = [
     {
       id: 'movimiento',
-      icon: '💸',
+      icon: Wallet,
       label: 'Movimiento',
       href: '/money/movimientos',
-      color: 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800'
+      color: 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800',
+      iconColor: 'text-emerald-500'
     },
     {
       id: 'estado',
-      icon: '🧠',
+      icon: Brain,
       label: 'Estado mental',
       href: '/mental/estado',
-      color: 'bg-purple-50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-800'
+      color: 'bg-purple-50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-800',
+      iconColor: 'text-purple-500'
     },
     {
       id: 'habito',
-      icon: '💪',
+      icon: Dumbbell,
       label: 'Hábito',
       href: '/fisico/habitos',
-      color: 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800'
+      color: 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800',
+      iconColor: 'text-orange-500'
     },
     {
       id: 'nota',
-      icon: '📝',
+      icon: StickyNote,
       label: 'Nota',
       href: '/notas',
-      color: 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800'
+      color: 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800',
+      iconColor: 'text-blue-500'
     },
     {
       id: 'objetivo',
-      icon: '🎯',
+      icon: Target,
       label: 'Objetivo',
       href: '/objetivos',
-      color: 'bg-cyan-50 dark:bg-cyan-950/20 border-cyan-200 dark:border-cyan-800'
+      color: 'bg-cyan-50 dark:bg-cyan-950/20 border-cyan-200 dark:border-cyan-800',
+      iconColor: 'text-cyan-500'
     }
   ]
 
@@ -104,7 +110,7 @@ export default function QuickActions() {
               >
                 <Card className={`p-4 ${action.color} hover:shadow-md transition-all active:scale-98`}>
                   <div className="flex items-center gap-3">
-                    <div className="text-3xl">{action.icon}</div>
+                    <action.icon className={`w-7 h-7 ${action.iconColor}`} />
                     <div className="text-left">
                       <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                         {action.label}

@@ -8,7 +8,7 @@ import { detectRecurringMovements, isSubscriptionAlreadyExists, formatCadence } 
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
-import { CheckCircle, Search } from 'lucide-react'
+import { CheckCircle, Search, TrendingDown, Zap, BarChart3, AlertTriangle, Loader } from 'lucide-react'
 
 export default function AlertasPage() {
   const router = useRouter()
@@ -132,13 +132,13 @@ export default function AlertasPage() {
   const getAlertIcon = (type) => {
     switch (type) {
       case 'high_spending':
-        return '💸'
+        return <TrendingDown className="w-6 h-6 text-red-500" />
       case 'frequent_tx':
-        return '⚡'
+        return <Zap className="w-6 h-6 text-amber-500" />
       case 'budget_exceeded':
-        return '📊'
+        return <BarChart3 className="w-6 h-6 text-orange-500" />
       default:
-        return '⚠️'
+        return <AlertTriangle className="w-6 h-6 text-yellow-500" />
     }
   }
 
@@ -148,7 +148,7 @@ export default function AlertasPage() {
         <TopBar title="Alertas" backHref="/money" />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <div className="text-2xl mb-2">⏳</div>
+            <div className="mb-2"><Loader className="w-6 h-6 text-zinc-400 mx-auto animate-spin" /></div>
             <p className="text-sm text-zinc-600 dark:text-zinc-400">Cargando...</p>
           </div>
         </div>
@@ -189,7 +189,7 @@ export default function AlertasPage() {
                     className={`p-4 ${colors.bg} ${colors.border} border`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="text-2xl flex-shrink-0">
+                      <div className="flex-shrink-0">
                         {getAlertIcon(alert.type)}
                       </div>
                       <div className="flex-1 min-w-0">

@@ -1,7 +1,9 @@
 'use client'
 
+import { Lightbulb } from 'lucide-react'
+
 export default function RecommendationCard({
-  emoji = '💡',
+  icon: Icon = Lightbulb,
   title,
   description,
   action = null,
@@ -40,7 +42,9 @@ export default function RecommendationCard({
   return (
     <div className={`p-4 rounded-2xl border ${styles.bg} ${styles.border} shadow-lg ${styles.glow}`}>
       <div className="flex items-start gap-3">
-        <div className="text-2xl flex-shrink-0">{emoji}</div>
+        <div className="flex-shrink-0">
+          <Icon className="w-5 h-5 text-zinc-700 dark:text-zinc-300" />
+        </div>
         <div className="flex-1 min-w-0">
           <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
             {title}

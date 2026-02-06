@@ -7,6 +7,7 @@ import { generateMonthlyRetrospective } from '@/lib/monthly-retrospective'
 import { getMonthlyHighlights } from '@/lib/monthly-highlights'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
+import { Star, Brain, Dumbbell, CreditCard, TrendingUp, ArrowDownRight, Target, FileText, Calendar } from 'lucide-react'
 
 const MONTHLY_HISTORY_KEY = 'gaston_monthly_history'
 
@@ -199,7 +200,9 @@ export default function MesPage() {
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-4">
           <Card className="p-8 text-center">
-            <div className="text-4xl mb-4">🗓️</div>
+            <div className="flex justify-center mb-4">
+              <Calendar className="w-10 h-10 text-zinc-400 dark:text-zinc-500" />
+            </div>
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
               Sin datos en {getMonthLabel()}
             </h3>
@@ -253,7 +256,7 @@ export default function MesPage() {
         {monthData.money && (
           <Card className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-2xl">💰</span>
+              <CreditCard className="w-6 h-6 text-emerald-500" />
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Money</h3>
             </div>
 
@@ -293,7 +296,7 @@ export default function MesPage() {
         {monthData.mental && monthData.mental.average30d > 0 && (
           <Card className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200 dark:border-purple-800">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-2xl">🧠</span>
+              <Brain className="w-6 h-6 text-purple-500" />
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Mental</h3>
             </div>
 
@@ -327,7 +330,7 @@ export default function MesPage() {
         {monthData.physical && (
           <Card className="p-4 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border-orange-200 dark:border-orange-800">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-2xl">💪</span>
+              <Dumbbell className="w-6 h-6 text-orange-500" />
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Físico</h3>
             </div>
 
@@ -354,7 +357,7 @@ export default function MesPage() {
         {monthData.goals && monthData.goals.total > 0 && (
           <Card className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 border-blue-200 dark:border-blue-800">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-2xl">🎯</span>
+              <Target className="w-6 h-6 text-indigo-500" />
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Objetivos</h3>
             </div>
 
@@ -386,7 +389,7 @@ export default function MesPage() {
         {retrospective && (
           <Card className="p-4">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-2xl">📝</span>
+              <FileText className="w-6 h-6 text-zinc-500" />
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Retrospectiva del Mes</h3>
             </div>
 
@@ -394,7 +397,7 @@ export default function MesPage() {
               {retrospective.mental && (
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-lg">🧠</span>
+                    <Brain className="w-5 h-5 text-purple-500" />
                     <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">Mental</span>
                   </div>
                   <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">
@@ -406,7 +409,7 @@ export default function MesPage() {
               {retrospective.physical && (
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-lg">💪</span>
+                    <Dumbbell className="w-5 h-5 text-orange-500" />
                     <span className="text-xs font-semibold text-orange-600 dark:text-orange-400">Físico</span>
                   </div>
                   <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">
@@ -418,7 +421,7 @@ export default function MesPage() {
               {retrospective.money && (
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-lg">💰</span>
+                    <CreditCard className="w-5 h-5 text-emerald-500" />
                     <span className="text-xs font-semibold text-green-600 dark:text-green-400">Money</span>
                   </div>
                   <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">
@@ -430,7 +433,7 @@ export default function MesPage() {
               {retrospective.goals && (
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-lg">🎯</span>
+                    <Target className="w-5 h-5 text-indigo-500" />
                     <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">Objetivos</span>
                   </div>
                   <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">
@@ -446,14 +449,21 @@ export default function MesPage() {
         {highlights.length > 0 && (
           <Card className="p-4">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-2xl">⭐</span>
+              <Star className="w-5 h-5 text-amber-500" />
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Eventos Destacados</h3>
             </div>
 
             <div className="space-y-2">
               {highlights.map((highlight, i) => (
                 <div key={i} className="flex items-start gap-2">
-                  <span className="text-base mt-0.5">{highlight.emoji}</span>
+                  <div className="w-5 h-5 rounded bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    {highlight.type === 'best_mental_week' && <Brain className="w-3 h-3 text-green-500" />}
+                    {highlight.type === 'worst_mental_week' && <Brain className="w-3 h-3 text-red-500" />}
+                    {highlight.type === 'longest_streak' && <Dumbbell className="w-3 h-3 text-orange-500" />}
+                    {highlight.type === 'highest_weekly_spending' && <CreditCard className="w-3 h-3 text-red-500" />}
+                    {highlight.type === 'category_spike' && <TrendingUp className="w-3 h-3 text-amber-500" />}
+                    {highlight.type === 'mental_trend_change' && <ArrowDownRight className="w-3 h-3 text-purple-500" />}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
                       {highlight.title}

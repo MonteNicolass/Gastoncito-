@@ -103,7 +103,7 @@ export default function CategoriasPage() {
     setIsRecategorizing(true)
     try {
       const result = await recategorizeAllMovimientos()
-      alert(`✅ ${result.processed} movimientos re-categorizados`)
+      alert(`${result.processed} movimientos re-categorizados`)
     } catch (error) {
       alert('Error al re-categorizar: ' + error.message)
     } finally {
@@ -123,7 +123,7 @@ export default function CategoriasPage() {
           variant="secondary"
           className="w-full"
         >
-          {isRecategorizing ? '⏳ Re-categorizando...' : '🔄 Re-categorizar todos'}
+          {isRecategorizing ? 'Re-categorizando...' : 'Re-categorizar todos'}
         </Button>
 
         {/* Botón agregar */}

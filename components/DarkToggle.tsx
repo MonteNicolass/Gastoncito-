@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Sun, Moon } from 'lucide-react'
 
 export default function DarkToggle() {
   const [mounted, setMounted] = useState(false)
@@ -46,7 +47,7 @@ export default function DarkToggle() {
       onClick={toggle}
       className="p-2 rounded-md text-sm hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
     >
-      {theme === 'dark' ? '☀️' : '🌙'}
+      {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
     </button>
   )
 }

@@ -12,7 +12,7 @@ import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import Toast from '@/components/ui/Toast'
-import { Receipt, Filter } from 'lucide-react'
+import { Receipt, Filter, ArrowDownUp, ShoppingCart } from 'lucide-react'
 
 // Umbral para mostrar equivalente USD (gastos significativos)
 const USD_DISPLAY_THRESHOLD = 10000
@@ -410,7 +410,7 @@ export default function MovimientosPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
-                <span className="text-lg">💸</span>
+                <ArrowDownUp className="w-5 h-5 text-green-400" />
               </div>
               <div className="text-left">
                 <p className="text-white font-semibold text-sm">
@@ -433,7 +433,7 @@ export default function MovimientosPage() {
         >
           <Card className="p-3 bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
             <div className="flex items-center justify-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-              <span>🛒</span>
+              <ShoppingCart className="w-4 h-4" />
               <span>Comparar precios</span>
             </div>
           </Card>
@@ -550,12 +550,12 @@ export default function MovimientosPage() {
                     )}
                     {mov.recurrent && (
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">
-                        🔄 Recurrente
+                        Recurrente
                       </span>
                     )}
                     {isAtypicalSpending(mov) && (
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300">
-                        ⚠️ Gasto alto
+                        Gasto alto
                       </span>
                     )}
                   </div>
@@ -803,7 +803,7 @@ export default function MovimientosPage() {
                 </Select>
                 {addForm.categoria && addForm.motivo && (
                   <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                    ✓ Detectada automáticamente
+                    Detectada automaticamente
                   </p>
                 )}
               </div>
@@ -825,7 +825,7 @@ export default function MovimientosPage() {
                 />
                 {!addForm.categoria && (
                   <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                    💡 Escribí y detectaré la categoría automáticamente
+                    Escribi y detectare la categoria automaticamente
                   </p>
                 )}
               </div>

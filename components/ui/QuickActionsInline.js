@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Wallet, Brain, Dumbbell, StickyNote } from 'lucide-react'
 import { initDB, addMovimiento, updateSaldo, addLifeEntry } from '@/lib/storage'
 
 export default function QuickActionsInline({ onActionComplete }) {
@@ -108,7 +109,7 @@ export default function QuickActionsInline({ onActionComplete }) {
           title="Registrar gasto"
         >
           <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center group-hover:bg-green-200 dark:group-hover:bg-green-900/50 transition-colors">
-            <span className="text-2xl">💸</span>
+            <Wallet className="w-6 h-6 text-emerald-500" />
           </div>
           <span className="text-xs text-zinc-600 dark:text-zinc-400">Gasto</span>
         </button>
@@ -119,7 +120,7 @@ export default function QuickActionsInline({ onActionComplete }) {
           title="Registrar estado mental"
         >
           <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center group-hover:bg-purple-200 dark:group-hover:bg-purple-900/50 transition-colors">
-            <span className="text-2xl">🧠</span>
+            <Brain className="w-6 h-6 text-purple-500" />
           </div>
           <span className="text-xs text-zinc-600 dark:text-zinc-400">Estado</span>
         </button>
@@ -130,7 +131,7 @@ export default function QuickActionsInline({ onActionComplete }) {
           title="Registrar hábito"
         >
           <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center group-hover:bg-orange-200 dark:group-hover:bg-orange-900/50 transition-colors">
-            <span className="text-2xl">💪</span>
+            <Dumbbell className="w-6 h-6 text-orange-500" />
           </div>
           <span className="text-xs text-zinc-600 dark:text-zinc-400">Hábito</span>
         </button>
@@ -141,7 +142,7 @@ export default function QuickActionsInline({ onActionComplete }) {
           title="Guardar nota"
         >
           <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors">
-            <span className="text-2xl">📝</span>
+            <StickyNote className="w-6 h-6 text-blue-500" />
           </div>
           <span className="text-xs text-zinc-600 dark:text-zinc-400">Nota</span>
         </button>

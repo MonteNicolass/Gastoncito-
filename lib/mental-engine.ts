@@ -169,7 +169,7 @@ export function getMentalAlerts(records: MentalRecord[]): MentalAlert[] {
         cta: {
           label: 'Registrar estado',
           action: 'chat_prefill',
-          text: '🧠 ',
+          text: '',
         },
       })
     }
@@ -208,7 +208,7 @@ export function getMentalAlerts(records: MentalRecord[]): MentalAlert[] {
       cta: {
         label: 'Registrar estado',
         action: 'chat_prefill',
-        text: '🧠 ',
+        text: '',
       },
     })
   } else {
@@ -223,7 +223,7 @@ export function getMentalAlerts(records: MentalRecord[]): MentalAlert[] {
         cta: {
           label: 'Registrar estado',
           action: 'chat_prefill',
-          text: '🧠 ',
+          text: '',
         },
       })
     }

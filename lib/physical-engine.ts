@@ -167,7 +167,7 @@ export function getPhysicalAlerts(records: PhysicalRecord[]): PhysicalAlert[] {
       cta: {
         label: 'Registrar actividad',
         action: 'chat_prefill',
-        text: '💪 ',
+        text: '',
       },
     })
     return alerts.slice(0, 1)
@@ -186,7 +186,7 @@ export function getPhysicalAlerts(records: PhysicalRecord[]): PhysicalAlert[] {
       cta: {
         label: 'Registrar actividad',
         action: 'chat_prefill',
-        text: '💪 ',
+        text: '',
       },
     })
   }
@@ -210,7 +210,7 @@ export function getPhysicalAlerts(records: PhysicalRecord[]): PhysicalAlert[] {
         cta: {
           label: 'Registrar actividad',
           action: 'chat_prefill',
-          text: '💪 ',
+          text: '',
         },
       })
     }

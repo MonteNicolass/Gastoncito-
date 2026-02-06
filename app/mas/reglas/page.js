@@ -16,6 +16,7 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
+import { ClipboardList } from 'lucide-react'
 
 export default function ReglasPage() {
   const [rules, setRules] = useState([])
@@ -114,7 +115,7 @@ export default function ReglasPage() {
     setIsRecategorizing(true)
     try {
       const result = await recategorizeAllMovimientos()
-      alert(`✅ ${result.processed} movimientos re-categorizados`)
+      alert(`${result.processed} movimientos re-categorizados`)
     } catch (error) {
       alert('Error al re-categorizar: ' + error.message)
     } finally {
@@ -152,7 +153,7 @@ export default function ReglasPage() {
           size="lg"
           className="w-full"
         >
-          {isRecategorizing ? '⏳ Re-categorizando...' : '🔄 Re-categorizar todos'}
+          {isRecategorizing ? 'Re-categorizando...' : 'Re-categorizar todos'}
         </Button>
 
         {/* Formulario */}
@@ -258,7 +259,11 @@ export default function ReglasPage() {
           </h2>
           {rules.length === 0 ? (
             <Card className="p-8 text-center">
-              <div className="text-4xl mb-4">📋</div>
+              <div className="flex justify-center mb-4">
+                <div className="w-14 h-14 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                  <ClipboardList className="w-7 h-7 text-zinc-500" />
+                </div>
+              </div>
               <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
                 Sin reglas
               </h3>

@@ -2,99 +2,134 @@
 
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
+import {
+  MessageCircle,
+  CreditCard,
+  BarChart3,
+  Wallet,
+  Target,
+  RefreshCw,
+  Lightbulb,
+  Brain,
+  Activity,
+  BookOpen,
+  Dumbbell,
+  CheckSquare,
+  Heart,
+  MoreHorizontal,
+  type LucideIcon,
+} from 'lucide-react'
+
+interface SubTab {
+  name: string
+  path: string
+  icon: LucideIcon
+}
+
+interface Tab {
+  name: string
+  path: string
+  icon: LucideIcon
+  subs: SubTab[]
+}
 
 export default function TabNav() {
-  const pathname = usePathname(); // Removed SSR check as this is a client component
+  const pathname = usePathname()
 
-  function isMainActive(tab: { path: string; subs?: { path: string }[] }) {
-    if (!pathname) return false; // Ensure pathname is defined
-    if (pathname === tab.path) return true;
-    if (tab.subs) return tab.subs.some((s) => pathname === s.path || pathname.startsWith(s.path));
-    return false;
+  function isMainActive(tab: Tab) {
+    if (!pathname) return false
+    if (pathname === tab.path) return true
+    if (tab.subs) return tab.subs.some((s) => pathname === s.path || pathname.startsWith(s.path))
+    return false
   }
 
-  const tabs = [
-    { name: 'Chat', path: '/chat', icon: '💬', subs: [] },
+  const tabs: Tab[] = [
+    { name: 'Chat', path: '/chat', icon: MessageCircle, subs: [] },
     {
       name: 'Money',
       path: '/money',
-      icon: '💰',
+      icon: CreditCard,
       subs: [
-        { name: 'Movimientos', path: '/money/movimientos', icon: '📊' },
-        { name: 'Billeteras', path: '/money/billeteras', icon: '💳' },
-        { name: 'Presupuestos', path: '/money/presupuestos', icon: '🎯' },
-        { name: 'Suscripciones', path: '/money/suscripciones', icon: '🔄' },
-        { name: 'Insights', path: '/money/insights', icon: '💡' },
+        { name: 'Movimientos', path: '/money/movimientos', icon: BarChart3 },
+        { name: 'Billeteras', path: '/money/billeteras', icon: Wallet },
+        { name: 'Presupuestos', path: '/money/presupuestos', icon: Target },
+        { name: 'Suscripciones', path: '/money/suscripciones', icon: RefreshCw },
+        { name: 'Insights', path: '/money/insights', icon: Lightbulb },
       ],
     },
     {
       name: 'Mental',
       path: '/mental',
-      icon: '🧠',
+      icon: Brain,
       subs: [
-        { name: 'Estado', path: '/mental/estado', icon: '📊' },
-        { name: 'Diario', path: '/mental/diario', icon: '📔' },
-        { name: 'Objetivos', path: '/mental/objetivos', icon: '🎯' },
-        { name: 'Insights', path: '/mental/insights', icon: '💡' },
+        { name: 'Estado', path: '/mental/estado', icon: Activity },
+        { name: 'Diario', path: '/mental/diario', icon: BookOpen },
+        { name: 'Objetivos', path: '/mental/objetivos', icon: Target },
+        { name: 'Insights', path: '/mental/insights', icon: Lightbulb },
       ],
     },
     {
-      name: 'Físico',
+      name: 'F\u00edsico',
       path: '/fisico',
-      icon: '💪',
+      icon: Dumbbell,
       subs: [
-        { name: 'Hábitos', path: '/fisico/habitos', icon: '✅' },
-        { name: 'Salud', path: '/fisico/salud', icon: '❤️' },
-        { name: 'Entrenos', path: '/fisico/entrenos', icon: '🏋️' },
+        { name: 'H\u00e1bitos', path: '/fisico/habitos', icon: CheckSquare },
+        { name: 'Salud', path: '/fisico/salud', icon: Heart },
+        { name: 'Entrenos', path: '/fisico/entrenos', icon: Dumbbell },
       ],
     },
     {
-      name: 'Más',
+      name: 'M\u00e1s',
       path: '/mas',
-      icon: '⋯',
+      icon: MoreHorizontal,
       subs: [],
     },
-  ];
+  ]
 
-  const activeMain = tabs.find(isMainActive) || null; // Ensure activeMain is always defined
+  const activeMain = tabs.find(isMainActive) || null
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-stone-200 safe-area-bottom">
-      {/* sublinks when a main tab with subs is active */}
       {activeMain && activeMain.subs && activeMain.subs.length > 0 && (
         <div className="flex gap-2 px-3 py-2 overflow-x-auto border-b border-stone-100">
-          {activeMain.subs.map((s) => (
-            <Link
-              key={s.path}
-              href={s.path}
-              className={`flex items-center gap-2 shrink-0 px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                pathname === s.path
-                  ? 'bg-stone-100 text-stone-900'
-                  : 'text-stone-600 hover:bg-stone-50'
-              }`}
-            >
-              <span className="text-base">{s.icon}</span>
-              <span>{s.name}</span>
-            </Link>
-          ))}
+          {activeMain.subs.map((s) => {
+            const SubIcon = s.icon
+            return (
+              <Link
+                key={s.path}
+                href={s.path}
+                className={`flex items-center gap-2 shrink-0 px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                  pathname === s.path
+                    ? 'bg-stone-100 text-stone-900'
+                    : 'text-stone-600 hover:bg-stone-50'
+                }`}
+              >
+                <SubIcon className="w-4 h-4" />
+                <span>{s.name}</span>
+              </Link>
+            )
+          })}
         </div>
       )}
 
       <div className="flex overflow-x-auto scrollbar-hide">
-        {tabs.map((tab) => (
-          <Link
-            key={tab.path}
-            href={tab.path}
-            className={`flex-1 min-w-0 flex flex-col items-center justify-center py-2 px-1 text-xs font-semibold transition-all ${
-              isMainActive(tab)
-                ? 'text-stone-900 bg-gradient-to-t from-stone-100 to-transparent'
-                : 'text-stone-500 hover:text-stone-700'
-            }`}
-          >
-            <span className="text-lg mb-0.5">{tab.icon}</span>
-            <span className="truncate w-full text-center">{tab.name}</span>
-          </Link>
-        ))}
+        {tabs.map((tab) => {
+          const TabIcon = tab.icon
+          return (
+            <Link
+              key={tab.path}
+              href={tab.path}
+              className={`flex-1 min-w-0 flex flex-col items-center justify-center py-2 px-1 text-xs font-semibold transition-all ${
+                isMainActive(tab)
+                  ? 'text-stone-900 bg-gradient-to-t from-stone-100 to-transparent'
+                  : 'text-stone-500 hover:text-stone-700'
+              }`}
+            >
+              <TabIcon className="w-5 h-5 mb-0.5" />
+              <span className="truncate w-full text-center">{tab.name}</span>
+            </Link>
+          )
+        })}
       </div>
     </nav>
   )

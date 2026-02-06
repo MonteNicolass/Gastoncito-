@@ -7,6 +7,7 @@ import { getAllBehaviorInsights } from '@/lib/insights/behaviorInsights'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
+import { TrendingDown, BarChart3, CloudRain, Activity as ActivityIcon, Truck, CheckCircle, Calendar } from 'lucide-react'
 
 export default function ComportamientoPage() {
   const router = useRouter()
@@ -85,8 +86,8 @@ export default function ComportamientoPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-sm font-semibold text-orange-800 dark:text-orange-300">
-                      💸 Racha de gasto alto
+                    <h3 className="text-sm font-semibold text-orange-800 dark:text-orange-300 flex items-center gap-1.5">
+                      <TrendingDown className="w-4 h-4" /> Racha de gasto alto
                     </h3>
                     {getIntensityBadge(insights.highSpendingStreak.intensity)}
                   </div>
@@ -96,8 +97,8 @@ export default function ComportamientoPage() {
                 </div>
               </div>
               {insights.highSpendingStreak.dateRange && (
-                <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                  📅 {formatDate(insights.highSpendingStreak.dateRange.start)} - {formatDate(insights.highSpendingStreak.dateRange.end)}
+                <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+                  <Calendar className="w-3 h-3" /> {formatDate(insights.highSpendingStreak.dateRange.start)} - {formatDate(insights.highSpendingStreak.dateRange.end)}
                 </div>
               )}
               <div className="grid grid-cols-2 gap-3 text-xs">
@@ -125,8 +126,8 @@ export default function ComportamientoPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-sm font-semibold text-yellow-800 dark:text-yellow-300">
-                      📊 Variabilidad inusual de gasto
+                    <h3 className="text-sm font-semibold text-yellow-800 dark:text-yellow-300 flex items-center gap-1.5">
+                      <BarChart3 className="w-4 h-4" /> Variabilidad inusual de gasto
                     </h3>
                     {getIntensityBadge(insights.spendingVariability.intensity)}
                   </div>
@@ -160,8 +161,8 @@ export default function ComportamientoPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-sm font-semibold text-purple-800 dark:text-purple-300">
-                      💭 Racha de estado bajo
+                    <h3 className="text-sm font-semibold text-purple-800 dark:text-purple-300 flex items-center gap-1.5">
+                      <CloudRain className="w-4 h-4" /> Racha de estado bajo
                     </h3>
                     {getIntensityBadge(insights.lowMoodStreak.intensity)}
                   </div>
@@ -171,8 +172,8 @@ export default function ComportamientoPage() {
                 </div>
               </div>
               {insights.lowMoodStreak.dateRange && (
-                <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                  📅 {formatDate(insights.lowMoodStreak.dateRange.start)} - {formatDate(insights.lowMoodStreak.dateRange.end)}
+                <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+                  <Calendar className="w-3 h-3" /> {formatDate(insights.lowMoodStreak.dateRange.start)} - {formatDate(insights.lowMoodStreak.dateRange.end)}
                 </div>
               )}
               <Button
@@ -194,8 +195,8 @@ export default function ComportamientoPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-sm font-semibold text-blue-800 dark:text-blue-300">
-                      🏃 Caída de actividad física
+                    <h3 className="text-sm font-semibold text-blue-800 dark:text-blue-300 flex items-center gap-1.5">
+                      <ActivityIcon className="w-4 h-4" /> Caída de actividad física
                     </h3>
                     {getIntensityBadge(insights.inactivity.intensity)}
                   </div>
@@ -205,8 +206,8 @@ export default function ComportamientoPage() {
                 </div>
               </div>
               {insights.inactivity.dateRange && (
-                <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                  📅 {formatDate(insights.inactivity.dateRange.start)} - {formatDate(insights.inactivity.dateRange.end)}
+                <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+                  <Calendar className="w-3 h-3" /> {formatDate(insights.inactivity.dateRange.start)} - {formatDate(insights.inactivity.dateRange.end)}
                 </div>
               )}
               <Button
@@ -227,8 +228,8 @@ export default function ComportamientoPage() {
             <div className="space-y-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
-                  <h3 className="text-sm font-semibold text-red-800 dark:text-red-300 mb-1">
-                    🛵 Delivery frecuente
+                  <h3 className="text-sm font-semibold text-red-800 dark:text-red-300 mb-1 flex items-center gap-1.5">
+                    <Truck className="w-4 h-4" /> Delivery frecuente
                   </h3>
                   <p className="text-sm text-zinc-700 dark:text-zinc-300">
                     {insights.frequentDelivery.message}
@@ -256,7 +257,11 @@ export default function ComportamientoPage() {
         {/* Sin detecciones */}
         {!hasDetections && (
           <Card className="p-8 text-center">
-            <div className="text-4xl mb-3">✅</div>
+            <div className="flex justify-center mb-3">
+              <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                <CheckCircle className="w-5 h-5 text-green-500" />
+              </div>
+            </div>
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
               Todo bien
             </h3>

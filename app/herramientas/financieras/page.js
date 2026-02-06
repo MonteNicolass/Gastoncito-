@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
+import { TrendingUp, Calculator, ShoppingCart, Lightbulb } from 'lucide-react'
 
 export default function HerramientasFinancierasPage() {
   const [cuotaValue, setCuotaValue] = useState('')
@@ -49,7 +50,7 @@ export default function HerramientasFinancierasPage() {
         {/* Precios Activos */}
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-2xl">💹</span>
+            <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Precios de Activos</h3>
           </div>
           <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-3">
@@ -68,7 +69,7 @@ export default function HerramientasFinancierasPage() {
         {/* Calculadora Cuotas vs Contado */}
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-2xl">🧮</span>
+            <Calculator className="w-5 h-5 text-green-600 dark:text-green-400" />
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Cuotas vs Contado</h3>
           </div>
           <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-3">
@@ -157,7 +158,8 @@ export default function HerramientasFinancierasPage() {
 
                     <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30">
                       <p className="text-xs font-semibold text-blue-900 dark:text-blue-100">
-                        💡 {conviene === 'cuotas' ? 'Convienen las cuotas' : 'Conviene pagar de contado'}
+                        <Lightbulb className="w-3.5 h-3.5 inline mr-1" />
+                        {conviene === 'cuotas' ? 'Convienen las cuotas' : 'Conviene pagar de contado'}
                       </p>
                     </div>
                   </>
@@ -170,7 +172,7 @@ export default function HerramientasFinancierasPage() {
         {/* Comparadores de Precios */}
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-2xl">🛒</span>
+            <ShoppingCart className="w-5 h-5 text-orange-600 dark:text-orange-400" />
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Comparadores de Precios</h3>
           </div>
           <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-3">

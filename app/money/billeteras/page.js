@@ -7,7 +7,7 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
-import { CreditCard } from 'lucide-react'
+import { CreditCard, Wallet } from 'lucide-react'
 
 // Opciones de billeteras (nombre = proveedor)
 const WALLET_OPTIONS = [
@@ -193,7 +193,7 @@ export default function BilleterasPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-zinc-700 to-zinc-800 flex items-center justify-center flex-shrink-0">
-                      <span className="text-lg">💳</span>
+                      <Wallet className="w-5 h-5 text-zinc-300" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">

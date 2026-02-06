@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { initDB, getLifeEntries } from '@/lib/storage'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
+import { Brain } from 'lucide-react'
 
 export default function ResumenMentalPage() {
   const [loading, setLoading] = useState(true)
@@ -125,7 +126,11 @@ export default function ResumenMentalPage() {
         <TopBar title="Resumen Mensual" backHref="/mental" />
         <div className="flex-1 overflow-y-auto px-4 py-4">
           <Card className="p-8 text-center">
-            <div className="text-4xl mb-4">🧠</div>
+            <div className="flex justify-center mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                <Brain className="w-7 h-7 text-zinc-500" />
+              </div>
+            </div>
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
               Sin registros este mes
             </h3>

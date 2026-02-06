@@ -8,7 +8,7 @@ import { detectAllEvents } from '@/lib/events-detection'
 import { getAllSilentAlerts } from '@/lib/silent-alerts'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
-import { ClipboardList } from 'lucide-react'
+import { ClipboardList, DollarSign, Brain, Dumbbell, Target } from 'lucide-react'
 
 function getBudgetsFromLocalStorage() {
   if (typeof window === 'undefined') return []
@@ -129,7 +129,7 @@ export default function EventosPage() {
                 : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
             }`}
           >
-            💰 Money
+            <DollarSign className="w-3.5 h-3.5 inline" /> Money
           </button>
           <button
             onClick={() => setFilterDomain('mental')}
@@ -139,7 +139,7 @@ export default function EventosPage() {
                 : 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
             }`}
           >
-            🧠 Mental
+            <Brain className="w-3.5 h-3.5 inline" /> Mental
           </button>
           <button
             onClick={() => setFilterDomain('physical')}
@@ -149,7 +149,7 @@ export default function EventosPage() {
                 : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
             }`}
           >
-            💪 Físico
+            <Dumbbell className="w-3.5 h-3.5 inline" /> Físico
           </button>
           <button
             onClick={() => setFilterDomain('goals')}
@@ -159,7 +159,7 @@ export default function EventosPage() {
                 : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
             }`}
           >
-            🎯 Objetivos
+            <Target className="w-3.5 h-3.5 inline" /> Objetivos
           </button>
         </div>
 

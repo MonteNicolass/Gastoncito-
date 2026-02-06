@@ -6,6 +6,7 @@ import { getWeeklySummary } from '@/lib/overview-insights'
 import { getAllSilentAlerts } from '@/lib/silent-alerts'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
+import { Calendar, AlertTriangle, BarChart3, Lightbulb } from 'lucide-react'
 
 function getBudgetsFromLocalStorage() {
   if (typeof window === 'undefined') return []
@@ -75,7 +76,11 @@ export default function SemanaPage() {
         <TopBar title="Esta Semana" />
         <div className="flex-1 overflow-y-auto px-4 py-4 pb-24">
           <Card className="p-8 text-center bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200/50 dark:border-purple-800/50">
-            <div className="text-5xl mb-4">📆</div>
+            <div className="flex justify-center mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                <Calendar className="w-7 h-7 text-purple-500" />
+              </div>
+            </div>
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
               Tu semana empieza acá
             </h3>
@@ -274,7 +279,7 @@ export default function SemanaPage() {
                 <div className="flex flex-col gap-2">
                   {weekData.goals.onTrack > 0 && (
                     <div className="px-3 py-1.5 rounded-full text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 flex items-center gap-1">
-                      <span>✓</span> {weekData.goals.onTrack} en camino
+                      {weekData.goals.onTrack} en camino
                     </div>
                   )}
                   {weekData.goals.atRisk > 0 && (
@@ -307,9 +312,12 @@ export default function SemanaPage() {
                       ? 'bg-orange-100 dark:bg-orange-900/40'
                       : 'bg-amber-100 dark:bg-amber-900/40'
                   }`}>
-                    <span className="text-sm">
-                      {alert.severity === 'high' ? '⚠️' : alert.severity === 'medium' ? '📊' : '💡'}
-                    </span>
+                    {alert.severity === 'high'
+                      ? <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                      : alert.severity === 'medium'
+                      ? <BarChart3 className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                      : <Lightbulb className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                    }
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">

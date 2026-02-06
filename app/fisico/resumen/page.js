@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { Dumbbell } from 'lucide-react'
 import { initDB, getLifeEntries } from '@/lib/storage'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
@@ -121,7 +122,11 @@ export default function ResumenFisicoPage() {
         <TopBar title="Resumen Mensual" backHref="/fisico" />
         <div className="flex-1 overflow-y-auto px-4 py-4">
           <Card className="p-8 text-center">
-            <div className="text-4xl mb-4">💪</div>
+            <div className="flex justify-center mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                <Dumbbell className="w-7 h-7 text-orange-500" />
+              </div>
+            </div>
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
               Sin actividad este mes
             </h3>

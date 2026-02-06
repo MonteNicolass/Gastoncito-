@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { initDB, addLifeEntry, getLifeEntries } from '@/lib/storage'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
+import { BookOpen, GraduationCap } from 'lucide-react'
 
 export default function AprendizajePage() {
   const [sessions, setSessions] = useState([])
@@ -116,7 +117,7 @@ export default function AprendizajePage() {
         {sessions.length > 0 && (
           <Card className="p-4 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 border-indigo-200 dark:border-indigo-800">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-2xl">📚</span>
+              <BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Resumen</h3>
             </div>
 
@@ -148,7 +149,7 @@ export default function AprendizajePage() {
         {/* Info Card */}
         <Card className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 border-blue-200 dark:border-blue-800">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-2xl">🎓</span>
+            <GraduationCap className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Seguimiento de Estudio</h3>
           </div>
           <p className="text-xs text-zinc-600 dark:text-zinc-400">
@@ -167,7 +168,11 @@ export default function AprendizajePage() {
         {/* Sessions List */}
         {sessions.length === 0 ? (
           <Card className="p-8 text-center">
-            <div className="text-4xl mb-4">📚</div>
+            <div className="flex justify-center mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                <BookOpen className="w-7 h-7 text-zinc-500" />
+              </div>
+            </div>
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
               Sin sesiones registradas
             </h3>
@@ -180,7 +185,7 @@ export default function AprendizajePage() {
             {sessions.map((session) => (
               <Card key={session.id} className="p-3">
                 <div className="flex items-start gap-3">
-                  <span className="text-2xl">📖</span>
+                  <BookOpen className="w-5 h-5 text-indigo-500 dark:text-indigo-400 mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                       {session.meta?.topic || 'Sin tema'}

@@ -9,6 +9,7 @@ import {
 } from '@/lib/insights/crossInsights'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
+import { DollarSign, Brain, Dumbbell, BarChart3 } from 'lucide-react'
 
 export default function InsightsPage() {
   const [loading, setLoading] = useState(true)
@@ -78,7 +79,10 @@ export default function InsightsPage() {
           <Card className="p-4">
             <div className="space-y-3">
               <div className="flex items-start gap-3">
-                <div className="text-2xl">💰🧠</div>
+                <div className="flex gap-1">
+                  <DollarSign className="w-5 h-5 text-green-600 dark:text-green-400" />
+                  <Brain className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                </div>
                 <div className="flex-1">
                   <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
                     Money ↔ Mental
@@ -121,7 +125,10 @@ export default function InsightsPage() {
           <Card className="p-4">
             <div className="space-y-3">
               <div className="flex items-start gap-3">
-                <div className="text-2xl">🧠💪</div>
+                <div className="flex gap-1">
+                  <Brain className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  <Dumbbell className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                </div>
                 <div className="flex-1">
                   <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
                     Mental ↔ Físico
@@ -164,7 +171,10 @@ export default function InsightsPage() {
           <Card className="p-4">
             <div className="space-y-3">
               <div className="flex items-start gap-3">
-                <div className="text-2xl">💰💪</div>
+                <div className="flex gap-1">
+                  <DollarSign className="w-5 h-5 text-green-600 dark:text-green-400" />
+                  <Dumbbell className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                </div>
                 <div className="flex-1">
                   <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
                     Money ↔ Físico
@@ -205,7 +215,11 @@ export default function InsightsPage() {
         {/* Sin datos suficientes */}
         {!hasInsights && (
           <Card className="p-8 text-center">
-            <div className="text-4xl mb-3">📊</div>
+            <div className="flex justify-center mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                <BarChart3 className="w-7 h-7 text-zinc-500" />
+              </div>
+            </div>
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
               Faltan datos para cruzar
             </h3>

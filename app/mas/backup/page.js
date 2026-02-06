@@ -107,7 +107,7 @@ export default function BackupPage() {
   }
 
   const handleClearAll = async () => {
-    if (!confirm('⚠️ ¿ELIMINAR TODOS LOS DATOS?\n\nEsta acción no se puede deshacer.')) return
+    if (!confirm('ELIMINAR TODOS LOS DATOS\n\nEsta acción no se puede deshacer.')) return
     if (!confirm('¿Estás COMPLETAMENTE seguro?\n\nSe perderán:\n- Movimientos\n- Saldos\n- Categorías personalizadas\n- Reglas\n- Suscripciones\n- Todas las configuraciones')) return
 
     setIsProcessing(true)
@@ -187,7 +187,7 @@ export default function BackupPage() {
                 variant="ghost"
                 className="w-full justify-start"
               >
-                💸 Exportar Movimientos
+                Exportar Movimientos
               </Button>
               <Button
                 onClick={handleExportBilleterasCSV}
@@ -195,7 +195,7 @@ export default function BackupPage() {
                 variant="ghost"
                 className="w-full justify-start"
               >
-                👛 Exportar Billeteras
+                Exportar Billeteras
               </Button>
               <Button
                 onClick={handleExportPresupuestosCSV}
@@ -203,7 +203,7 @@ export default function BackupPage() {
                 variant="ghost"
                 className="w-full justify-start"
               >
-                📊 Exportar Presupuestos
+                Exportar Presupuestos
               </Button>
               <Button
                 onClick={handleExportObjetivosCSV}
@@ -211,7 +211,7 @@ export default function BackupPage() {
                 variant="ghost"
                 className="w-full justify-start"
               >
-                🎯 Exportar Objetivos
+                Exportar Objetivos
               </Button>
             </div>
           </Card>
@@ -233,7 +233,7 @@ export default function BackupPage() {
                 variant="primary"
                 className="w-full"
               >
-                {isProcessing ? 'Exportando...' : '💾 Exportar backup completo'}
+                {isProcessing ? 'Exportando...' : 'Exportar backup completo'}
               </Button>
               <Button
                 onClick={handleImportBackup}
@@ -241,7 +241,7 @@ export default function BackupPage() {
                 variant="secondary"
                 className="w-full"
               >
-                {isProcessing ? 'Importando...' : '📥 Importar backup'}
+                {isProcessing ? 'Importando...' : 'Importar backup'}
               </Button>
             </div>
           </Card>
@@ -262,7 +262,7 @@ export default function BackupPage() {
               variant="danger"
               className="w-full"
             >
-              {isProcessing ? 'Eliminando...' : '🗑️ Eliminar todos los datos'}
+              {isProcessing ? 'Eliminando...' : 'Eliminar todos los datos'}
             </Button>
           </Card>
         </div>

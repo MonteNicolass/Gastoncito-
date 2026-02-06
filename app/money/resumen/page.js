@@ -9,7 +9,7 @@ import { compareWithInflation, getCurrentInflation } from '@/lib/services/macro-
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { BarChart3, TrendingUp, DollarSign } from 'lucide-react'
+import { BarChart3, TrendingUp, DollarSign, AlertTriangle } from 'lucide-react'
 
 // Helper para obtener presupuestos de localStorage
 function getBudgetsFromLocalStorage() {
@@ -183,8 +183,11 @@ export default function ResumenMensualPage() {
                 }`}
               >
                 <div className="flex items-start gap-3">
-                  <div className="text-2xl">
-                    {alert.type === 'spending_up' ? '📈' : '⚠️'}
+                  <div className="flex-shrink-0">
+                    {alert.type === 'spending_up'
+                      ? <TrendingUp className="w-6 h-6 text-red-500" />
+                      : <AlertTriangle className="w-6 h-6 text-yellow-500" />
+                    }
                   </div>
                   <div className="flex-1">
                     <p

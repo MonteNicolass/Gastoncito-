@@ -415,7 +415,7 @@ function checkNoRecords(gastos: Movimiento[]): EconomicAlert | null {
       cta: {
         label: 'Registrar gasto',
         action: 'chat_prefill',
-        text: '💸 ',
+        text: '',
       },
       data: { daysSinceLastRecord: Infinity },
     }
@@ -439,7 +439,7 @@ function checkNoRecords(gastos: Movimiento[]): EconomicAlert | null {
     cta: {
       label: 'Registrar gasto',
       action: 'chat_prefill',
-      text: '💸 ',
+      text: '',
     },
     data: { daysSinceLastRecord: days },
   }

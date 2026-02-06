@@ -7,7 +7,7 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
-import { PieChart } from 'lucide-react'
+import { PieChart, AlertTriangle, Lightbulb } from 'lucide-react'
 
 // LocalStorage helpers para presupuestos
 const STORAGE_KEY = 'gaston_budgets'
@@ -403,14 +403,14 @@ export default function PresupuestosPage() {
 
               {budget.status === 'exceeded' && (
                 <div className="mt-2 flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400 font-medium">
-                  <span>⚠️</span>
+                  <AlertTriangle className="w-3.5 h-3.5" />
                   <span>Excedido por {formatAmount(budget.spent - budget.amount)}</span>
                 </div>
               )}
 
               {budget.status === 'warning' && (
                 <div className="mt-2 flex items-center gap-1.5 text-xs text-yellow-600 dark:text-yellow-400">
-                  <span>💡</span>
+                  <Lightbulb className="w-3.5 h-3.5" />
                   <span>Te queda {formatAmount(budget.amount - budget.spent)}</span>
                 </div>
               )}

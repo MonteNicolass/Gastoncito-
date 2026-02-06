@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { Sunrise, Sun, Coffee, Moon, Apple, UtensilsCrossed, Sandwich } from 'lucide-react'
 import { initDB } from '@/lib/storage'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
@@ -68,15 +69,27 @@ export default function ComidaPage() {
     })
   }
 
-  const getMealTypeEmoji = (type) => {
-    const emojis = {
-      desayuno: '🌅',
-      almuerzo: '☀️',
-      merienda: '☕',
-      cena: '🌙',
-      snack: '🍎'
+  const MealTypeIcon = ({ type, className = "w-6 h-6" }) => {
+    const iconProps = { className }
+    switch (type) {
+      case 'desayuno': return <Sunrise {...iconProps} />
+      case 'almuerzo': return <Sun {...iconProps} />
+      case 'merienda': return <Coffee {...iconProps} />
+      case 'cena': return <Moon {...iconProps} />
+      case 'snack': return <Apple {...iconProps} />
+      default: return <UtensilsCrossed {...iconProps} />
     }
-    return emojis[type] || '🍽️'
+  }
+
+  const getMealTypeColor = (type) => {
+    const colors = {
+      desayuno: 'text-amber-500 bg-amber-100 dark:bg-amber-900/30',
+      almuerzo: 'text-yellow-500 bg-yellow-100 dark:bg-yellow-900/30',
+      merienda: 'text-orange-600 bg-orange-100 dark:bg-orange-900/30',
+      cena: 'text-indigo-500 bg-indigo-100 dark:bg-indigo-900/30',
+      snack: 'text-green-500 bg-green-100 dark:bg-green-900/30'
+    }
+    return colors[type] || 'text-zinc-500 bg-zinc-100 dark:bg-zinc-800'
   }
 
   if (loading) {
@@ -98,7 +111,9 @@ export default function ComidaPage() {
         {/* Info Card */}
         <Card className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border-amber-200 dark:border-amber-800">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-2xl">🍔</span>
+            <div className="w-8 h-8 rounded-lg bg-amber-200 dark:bg-amber-900/40 flex items-center justify-center">
+              <Sandwich className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            </div>
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Registro Manual</h3>
           </div>
           <p className="text-xs text-zinc-600 dark:text-zinc-400">
@@ -117,7 +132,11 @@ export default function ComidaPage() {
         {/* Meals List */}
         {meals.length === 0 ? (
           <Card className="p-8 text-center">
-            <div className="text-4xl mb-4">🍽️</div>
+            <div className="flex justify-center mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                <UtensilsCrossed className="w-7 h-7 text-orange-500" />
+              </div>
+            </div>
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
               Sin comidas registradas
             </h3>
@@ -130,7 +149,9 @@ export default function ComidaPage() {
             {meals.map((meal) => (
               <Card key={meal.id} className="p-3">
                 <div className="flex items-start gap-3">
-                  <span className="text-2xl">{getMealTypeEmoji(meal.type)}</span>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${getMealTypeColor(meal.type)}`}>
+                    <MealTypeIcon type={meal.type} className="w-5 h-5" />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                       {meal.name}

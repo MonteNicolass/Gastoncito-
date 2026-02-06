@@ -6,7 +6,7 @@ import { initDB, getLifeEntriesByDomain, deleteLifeEntry } from '@/lib/storage'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
-import { BookOpen } from 'lucide-react'
+import { BookOpen, Pencil } from 'lucide-react'
 
 export default function DiarioMentalPage() {
   const router = useRouter()
@@ -45,11 +45,11 @@ export default function DiarioMentalPage() {
     return null
   }
 
-  const getMoodEmoji = (score) => {
-    if (score >= 8) return '😊'
-    if (score >= 6) return '🙂'
-    if (score >= 4) return '😐'
-    return '😔'
+  const getMoodColor = (score) => {
+    if (score >= 8) return 'bg-green-500'
+    if (score >= 6) return 'bg-blue-500'
+    if (score >= 4) return 'bg-yellow-500'
+    return 'bg-red-500'
   }
 
   return (
@@ -63,7 +63,7 @@ export default function DiarioMentalPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
-                  <span className="text-2xl">✏️</span>
+                  <Pencil className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <p className="text-white font-semibold">Nueva entrada</p>
@@ -103,10 +103,10 @@ export default function DiarioMentalPage() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    {/* Mood badge con emoji */}
+                    {/* Mood badge */}
                     {entry.meta?.mood_score && (
                       <div className="flex items-center gap-2 mb-3">
-                        <span className="text-2xl">{getMoodEmoji(entry.meta.mood_score)}</span>
+                        <span className={`w-4 h-4 rounded-full ${getMoodColor(entry.meta.mood_score)}`} />
                         <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                           {entry.meta.mood_score}
                         </span>
