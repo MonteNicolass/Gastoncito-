@@ -1,208 +1,65 @@
 'use client'
 
-import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import TopBar from '@/components/ui/TopBar'
-import Card from '@/components/ui/Card'
-import { TrendingUp, Calculator, ShoppingCart, Lightbulb } from 'lucide-react'
+import AssetQuotesCard from '@/components/AssetQuotesCard'
+import InstallmentsVsCashCard from '@/components/InstallmentsVsCashCard'
+import { ShoppingCart, BarChart3, ChevronRight } from 'lucide-react'
 
 export default function HerramientasFinancierasPage() {
-  const [cuotaValue, setCuotaValue] = useState('')
-  const [numCuotas, setNumCuotas] = useState('12')
-  const [tasaAnual, setTasaAnual] = useState('100')
-  const [contadoValue, setContadoValue] = useState('')
-
-  const calculatePresentValue = () => {
-    const cuota = parseFloat(cuotaValue) || 0
-    const n = parseInt(numCuotas) || 1
-    const tasaAnualNum = parseFloat(tasaAnual) || 0
-    const i = tasaAnualNum / 100 / 12 // Tasa mensual
-
-    if (cuota === 0 || i === 0) return 0
-
-    // Valor presente = cuota / (1 + i)^n sumado para cada mes
-    let valorPresente = 0
-    for (let mes = 1; mes <= n; mes++) {
-      valorPresente += cuota / Math.pow(1 + i, mes)
-    }
-
-    return valorPresente
-  }
-
-  const presentValue = calculatePresentValue()
-  const totalCuotas = (parseFloat(cuotaValue) || 0) * (parseInt(numCuotas) || 1)
-  const contado = parseFloat(contadoValue) || 0
-  const diferencia = contado > 0 ? presentValue - contado : 0
-  const conviene = contado > 0 ? (presentValue < contado ? 'cuotas' : 'contado') : null
-
-  const formatAmount = (amount) => {
-    return new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: 'ARS',
-      minimumFractionDigits: 0,
-    }).format(amount)
-  }
+  const router = useRouter()
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-zinc-50 dark:bg-zinc-950 pb-24">
       <TopBar title="Herramientas Financieras" backHref="/herramientas" />
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {/* Precios Activos */}
-        <Card className="p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Precios de Activos</h3>
-          </div>
-          <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-3">
-            Consultá cotizaciones actualizadas de dólar, acciones, bonos y más
-          </p>
-          <a
-            href="https://finanzasargy.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block w-full py-2.5 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold text-center transition-colors"
-          >
-            Abrir Finanzas Argy →
-          </a>
-        </Card>
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
+        {/* Cotizaciones in-app */}
+        <AssetQuotesCard />
 
-        {/* Calculadora Cuotas vs Contado */}
-        <Card className="p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Calculator className="w-5 h-5 text-green-600 dark:text-green-400" />
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Cuotas vs Contado</h3>
-          </div>
-          <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-3">
-            Calculá el valor presente de las cuotas considerando inflación
-          </p>
+        {/* Cuotas vs Contado */}
+        <InstallmentsVsCashCard />
 
-          <div className="space-y-3">
-            {/* Inputs */}
-            <div>
-              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                Valor de cada cuota
-              </label>
-              <input
-                type="number"
-                value={cuotaValue}
-                onChange={(e) => setCuotaValue(e.target.value)}
-                placeholder="Ej: 10000"
-                className="w-full px-3 py-2 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-zinc-100"
-              />
-            </div>
+        {/* Comparadores internos */}
+        <div className="space-y-2">
+          <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1">
+            Comparadores de precios
+          </h3>
 
-            <div>
-              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                Número de cuotas
-              </label>
-              <input
-                type="number"
-                value={numCuotas}
-                onChange={(e) => setNumCuotas(e.target.value)}
-                placeholder="Ej: 12"
-                className="w-full px-3 py-2 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-zinc-100"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                Inflación anual estimada (%)
-              </label>
-              <input
-                type="number"
-                value={tasaAnual}
-                onChange={(e) => setTasaAnual(e.target.value)}
-                placeholder="Ej: 100"
-                className="w-full px-3 py-2 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-zinc-100"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                Precio de contado (opcional)
-              </label>
-              <input
-                type="number"
-                value={contadoValue}
-                onChange={(e) => setContadoValue(e.target.value)}
-                placeholder="Ej: 90000"
-                className="w-full px-3 py-2 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-zinc-100"
-              />
-            </div>
-
-            {/* Results */}
-            {cuotaValue && numCuotas && (
-              <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
-                <div className="flex items-baseline justify-between">
-                  <span className="text-xs text-zinc-600 dark:text-zinc-400">Valor presente (actualizado)</span>
-                  <span className="text-lg font-bold text-green-600 dark:text-green-400">
-                    {formatAmount(presentValue)}
-                  </span>
-                </div>
-
-                <div className="flex items-baseline justify-between">
-                  <span className="text-xs text-zinc-600 dark:text-zinc-400">Total nominal en cuotas</span>
-                  <span className="text-sm font-semibold text-zinc-600 dark:text-zinc-400">
-                    {formatAmount(totalCuotas)}
-                  </span>
-                </div>
-
-                {contado > 0 && (
-                  <>
-                    <div className="flex items-baseline justify-between pt-2 border-t border-zinc-200 dark:border-zinc-800">
-                      <span className="text-xs text-zinc-600 dark:text-zinc-400">Diferencia vs contado</span>
-                      <span className={`text-sm font-semibold ${diferencia < 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                        {diferencia < 0 ? '' : '+'}{formatAmount(Math.abs(diferencia))}
-                      </span>
-                    </div>
-
-                    <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30">
-                      <p className="text-xs font-semibold text-blue-900 dark:text-blue-100">
-                        <Lightbulb className="w-3.5 h-3.5 inline mr-1" />
-                        {conviene === 'cuotas' ? 'Convienen las cuotas' : 'Conviene pagar de contado'}
-                      </p>
-                    </div>
-                  </>
-                )}
+          <div className="space-y-1.5">
+            <button
+              onClick={() => router.push('/money/comparador')}
+              className="w-full p-3 rounded-xl text-left bg-white dark:bg-zinc-800/50 border border-zinc-200/50 dark:border-zinc-700/50 hover:shadow-md transition-all active:scale-[0.98] flex items-center gap-3"
+            >
+              <BarChart3 className="w-5 h-5 text-blue-500" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  Comparador de productos
+                </p>
+                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  Compará precios entre tiendas con tus datos
+                </p>
               </div>
-            )}
-          </div>
-        </Card>
+              <ChevronRight className="w-4 h-4 text-zinc-400" />
+            </button>
 
-        {/* Comparadores de Precios */}
-        <Card className="p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <ShoppingCart className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Comparadores de Precios</h3>
-          </div>
-          <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-3">
-            Encontrá los mejores precios en supermercados online
-          </p>
-
-          <div className="space-y-2">
-            <a
-              href="https://www.ratoneando.com.ar"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full py-2.5 px-4 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm font-semibold text-center transition-colors"
+            <button
+              onClick={() => router.push('/money/carrito')}
+              className="w-full p-3 rounded-xl text-left bg-white dark:bg-zinc-800/50 border border-zinc-200/50 dark:border-zinc-700/50 hover:shadow-md transition-all active:scale-[0.98] flex items-center gap-3"
             >
-              Ratoneando →
-            </a>
-
-            <a
-              href="https://www.miraprecios.com.ar"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full py-2.5 px-4 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm font-semibold text-center transition-colors"
-            >
-              Mira Precios →
-            </a>
+              <ShoppingCart className="w-5 h-5 text-emerald-500" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  Carrito de compras
+                </p>
+                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  Armá tu lista y optimizá dónde comprar
+                </p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-zinc-400" />
+            </button>
           </div>
-
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-3">
-            Estructura preparada para integración futura con APIs de supermercados
-          </p>
-        </Card>
+        </div>
       </div>
     </div>
   )
