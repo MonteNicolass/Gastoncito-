@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import TopBar from '@/components/ui/TopBar'
 import AssetQuotesCard from '@/components/AssetQuotesCard'
 import InstallmentsVsCashCard from '@/components/InstallmentsVsCashCard'
-import { ShoppingCart, BarChart3, ChevronRight } from 'lucide-react'
+import { ShoppingCart, BarChart3, ChevronRight, ClipboardList } from 'lucide-react'
 
 export default function HerramientasFinancierasPage() {
   const router = useRouter()
@@ -54,6 +54,22 @@ export default function HerramientasFinancierasPage() {
                 </p>
                 <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
                   Armá tu lista y optimizá dónde comprar
+                </p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-zinc-400" />
+            </button>
+
+            <button
+              onClick={() => router.push('/money/decisiones')}
+              className="w-full p-3 rounded-xl text-left bg-white dark:bg-zinc-800/50 border border-zinc-200/50 dark:border-zinc-700/50 hover:shadow-md transition-all active:scale-[0.98] flex items-center gap-3"
+            >
+              <ClipboardList className="w-5 h-5 text-purple-500" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  Decisiones financieras
+                </p>
+                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  Historial de análisis y optimizaciones guardados
                 </p>
               </div>
               <ChevronRight className="w-4 h-4 text-zinc-400" />

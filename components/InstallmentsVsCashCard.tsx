@@ -2,8 +2,14 @@
 
 import { useState, useMemo } from 'react'
 import Card from '@/components/ui/Card'
-import { Calculator, CheckCircle, Equal } from 'lucide-react'
+import { Calculator, CheckCircle, Equal, Save, Check } from 'lucide-react'
 import { calculateInstallments } from '@/lib/calculators/installments'
+import {
+  saveDecision,
+  getDecisionsByType,
+  type CuotasDecision,
+  type FinancialDecision,
+} from '@/lib/decisions/decisionStore'
 
 function formatARS(amount: number) {
   return new Intl.NumberFormat('es-AR', {
@@ -11,6 +17,11 @@ function formatARS(amount: number) {
     currency: 'ARS',
     minimumFractionDigits: 0,
   }).format(amount)
+}
+
+function formatDate(dateString: string): string {
+  const d = new Date(dateString)
+  return d.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
 }
 
 const LABEL_CONFIG = {
@@ -24,6 +35,10 @@ export default function InstallmentsVsCashCard() {
   const [numCuotas, setNumCuotas] = useState('12')
   const [inflacion, setInflacion] = useState('40')
   const [contado, setContado] = useState('')
+  const [saved, setSaved] = useState(false)
+  const [recentDecisions, setRecentDecisions] = useState<FinancialDecision[]>(
+    () => getDecisionsByType('cuotas_vs_contado').slice(0, 3)
+  )
 
   const cuota = parseFloat(cuotaValue) || 0
   const n = parseInt(numCuotas) || 0
@@ -34,6 +49,34 @@ export default function InstallmentsVsCashCard() {
     if (cuota <= 0 || n <= 0 || inf <= 0) return null
     return calculateInstallments(cuota, n, inf, cash > 0 ? cash : undefined)
   }, [cuota, n, inf, cash])
+
+  function handleSave() {
+    if (!result) return
+
+    const decision: Omit<CuotasDecision, 'id'> = {
+      tipo: 'cuotas_vs_contado',
+      inputs: {
+        cuota,
+        numCuotas: n,
+        inflacion: inf,
+        contado: cash > 0 ? cash : null,
+      },
+      resultado: {
+        presentValue: result.presentValue,
+        totalNominal: result.totalNominal,
+        monthlyRate: result.monthlyRate,
+        label: result.label ?? null,
+        differenceVsCash: result.differenceVsCash ?? null,
+        differencePercent: result.differencePercent ?? null,
+      },
+      fecha: new Date().toISOString(),
+    }
+
+    saveDecision(decision as any)
+    setSaved(true)
+    setRecentDecisions(getDecisionsByType('cuotas_vs_contado').slice(0, 3))
+    setTimeout(() => setSaved(false), 2000)
+  }
 
   return (
     <div className="space-y-2">
@@ -54,7 +97,7 @@ export default function InstallmentsVsCashCard() {
             <input
               type="number"
               value={cuotaValue}
-              onChange={(e) => setCuotaValue(e.target.value)}
+              onChange={(e) => { setCuotaValue(e.target.value); setSaved(false) }}
               placeholder="10.000"
               className="w-full px-3 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 outline-none focus:ring-2 ring-emerald-500/30"
             />
@@ -66,7 +109,7 @@ export default function InstallmentsVsCashCard() {
             <input
               type="number"
               value={numCuotas}
-              onChange={(e) => setNumCuotas(e.target.value)}
+              onChange={(e) => { setNumCuotas(e.target.value); setSaved(false) }}
               placeholder="12"
               className="w-full px-3 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 outline-none focus:ring-2 ring-emerald-500/30"
             />
@@ -81,7 +124,7 @@ export default function InstallmentsVsCashCard() {
             <input
               type="number"
               value={inflacion}
-              onChange={(e) => setInflacion(e.target.value)}
+              onChange={(e) => { setInflacion(e.target.value); setSaved(false) }}
               placeholder="40"
               className="w-full px-3 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 outline-none focus:ring-2 ring-emerald-500/30"
             />
@@ -93,7 +136,7 @@ export default function InstallmentsVsCashCard() {
             <input
               type="number"
               value={contado}
-              onChange={(e) => setContado(e.target.value)}
+              onChange={(e) => { setContado(e.target.value); setSaved(false) }}
               placeholder="90.000"
               className="w-full px-3 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 outline-none focus:ring-2 ring-emerald-500/30"
             />
@@ -164,9 +207,66 @@ export default function InstallmentsVsCashCard() {
                 })()}
               </div>
             )}
+
+            {/* Save button */}
+            <button
+              onClick={handleSave}
+              disabled={saved}
+              className={`w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
+                saved
+                  ? 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
+                  : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+              }`}
+            >
+              {saved ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  Guardado
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  Guardar análisis
+                </>
+              )}
+            </button>
           </div>
         )}
       </Card>
+
+      {/* Recent saved analyses */}
+      {recentDecisions.length > 0 && (
+        <Card className="p-3 space-y-1">
+          <p className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1 mb-1">
+            Últimos análisis
+          </p>
+          <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+            {recentDecisions.map(d => {
+              if (d.tipo !== 'cuotas_vs_contado') return null
+              const labelText = d.resultado.label === 'cuotas_mejor'
+                ? 'Cuotas'
+                : d.resultado.label === 'contado_mejor'
+                ? 'Contado'
+                : 'Similar'
+              return (
+                <div key={d.id} className="flex items-center justify-between py-2 px-1">
+                  <div>
+                    <p className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
+                      {d.inputs.numCuotas}x {formatARS(d.inputs.cuota)}
+                    </p>
+                    <p className="text-[10px] text-zinc-500">
+                      {formatDate(d.fecha)} · {labelText}
+                    </p>
+                  </div>
+                  <span className="text-xs font-bold font-mono text-zinc-700 dark:text-zinc-300 tabular-nums">
+                    VP {formatARS(d.resultado.presentValue)}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </Card>
+      )}
     </div>
   )
 }

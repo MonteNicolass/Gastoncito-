@@ -1,128 +1,145 @@
 'use client'
 
 import Card from '@/components/ui/Card'
-import { MapPin, Trophy, ChevronDown, Store } from 'lucide-react'
+import {
+  type FinancialDecision,
+  getDecisionSummary,
+} from '@/lib/decisions/decisionStore'
+import {
+  Calculator,
+  ShoppingCart,
+  BarChart3,
+  Trash2,
+} from 'lucide-react'
 
-interface StoreRanking {
-  store: string
-  estimatedCost: number
-  coverage: number
-  badge: 'cheapest' | 'normal' | 'expensive'
-  difference?: number
-  percentMore?: number
+function formatDate(dateString: string): string {
+  const d = new Date(dateString)
+  return d.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-interface Props {
-  stores: StoreRanking[]
-}
-
-function capitalize(s: string) {
-  return s.charAt(0).toUpperCase() + s.slice(1)
-}
-
-function formatARS(amount: number) {
-  return new Intl.NumberFormat('es-AR', {
-    style: 'currency',
-    currency: 'ARS',
-    minimumFractionDigits: 0,
-  }).format(amount)
-}
-
-const BADGE_CONFIG = {
-  cheapest: {
-    label: 'Más barato',
-    bg: 'bg-emerald-100 dark:bg-emerald-900/30',
-    text: 'text-emerald-700 dark:text-emerald-300',
-    border: 'border-emerald-200 dark:border-emerald-800/50',
-    ring: 'ring-emerald-500/20',
+const TYPE_CONFIG = {
+  cuotas_vs_contado: {
+    Icon: Calculator,
+    color: 'text-purple-500',
+    bg: 'bg-purple-50 dark:bg-purple-900/20',
+    label: 'Cuotas vs Contado',
   },
-  normal: {
-    label: 'Normal',
-    bg: 'bg-zinc-100 dark:bg-zinc-800',
-    text: 'text-zinc-600 dark:text-zinc-400',
-    border: 'border-zinc-200 dark:border-zinc-700',
-    ring: '',
+  carrito_optimizado: {
+    Icon: ShoppingCart,
+    color: 'text-emerald-500',
+    bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+    label: 'Carrito',
   },
-  expensive: {
-    label: 'Caro',
-    bg: 'bg-red-100 dark:bg-red-900/30',
-    text: 'text-red-700 dark:text-red-300',
-    border: 'border-red-200 dark:border-red-800/50',
-    ring: '',
+  comparacion_producto: {
+    Icon: BarChart3,
+    color: 'text-blue-500',
+    bg: 'bg-blue-50 dark:bg-blue-900/20',
+    label: 'Comparación',
   },
+} as const
+
+interface DecisionCardProps {
+  decision: FinancialDecision
+  onDelete?: (id: string) => void
+  compact?: boolean
 }
 
-export default function DecisionCard({ stores }: Props) {
-  if (!stores || stores.length === 0) return null
+export default function DecisionCard({ decision, onDelete, compact = false }: DecisionCardProps) {
+  const summary = getDecisionSummary(decision)
+  const cfg = TYPE_CONFIG[decision.tipo]
+  const Icon = cfg.Icon
+
+  if (compact) {
+    return (
+      <div className="flex items-center gap-3 py-2">
+        <div className={`w-8 h-8 rounded-lg ${cfg.bg} flex items-center justify-center flex-shrink-0`}>
+          <Icon className={`w-4 h-4 ${cfg.color}`} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
+            {summary.subtitle}
+          </p>
+          <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            {cfg.label} · {formatDate(decision.fecha)}
+          </p>
+        </div>
+        <span className="text-sm font-bold font-mono text-zinc-900 dark:text-zinc-100 tabular-nums flex-shrink-0">
+          {summary.amount}
+        </span>
+      </div>
+    )
+  }
 
   return (
-    <div className="space-y-2.5">
-      <div className="flex items-center gap-2 px-1">
-        <MapPin className="w-4 h-4 text-emerald-500" />
-        <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-          Dónde conviene comprar hoy
-        </h3>
-      </div>
+    <Card className="p-4">
+      <div className="flex items-start gap-3">
+        <div className={`w-10 h-10 rounded-xl ${cfg.bg} flex items-center justify-center flex-shrink-0`}>
+          <Icon className={`w-5 h-5 ${cfg.color}`} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${cfg.bg} ${cfg.color}`}>
+              {cfg.label}
+            </span>
+            <span className="text-[10px] text-zinc-400">
+              {formatDate(decision.fecha)}
+            </span>
+          </div>
+          <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            {summary.title}
+          </p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+            {summary.subtitle}
+          </p>
 
-      <div className="space-y-2">
-        {stores.map((store, i) => {
-          const badge = BADGE_CONFIG[store.badge]
-          const isFirst = i === 0
+          {/* Type-specific details */}
+          {decision.tipo === 'cuotas_vs_contado' && (
+            <div className="flex items-center gap-3 mt-2 text-[10px] text-zinc-500">
+              <span>{decision.inputs.numCuotas} cuotas de ${new Intl.NumberFormat('es-AR').format(decision.inputs.cuota)}</span>
+              <span>·</span>
+              <span>Inflación {decision.inputs.inflacion}%</span>
+            </div>
+          )}
 
-          return (
-            <Card
-              key={store.store}
-              className={`p-4 transition-all ${
-                isFirst
-                  ? `ring-1 ${badge.ring} border-emerald-200/60 dark:border-emerald-800/40`
-                  : ''
-              }`}
+          {decision.tipo === 'carrito_optimizado' && (
+            <div className="flex items-center gap-3 mt-2 text-[10px] text-zinc-500">
+              <span>{decision.items.length} productos</span>
+              <span>·</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                -{decision.ahorro_percent}%
+              </span>
+            </div>
+          )}
+
+          {decision.tipo === 'comparacion_producto' && (
+            <div className="flex items-center gap-3 mt-2 text-[10px] text-zinc-500">
+              <span>{decision.tiendas_comparadas} tiendas</span>
+              {decision.ahorro_vs_caro > 0 && (
+                <>
+                  <span>·</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                    Ahorro: ${new Intl.NumberFormat('es-AR').format(decision.ahorro_vs_caro)}
+                  </span>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col items-end gap-1 flex-shrink-0">
+          <span className="text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100 tabular-nums">
+            {summary.amount}
+          </span>
+          {onDelete && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onDelete(decision.id) }}
+              className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors active:scale-95"
             >
-              <div className="flex items-center gap-3">
-                {/* Rank */}
-                <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold ${
-                  isFirst
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400'
-                }`}>
-                  {i === 0 ? <Trophy className="w-4 h-4" /> : `${i + 1}`}
-                </div>
-
-                {/* Store info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                      {capitalize(store.store)}
-                    </span>
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${badge.bg} ${badge.text}`}>
-                      {badge.label}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                      {store.coverage}% de tu lista
-                    </span>
-                  </div>
-                </div>
-
-                {/* Price */}
-                <div className="text-right">
-                  <div className={`text-base font-bold font-mono ${
-                    isFirst ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-700 dark:text-zinc-300'
-                  }`}>
-                    {formatARS(store.estimatedCost)}
-                  </div>
-                  {store.difference && store.difference > 0 && (
-                    <span className="text-[10px] text-red-500 dark:text-red-400">
-                      +{formatARS(store.difference)}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </Card>
-          )
-        })}
+              <Trash2 className="w-3.5 h-3.5 text-zinc-400" />
+            </button>
+          )}
+        </div>
       </div>
-    </div>
+    </Card>
   )
 }

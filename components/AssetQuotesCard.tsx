@@ -2,9 +2,15 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Card from '@/components/ui/Card'
-import { TrendingUp, RefreshCw, WifiOff, DollarSign } from 'lucide-react'
+import { TrendingUp, TrendingDown, RefreshCw, WifiOff, DollarSign, Star, Minus } from 'lucide-react'
 import { fetchQuotes, type Quote } from '@/lib/market/providers'
-import { getCachedQuotes, saveQuotesToCache, isCacheFresh } from '@/lib/market/quotesCache'
+import { getCachedQuotes, saveQuotesToCache } from '@/lib/market/quotesCache'
+import {
+  getFavoriteAssets,
+  toggleFavorite,
+  saveBulkQuotesToHistory,
+  getAssetVariation,
+} from '@/lib/market/quoteHistory'
 
 function formatARS(amount: number | null) {
   if (amount === null) return '-'
@@ -25,11 +31,22 @@ function sortQuotes(quotes: Quote[]): Quote[] {
   })
 }
 
+const DOT_COLORS: Record<string, string> = {
+  blue: 'bg-blue-500',
+  oficial: 'bg-emerald-500',
+  tarjeta: 'bg-purple-500',
+  mep: 'bg-amber-500',
+  ccl: 'bg-orange-500',
+  cripto: 'bg-cyan-500',
+}
+
 export default function AssetQuotesCard() {
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [loading, setLoading] = useState(true)
   const [isOffline, setIsOffline] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<string | null>(null)
+  const [favorites, setFavorites] = useState<string[]>([])
+  const [variations, setVariations] = useState<Record<string, { deltaPercent: number | null }>>({})
 
   const loadQuotes = useCallback(async (force = false) => {
     setLoading(true)
@@ -59,6 +76,14 @@ export default function AssetQuotesCard() {
           minute: '2-digit',
         }))
         setIsOffline(false)
+
+        // Save to history
+        saveBulkQuotesToHistory(fresh.map(q => ({
+          id: q.id,
+          name: q.name,
+          buy: q.buy,
+          sell: q.sell,
+        })))
       } else {
         // Use stale cache
         const cached = getCachedQuotes()
@@ -78,7 +103,24 @@ export default function AssetQuotesCard() {
 
   useEffect(() => {
     loadQuotes()
+    setFavorites(getFavoriteAssets())
   }, [loadQuotes])
+
+  // Load variations after quotes load
+  useEffect(() => {
+    if (quotes.length === 0) return
+    const vars: Record<string, { deltaPercent: number | null }> = {}
+    for (const q of quotes) {
+      const v = getAssetVariation(q.id)
+      vars[q.id] = { deltaPercent: v?.deltaPercent ?? null }
+    }
+    setVariations(vars)
+  }, [quotes])
+
+  function handleToggleFavorite(assetId: string) {
+    const updated = toggleFavorite(assetId)
+    setFavorites(updated)
+  }
 
   return (
     <div className="space-y-2">
@@ -131,39 +173,67 @@ export default function AssetQuotesCard() {
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-2 bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800">
               <span className="text-[10px] font-semibold text-zinc-400 uppercase">Tipo</span>
-              <div className="flex gap-8">
-                <span className="text-[10px] font-semibold text-zinc-400 uppercase w-20 text-right">Compra</span>
-                <span className="text-[10px] font-semibold text-zinc-400 uppercase w-20 text-right">Venta</span>
+              <div className="flex gap-6">
+                <span className="text-[10px] font-semibold text-zinc-400 uppercase w-16 text-right">Compra</span>
+                <span className="text-[10px] font-semibold text-zinc-400 uppercase w-16 text-right">Venta</span>
+                <span className="text-[10px] font-semibold text-zinc-400 uppercase w-12 text-right">Var</span>
               </div>
             </div>
 
             {/* Rows */}
             <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-              {quotes.map((q) => (
-                <div key={q.id} className="flex items-center justify-between px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${
-                      q.id === 'blue' ? 'bg-blue-500' :
-                      q.id === 'oficial' ? 'bg-emerald-500' :
-                      q.id === 'tarjeta' ? 'bg-purple-500' :
-                      q.id === 'mep' ? 'bg-amber-500' :
-                      q.id === 'ccl' ? 'bg-orange-500' :
-                      'bg-cyan-500'
-                    }`} />
-                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                      {q.name}
-                    </span>
+              {quotes.map((q) => {
+                const isFav = favorites.includes(q.id)
+                const variation = variations[q.id]
+                const dp = variation?.deltaPercent
+
+                return (
+                  <div key={q.id} className="flex items-center justify-between px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleToggleFavorite(q.id)}
+                        className="p-0.5 active:scale-90 transition-transform"
+                      >
+                        <Star className={`w-3.5 h-3.5 ${isFav ? 'text-amber-500 fill-amber-500' : 'text-zinc-300 dark:text-zinc-600'}`} />
+                      </button>
+                      <div className={`w-2 h-2 rounded-full ${DOT_COLORS[q.id] || 'bg-zinc-400'}`} />
+                      <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                        {q.name}
+                      </span>
+                    </div>
+                    <div className="flex gap-6 items-center">
+                      <span className="text-sm font-mono font-semibold text-zinc-700 dark:text-zinc-300 w-16 text-right tabular-nums">
+                        {formatARS(q.buy)}
+                      </span>
+                      <span className="text-sm font-mono font-bold text-zinc-900 dark:text-zinc-100 w-16 text-right tabular-nums">
+                        {formatARS(q.sell)}
+                      </span>
+                      <span className={`text-[10px] font-mono font-medium w-12 text-right tabular-nums flex items-center justify-end gap-0.5 ${
+                        dp === null ? 'text-zinc-400'
+                        : dp > 0 ? 'text-red-500'
+                        : dp < 0 ? 'text-emerald-600 dark:text-emerald-400'
+                        : 'text-zinc-400'
+                      }`}>
+                        {dp === null ? (
+                          <Minus className="w-3 h-3" />
+                        ) : dp > 0 ? (
+                          <>
+                            <TrendingUp className="w-3 h-3" />
+                            +{dp}%
+                          </>
+                        ) : dp < 0 ? (
+                          <>
+                            <TrendingDown className="w-3 h-3" />
+                            {dp}%
+                          </>
+                        ) : (
+                          '0%'
+                        )}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex gap-8">
-                    <span className="text-sm font-mono font-semibold text-zinc-700 dark:text-zinc-300 w-20 text-right tabular-nums">
-                      {formatARS(q.buy)}
-                    </span>
-                    <span className="text-sm font-mono font-bold text-zinc-900 dark:text-zinc-100 w-20 text-right tabular-nums">
-                      {formatARS(q.sell)}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
 
             {/* Footer */}

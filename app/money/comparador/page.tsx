@@ -8,6 +8,7 @@ import { getComparatorSummary, compareProduct, type ProductComparison } from '@/
 import { getProductPriceHistory, type ProductPriceHistory } from '@/lib/prices/priceHistory'
 import { getTrackedProducts } from '@/lib/ratoneando/price-storage'
 import { addToCart, getCart } from '@/lib/cart/cartStore'
+import { saveDecision } from '@/lib/decisions/decisionStore'
 import {
   Search,
   Trophy,
@@ -18,6 +19,8 @@ import {
   Minus,
   BarChart3,
   Package,
+  Check,
+  Save,
 } from 'lucide-react'
 
 function formatARS(amount: number) {
@@ -50,6 +53,8 @@ export default function ComparadorPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null)
   const [addedToCart, setAddedToCart] = useState<Set<string>>(new Set())
+  const [cartFeedback, setCartFeedback] = useState<string | null>(null)
+  const [savedComparison, setSavedComparison] = useState(false)
 
   const tracked = useMemo(() => getTrackedProducts(), [])
   const comparator = useMemo(() => getComparatorSummary(), [])
@@ -74,6 +79,23 @@ export default function ComparadorPage() {
   function handleAddToCart(productName: string) {
     addToCart(productName)
     setAddedToCart(prev => new Set(prev).add(productName))
+    setCartFeedback(productName)
+    setTimeout(() => setCartFeedback(null), 2000)
+  }
+
+  function handleSaveComparison() {
+    if (!comparison || !comparison.cheapestStore) return
+    saveDecision({
+      tipo: 'comparacion_producto',
+      producto: comparison.productName,
+      tienda_barata: comparison.cheapestStore,
+      precio_barato: comparison.stores[0]?.latestPrice ?? 0,
+      tiendas_comparadas: comparison.stores.length,
+      ahorro_vs_caro: comparison.maxSaving,
+      fecha: new Date().toISOString(),
+    } as any)
+    setSavedComparison(true)
+    setTimeout(() => setSavedComparison(false), 2000)
   }
 
   // Product detail view
@@ -205,25 +227,54 @@ export default function ComparadorPage() {
             </div>
           )}
 
-          {/* Add to cart CTA */}
-          <button
-            onClick={() => handleAddToCart(name)}
-            disabled={inCart}
-            className={`w-full py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform ${
-              inCart
-                ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-500'
-                : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/20'
-            }`}
-          >
-            {inCart ? (
-              <>Ya está en el carrito</>
-            ) : (
-              <>
-                <ShoppingCart className="w-4 h-4" />
-                Agregar al carrito
-              </>
+          {/* Actions */}
+          <div className="space-y-2">
+            <button
+              onClick={() => handleAddToCart(name)}
+              disabled={inCart}
+              className={`w-full py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-all ${
+                inCart
+                  ? 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
+                  : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/20'
+              }`}
+            >
+              {inCart ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  {cartFeedback === name ? 'Agregado al carrito' : 'Ya está en el carrito'}
+                </>
+              ) : (
+                <>
+                  <ShoppingCart className="w-4 h-4" />
+                  Agregar al carrito
+                </>
+              )}
+            </button>
+
+            {comparison && comparison.stores.length >= 2 && (
+              <button
+                onClick={handleSaveComparison}
+                disabled={savedComparison}
+                className={`w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
+                  savedComparison
+                    ? 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
+                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+                }`}
+              >
+                {savedComparison ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    Comparación guardada
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    Guardar comparación
+                  </>
+                )}
+              </button>
             )}
-          </button>
+          </div>
         </div>
       </div>
     )

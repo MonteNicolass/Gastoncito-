@@ -35,6 +35,8 @@ import MonthlySpendSnapshot from '@/components/MonthlySpendSnapshot'
 import FinancialHealthCard from '@/components/FinancialHealthCard'
 import FinancialAlertCard from '@/components/FinancialAlertCard'
 import { generateFinancialAlerts, type FinancialAlert } from '@/lib/finance/alerts'
+import { getLatestDecision, getDecisionSummary, type FinancialDecision } from '@/lib/decisions/decisionStore'
+import DecisionCard from '@/components/DecisionCard'
 import MentalStatusCard from '@/components/MentalStatusCard'
 import PhysicalStatusCard from '@/components/PhysicalStatusCard'
 import MentalInsightHighlight from '@/components/MentalInsightHighlight'
@@ -203,6 +205,7 @@ interface ResumenData {
   crossInsights: { text: string; type: 'spending_mood' | 'exercise_mood' }[]
   cartItemCount: number
   financialAlerts: FinancialAlert[]
+  latestDecision: FinancialDecision | null
 }
 
 // ── Component ────────────────────────────────────────────────
@@ -405,6 +408,7 @@ export default function ResumenGeneral() {
         physConsistency,
         crossInsights,
         cartItemCount: getCartItemCount(),
+        latestDecision: getLatestDecision(),
         financialAlerts: (() => {
           try {
             const activeSubs = subscriptions.filter((s: any) => s.active !== false)
@@ -553,6 +557,21 @@ export default function ResumenGeneral() {
         {/* ── 2d. Financial Alerts ── */}
         {data.financialAlerts.length > 0 && (
           <FinancialAlertCard alerts={data.financialAlerts.slice(0, 3)} />
+        )}
+
+        {/* ── 2e. Latest Financial Decision ── */}
+        {data.latestDecision && (
+          <button
+            onClick={() => navigateTo('/money/decisiones')}
+            className="w-full text-left transition-transform active:scale-[0.98]"
+          >
+            <Card className="p-3">
+              <p className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2 px-1">
+                Última decisión
+              </p>
+              <DecisionCard decision={data.latestDecision} compact />
+            </Card>
+          </button>
         )}
 
         {/* ── 3. Pilares – bloques grandes tappables ── */}

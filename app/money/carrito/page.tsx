@@ -15,6 +15,7 @@ import {
 } from '@/lib/cart/cartStore'
 import { analyzeCart } from '@/lib/cart/cartOptimizer'
 import { getTrackedProducts, getCheapestOption } from '@/lib/ratoneando/price-storage'
+import { saveDecision } from '@/lib/decisions/decisionStore'
 import {
   ShoppingCart,
   Plus,
@@ -22,6 +23,8 @@ import {
   BarChart3,
   X,
   Package,
+  Save,
+  Check,
 } from 'lucide-react'
 
 interface TrackedProduct {
@@ -44,6 +47,7 @@ export default function CarritoPage() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [showResults, setShowResults] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [savedDecision, setSavedDecision] = useState(false)
 
   const trackedProducts: TrackedProduct[] = useMemo(() => getTrackedProducts(), [])
 
@@ -101,6 +105,24 @@ export default function CarritoPage() {
     const updated = clearCart()
     setItems(updated)
     setShowResults(false)
+  }
+
+  function handleSaveDecision() {
+    if (!analysis?.optimization) return
+    const opt = analysis.optimization
+    saveDecision({
+      tipo: 'carrito_optimizado',
+      items: items.map(i => ({ productName: i.productName, quantity: i.quantity })),
+      total_single_store: opt.optionA.total,
+      total_optimized: opt.decision.total,
+      ahorro: opt.decision.savingsVsWorst,
+      ahorro_percent: opt.savingsPercent,
+      strategy: opt.bestStrategy,
+      store_name: opt.bestStrategy === 'single_store' ? opt.optionA.store : null,
+      fecha: new Date().toISOString(),
+    } as any)
+    setSavedDecision(true)
+    setTimeout(() => setSavedDecision(false), 2000)
   }
 
   const cartProductIds = new Set(items.map(i => i.productId))
@@ -221,7 +243,33 @@ export default function CarritoPage() {
         {showResults && analysis && (
           <div className="space-y-4">
             {analysis.hasEnoughData ? (
-              <CartSummary analysis={analysis} cartItemCount={items.length} />
+              <>
+                <CartSummary analysis={analysis} cartItemCount={items.length} />
+
+                {analysis.optimization && (
+                  <button
+                    onClick={handleSaveDecision}
+                    disabled={savedDecision}
+                    className={`w-full py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
+                      savedDecision
+                        ? 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
+                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                    }`}
+                  >
+                    {savedDecision ? (
+                      <>
+                        <Check className="w-4 h-4" />
+                        Decisión guardada
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4" />
+                        Guardar decisión de compra
+                      </>
+                    )}
+                  </button>
+                )}
+              </>
             ) : (
               <Card className="p-6 text-center">
                 <BarChart3 className="w-8 h-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
