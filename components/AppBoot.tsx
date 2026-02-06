@@ -58,7 +58,10 @@ export default function AppBoot({ children }: Props) {
     let cancelled = false
 
     async function init() {
-      const result = await bootApp()
+      const timeout = new Promise<{ status: 'error'; error: string }>(resolve =>
+        setTimeout(() => resolve({ status: 'error', error: 'La carga tardó demasiado. Reiniciá la app.' }), 10000)
+      )
+      const result = await Promise.race([bootApp(), timeout])
 
       if (cancelled) return
 

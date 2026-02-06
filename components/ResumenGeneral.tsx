@@ -20,8 +20,6 @@ import { getGeneralScore, type GeneralScore } from '@/lib/score/general-score'
 import { getGoalsSnapshot, type GoalsOverview } from '@/lib/goals-engine'
 import { getRecentNotes, type NotePreview } from '@/lib/notes-engine'
 import { getEconomyHistory, type EconomyHistory } from '@/lib/history/economy-history'
-import { getMentalHistory, type MentalHistory } from '@/lib/history/mental-history'
-import { getPhysicalHistory, type PhysicalHistory } from '@/lib/history/physical-history'
 import type { Movimiento } from '@/lib/economic-alerts-engine'
 import type { MentalRecord } from '@/lib/mental-engine'
 import type { PhysicalRecord } from '@/lib/physical-engine'
@@ -34,24 +32,19 @@ import SavingsHighlight from '@/components/SavingsHighlight'
 import MentalStatusCard from '@/components/MentalStatusCard'
 import PhysicalStatusCard from '@/components/PhysicalStatusCard'
 import MentalInsightHighlight from '@/components/MentalInsightHighlight'
-import ConsistencyBar from '@/components/ConsistencyBar'
 import { getAverageMood, getMoodTrend, getMoodStreaks } from '@/lib/insights/mentalInsights'
 import { getSpendingByMood, getMoodByExercise } from '@/lib/insights/crossInsights'
 import Card from '@/components/ui/Card'
 import TopBar from '@/components/ui/TopBar'
 import { Skeleton } from '@/components/ui/Skeleton'
 import {
-  Brain,
-  Dumbbell,
   Wallet,
   TrendingUp,
   TrendingDown,
   AlertTriangle,
   ChevronRight,
-  Flame,
   Activity,
   Layers,
-  StickyNote,
   Target,
   CheckCircle,
 } from 'lucide-react'
@@ -184,8 +177,6 @@ interface ResumenData {
   goalsOverview: GoalsOverview
   recentNotes: NotePreview[]
   econHistory: EconomyHistory
-  mentalHistory: MentalHistory
-  physHistory: PhysicalHistory
   hasAnyData: boolean
   savingsAmount: number
   savingsSubtitle: string | null
@@ -253,8 +244,6 @@ export default function ResumenGeneral() {
       const goalsOverview = getGoalsSnapshot(goals)
       const recentNotes = getRecentNotes(notes, 3)
       const econHistory = getEconomyHistory(movimientos)
-      const mentalHistory = getMentalHistory(mentalRecords)
-      const physHistory = getPhysicalHistory(physicalRecords)
 
       const hasAnyData = movimientos.length > 0 || lifeEntries.length > 0
 
@@ -352,8 +341,6 @@ export default function ResumenGeneral() {
         goalsOverview,
         recentNotes,
         econHistory,
-        mentalHistory,
-        physHistory,
         hasAnyData,
         savingsAmount,
         savingsSubtitle,
@@ -496,167 +483,96 @@ export default function ResumenGeneral() {
           />
         )}
 
-        {/* ── 3. Snapshots por pilar ── */}
-        <div className="grid grid-cols-3 gap-3">
-          {/* Economy */}
-          <button
-            onClick={() => navigateTo('/money')}
-            className="text-left transition-transform active:scale-[0.97]"
-          >
-            <Card className="p-3.5 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
-              <div className="flex items-center gap-1.5 mb-2">
+        {/* ── 3. Pilares – bloques grandes tappables ── */}
+
+        {/* Economy */}
+        <button
+          onClick={() => navigateTo('/money')}
+          className="w-full text-left transition-transform active:scale-[0.98]"
+        >
+          <div className="rounded-2xl bg-white dark:bg-zinc-800/50 border border-zinc-200/60 dark:border-zinc-700/60 p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
                 <Wallet className="w-4 h-4 text-emerald-500" />
-                <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">Money</span>
+                <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                  Economía este mes
+                </h3>
               </div>
-              <p className="text-base font-bold text-zinc-900 dark:text-zinc-100 font-mono leading-tight">
+              <ChevronRight className="w-4 h-4 text-zinc-400" />
+            </div>
+            <div className="flex items-baseline gap-3">
+              <span className="text-3xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100">
                 {formatARS(data.econSnap.monthlySpend)}
-              </p>
-              <div className="flex items-center gap-1 mt-1.5">
-                {data.econSnap.deltaVsAvgPercent > 10 && <TrendingUp className="w-3 h-3 text-red-500" />}
-                {data.econSnap.deltaVsAvgPercent < -10 && <TrendingDown className="w-3 h-3 text-emerald-500" />}
-                <span className={`text-[10px] font-medium ${
+              </span>
+              {data.econSnap.deltaVsAvgPercent !== 0 && (
+                <span className={`flex items-center gap-1 text-sm font-medium ${
                   data.econSnap.deltaVsAvgPercent > 10 ? 'text-red-500' :
                   data.econSnap.deltaVsAvgPercent < -10 ? 'text-emerald-500' :
                   'text-zinc-400'
                 }`}>
-                  {data.econSnap.deltaVsAvgPercent !== 0
-                    ? `${data.econSnap.deltaVsAvgPercent > 0 ? '+' : ''}${data.econSnap.deltaVsAvgPercent}% vs 3m`
-                    : 'Estable'}
+                  {data.econSnap.deltaVsAvgPercent > 10 && <TrendingUp className="w-4 h-4" />}
+                  {data.econSnap.deltaVsAvgPercent < -10 && <TrendingDown className="w-4 h-4" />}
+                  {data.econSnap.deltaVsAvgPercent > 0 ? '+' : ''}{data.econSnap.deltaVsAvgPercent}% vs 3m
                 </span>
-              </div>
-              {data.econHistory.trend !== 'stable' && (
-                <p className="text-[9px] text-zinc-400 mt-1 leading-tight">
-                  {data.econHistory.text}
-                </p>
               )}
-            </Card>
-          </button>
+            </div>
+            {data.econHistory.trend !== 'stable' && (
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2">
+                {data.econHistory.text}
+              </p>
+            )}
+          </div>
+        </button>
 
-          {/* Mental */}
-          <button
-            onClick={() => navigateTo('/mental')}
-            className="text-left transition-transform active:scale-[0.97]"
-          >
-            <Card className="p-3.5 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
-              <div className="flex items-center gap-1.5 mb-2">
-                <Brain className="w-4 h-4 text-purple-500" />
-                <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">Mental</span>
-              </div>
-              <div className="flex items-baseline gap-0.5">
-                <span className="text-base font-bold text-purple-600 dark:text-purple-400">
-                  {data.mentalSnap.avgMoodLast14 !== null ? data.mentalSnap.avgMoodLast14 : '\u2013'}
-                </span>
-                <span className="text-[10px] text-purple-400">/5</span>
-              </div>
-              <div className="flex items-center gap-1 mt-1.5">
-                {data.mentalSnap.trend === 'up' && <TrendingUp className="w-3 h-3 text-emerald-500" />}
-                {data.mentalSnap.trend === 'down' && <TrendingDown className="w-3 h-3 text-red-500" />}
-                <span className="text-[10px] text-zinc-400">
-                  {data.mentalSnap.daysTrackedLast14 > 0
-                    ? `${data.mentalSnap.daysTrackedLast14}d registrados`
-                    : 'Sin datos'}
-                </span>
-              </div>
-              {data.mentalHistory.trend !== 'stable' && data.mentalHistory.last7 !== null && (
-                <p className="text-[9px] text-zinc-400 mt-1 leading-tight">
-                  {data.mentalHistory.text}
-                </p>
-              )}
-            </Card>
-          </button>
+        {/* Mental */}
+        <button
+          onClick={() => navigateTo('/mental')}
+          className="w-full text-left transition-transform active:scale-[0.98]"
+        >
+          <MentalStatusCard
+            average={data.mentalAvg}
+            count={data.mentalCount}
+            trend={data.mentalTrend}
+            delta={data.mentalDelta}
+            lowStreak={data.mentalLowStreak}
+            variability={null}
+          />
+        </button>
 
-          {/* Physical */}
-          <button
-            onClick={() => navigateTo('/fisico')}
-            className="text-left transition-transform active:scale-[0.97]"
-          >
-            <Card className="p-3.5 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
-              <div className="flex items-center gap-1.5 mb-2">
-                <Dumbbell className="w-4 h-4 text-orange-500" />
-                <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">F\u00edsico</span>
-              </div>
-              <div className="flex items-baseline gap-0.5">
-                <span className="text-base font-bold text-orange-600 dark:text-orange-400">
-                  {data.physSnap.activitiesLast14 ?? 0}
-                </span>
-                <span className="text-[10px] text-orange-400">d\u00edas</span>
-              </div>
-              <div className="flex items-center gap-1 mt-1.5">
-                {data.physSnap.trend === 'up' && <TrendingUp className="w-3 h-3 text-emerald-500" />}
-                {data.physSnap.trend === 'down' && <TrendingDown className="w-3 h-3 text-red-500" />}
-                {data.physSnap.lastActivityDaysAgo !== null ? (
-                  data.physSnap.lastActivityDaysAgo === 0 ? (
-                    <span className="text-[10px] text-emerald-500 font-medium flex items-center gap-0.5">
-                      <Flame className="w-3 h-3" /> Hoy
-                    </span>
-                  ) : (
-                    <span className="text-[10px] text-zinc-400">
-                      Hace {data.physSnap.lastActivityDaysAgo}d
-                    </span>
-                  )
-                ) : (
-                  <span className="text-[10px] text-zinc-400">Sin actividad</span>
-                )}
-              </div>
-              {data.physHistory.trend !== 'stable' && data.physHistory.last30 > 0 && (
-                <p className="text-[9px] text-zinc-400 mt-1 leading-tight">
-                  {data.physHistory.text}
-                </p>
-              )}
-            </Card>
-          </button>
-        </div>
+        {/* Physical */}
+        <button
+          onClick={() => navigateTo('/fisico')}
+          className="w-full text-left transition-transform active:scale-[0.98]"
+        >
+          <PhysicalStatusCard
+            daysSinceLast={data.physDaysSinceLast}
+            activitiesLast14={data.physActivities14}
+            trend={data.physTrend}
+            streak={data.physStreak}
+          />
+        </button>
 
-        {/* ── 3b. Mental & Physical status ── */}
-        <MentalStatusCard
-          average={data.mentalAvg}
-          count={data.mentalCount}
-          trend={data.mentalTrend}
-          delta={data.mentalDelta}
-          lowStreak={data.mentalLowStreak}
-          variability={null}
-        />
-
-        <MentalInsightHighlight insights={data.crossInsights} />
-
-        <PhysicalStatusCard
-          daysSinceLast={data.physDaysSinceLast}
-          activitiesLast14={data.physActivities14}
-          trend={data.physTrend}
-          streak={data.physStreak}
-        />
-
-        <ConsistencyBar activeDays={data.physConsistency} />
+        {/* Cross insight (max 1 in resumen) */}
+        {data.crossInsights.length > 0 && (
+          <MentalInsightHighlight insights={data.crossInsights.slice(0, 1)} />
+        )}
 
         {/* ── 4. Objetivos ── */}
         {data.goalsOverview.activeCount > 0 ? (
           <GoalsProgress overview={data.goalsOverview} />
         ) : (
-          <div className="space-y-2">
-            <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1 flex items-center gap-2">
-              <Target className="w-3 h-3" />
-              Objetivos
-            </h3>
-            <Card className="px-4 py-3">
-              <div className="flex items-center gap-2.5">
-                <Target className="w-4 h-4 text-zinc-400 flex-shrink-0" />
-                <span className="text-sm text-zinc-600 dark:text-zinc-400">Sin objetivos activos</span>
-              </div>
-            </Card>
-          </div>
+          <EmptyState
+            icon={Target}
+            title="Sin objetivos activos"
+            ctaLabel="Crear objetivo"
+            ctaHref="/objetivos"
+            compact
+          />
         )}
 
         {/* ── 5. Notas ── */}
-        {data.recentNotes.length > 0 ? (
+        {data.recentNotes.length > 0 && (
           <NotesPreview notes={data.recentNotes} />
-        ) : (
-          <EmptyState
-            icon={StickyNote}
-            title="Sin notas recientes"
-            ctaLabel="Agregar nota"
-            ctaPrefill="Nota: "
-            compact
-          />
         )}
 
         {/* ── 6. Quick links ── */}
