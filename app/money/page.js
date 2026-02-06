@@ -5,10 +5,14 @@ import { useRouter } from 'next/navigation'
 import { initDB, getMovimientos, getWallets, addMovimiento, updateSaldo } from '@/lib/storage'
 import { seedPredefinedCategories } from '@/lib/seed-categories'
 import { getSpendingAwareness, getRecentShortcuts, getMonthComparisonData, getTopCategoriesData } from '@/lib/gasti'
+import { runRatoneandoEngine } from '@/lib/ratoneando'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import ProgressRing from '@/components/ui/ProgressRing'
 import QuickAddModal from '@/components/ui/QuickAddModal'
+import SavingsHighlight from '@/components/SavingsHighlight'
+import DecisionCard from '@/components/DecisionCard'
+import CartComparison from '@/components/CartComparison'
 import {
   Wallet,
   CreditCard,
@@ -44,6 +48,7 @@ export default function MoneyPage() {
   const [spendingAwareness, setSpendingAwareness] = useState(null)
   const [monthComparison, setMonthComparison] = useState(null)
   const [topCategories, setTopCategories] = useState(null)
+  const [ratoneando, setRatoneando] = useState(null)
 
   useEffect(() => {
     initDB().then(() => {
@@ -71,6 +76,12 @@ export default function MoneyPage() {
 
       const categoriesData = getTopCategoriesData(movimientos, 5)
       setTopCategories(categoriesData)
+
+      // Ratoneando engine
+      try {
+        const ratoneandoResult = await runRatoneandoEngine(movimientos)
+        setRatoneando(ratoneandoResult)
+      } catch { /* silent */ }
 
       const now = new Date()
       const currentMonth = now.toISOString().slice(0, 7)
@@ -296,6 +307,58 @@ export default function MoneyPage() {
           </div>
           <ChevronRight className="w-5 h-5 text-white/60" />
         </button>
+
+        {/* ── Savings Highlight (Ahorro potencial) ── */}
+        {ratoneando?.hasData && ratoneando.totalPotentialSavings >= 500 && (
+          <SavingsHighlight
+            amount={ratoneando.totalPotentialSavings}
+            subtitle={ratoneando.recommendations?.[0]?.message}
+            href="/money/insights"
+          />
+        )}
+
+        {/* ── Decision Card (Dónde comprar) ── */}
+        {ratoneando?.hasData && ratoneando.cartOptimization && (() => {
+          const { recommendation, alternative } = ratoneando.cartOptimization
+          const stores = [
+            {
+              store: recommendation.store,
+              estimatedCost: recommendation.estimatedCost,
+              coverage: recommendation.coverage,
+              badge: 'cheapest',
+            }
+          ]
+          if (alternative) {
+            stores.push({
+              store: alternative.store,
+              estimatedCost: alternative.estimatedCost,
+              coverage: Math.round((recommendation.coverage * recommendation.estimatedCost) / (alternative.estimatedCost || 1)),
+              badge: alternative.percentMore >= 15 ? 'expensive' : 'normal',
+              difference: alternative.difference,
+              percentMore: alternative.percentMore,
+            })
+          }
+          return <DecisionCard stores={stores} />
+        })()}
+
+        {/* ── Cart Comparison (Changuito) ── */}
+        {ratoneando?.hasData && ratoneando.cartOptimization?.alternative && (
+          <CartComparison
+            single={{
+              store: ratoneando.cartOptimization.alternative.store,
+              estimatedCost: ratoneando.cartOptimization.alternative.estimatedCost,
+              coverage: 80,
+              itemsFound: ratoneando.cartOptimization.basketSize,
+            }}
+            optimized={{
+              store: ratoneando.cartOptimization.recommendation.store,
+              estimatedCost: ratoneando.cartOptimization.recommendation.estimatedCost,
+              coverage: ratoneando.cartOptimization.recommendation.coverage,
+              itemsFound: ratoneando.cartOptimization.recommendation.itemsFound,
+            }}
+            basketSize={ratoneando.cartOptimization.basketSize}
+          />
+        )}
 
         {/* Spending Awareness */}
         {spendingAwareness && spendingAwareness.recentCount > 0 && (

@@ -25,10 +25,12 @@ import { getPhysicalHistory, type PhysicalHistory } from '@/lib/history/physical
 import type { Movimiento } from '@/lib/economic-alerts-engine'
 import type { MentalRecord } from '@/lib/mental-engine'
 import type { PhysicalRecord } from '@/lib/physical-engine'
+import { runRatoneandoEngine } from '@/lib/ratoneando'
 import AlertCard from '@/components/AlertCard'
 import GoalsProgress from '@/components/GoalsProgress'
 import NotesPreview from '@/components/NotesPreview'
 import EmptyState from '@/components/EmptyState'
+import SavingsHighlight from '@/components/SavingsHighlight'
 import Card from '@/components/ui/Card'
 import TopBar from '@/components/ui/TopBar'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -179,6 +181,8 @@ interface ResumenData {
   mentalHistory: MentalHistory
   physHistory: PhysicalHistory
   hasAnyData: boolean
+  savingsAmount: number
+  savingsSubtitle: string | null
 }
 
 // ── Component ────────────────────────────────────────────────
@@ -237,6 +241,16 @@ export default function ResumenGeneral() {
 
       const hasAnyData = movimientos.length > 0 || lifeEntries.length > 0
 
+      let savingsAmount = 0
+      let savingsSubtitle: string | null = null
+      try {
+        const rat = await runRatoneandoEngine(movimientos)
+        if (rat?.hasData) {
+          savingsAmount = rat.totalPotentialSavings || 0
+          savingsSubtitle = rat.recommendations?.[0]?.message || null
+        }
+      } catch { /* silent */ }
+
       setData({
         alerts,
         state,
@@ -250,6 +264,8 @@ export default function ResumenGeneral() {
         mentalHistory,
         physHistory,
         hasAnyData,
+        savingsAmount,
+        savingsSubtitle,
       })
     } catch (error) {
       console.error('Error loading resumen:', error)
@@ -368,6 +384,15 @@ export default function ResumenGeneral() {
             </Card>
           )}
         </div>
+
+        {/* ── 2b. Ahorro potencial ── */}
+        {data.savingsAmount >= 500 && (
+          <SavingsHighlight
+            amount={data.savingsAmount}
+            subtitle={data.savingsSubtitle || undefined}
+            href="/money/insights"
+          />
+        )}
 
         {/* ── 3. Snapshots por pilar ── */}
         <div className="grid grid-cols-3 gap-3">

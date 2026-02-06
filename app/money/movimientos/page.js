@@ -13,6 +13,9 @@ import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import Toast from '@/components/ui/Toast'
 import { Receipt, Filter, ArrowDownUp, ShoppingCart } from 'lucide-react'
+import PriceBadge from '@/components/PriceBadge'
+import { classifyPrice } from '@/lib/classify-price'
+import { getPriceHistory } from '@/lib/ratoneando/price-storage'
 
 // Umbral para mostrar equivalente USD (gastos significativos)
 const USD_DISPLAY_THRESHOLD = 10000
@@ -558,6 +561,12 @@ export default function MovimientosPage() {
                         Gasto alto
                       </span>
                     )}
+                    {mov.tipo === 'gasto' && mov.motivo && (() => {
+                      const history = getPriceHistory(mov.motivo)
+                      const classification = classifyPrice(mov.monto, history)
+                      if (!classification || classification.label === 'normal') return null
+                      return <PriceBadge label={classification.label} deltaPercent={classification.deltaPercent} />
+                    })()}
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0 flex flex-col items-end gap-1">
