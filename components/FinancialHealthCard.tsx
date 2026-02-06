@@ -44,35 +44,31 @@ export default function FinancialHealthCard({ income, expenses, topCategories, s
   const scoreCfg = getScoreConfig(healthScore)
 
   return (
-    <div className="rounded-2xl bg-white dark:bg-zinc-800/50 border border-zinc-200/60 dark:border-zinc-700/60 p-5 space-y-5">
+    <div className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/50 shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-5 space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Heart className="w-4 h-4 text-rose-500" />
-          <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+          <Heart className="w-4 h-4 text-terra-500" strokeWidth={1.75} />
+          <h3 className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
             Salud financiera
           </h3>
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className={`text-lg font-bold tabular-nums ${scoreCfg.color}`}>
-            {healthScore}
-          </span>
-          <span className={`text-[10px] font-medium ${scoreCfg.color}`}>
-            {scoreCfg.label}
-          </span>
-        </div>
+        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+          healthScore >= 70 ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
+          : healthScore >= 50 ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
+          : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+        }`}>
+          {scoreCfg.label} · {healthScore}
+        </span>
       </div>
 
       {/* Income vs Expenses ratio bar */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Wallet className="w-3.5 h-3.5 text-zinc-400" />
-            <span className="text-xs text-zinc-600 dark:text-zinc-400">
-              Ingresos → Gastos
-            </span>
-          </div>
-          <span className={`text-sm font-bold tabular-nums ${
+          <span className="text-xs text-zinc-500 dark:text-zinc-400">
+            Ingresos → Gastos
+          </span>
+          <span className={`text-xs font-bold font-mono ${
             expenseRatio >= 90 ? 'text-red-500' :
             expenseRatio >= 70 ? 'text-amber-500' :
             'text-emerald-500'
@@ -81,7 +77,7 @@ export default function FinancialHealthCard({ income, expenses, topCategories, s
           </span>
         </div>
 
-        <div className="h-3 bg-zinc-100 dark:bg-zinc-700 rounded-full overflow-hidden">
+        <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-500 ${
               expenseRatio >= 90 ? 'bg-red-500' :
@@ -92,58 +88,45 @@ export default function FinancialHealthCard({ income, expenses, topCategories, s
           />
         </div>
 
-        <div className="flex items-center justify-between text-[11px]">
-          <span className="text-zinc-400">
-            {formatARS(income)} ingreso
-          </span>
-          <span className="text-zinc-400">
-            {formatARS(expenses)} gasto
-          </span>
+        <div className="flex items-center justify-between text-[10px] text-zinc-400">
+          <span className="font-mono">{formatARS(income)}</span>
+          <span className="font-mono">{formatARS(expenses)}</span>
         </div>
       </div>
 
       {/* Top categories */}
       {topCategories.length > 0 && (
-        <div className="space-y-2">
-          <div className="flex items-center gap-1.5">
-            <Receipt className="w-3.5 h-3.5 text-zinc-400" />
-            <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-              Top categorías
-            </span>
-          </div>
-
-          <div className="space-y-2">
-            {topCategories.slice(0, 3).map((cat, i) => (
-              <div key={cat.name} className="flex items-center gap-2.5">
-                <div className={`w-2 h-2 rounded-full ${CATEGORY_COLORS[i] || CATEGORY_COLORS[0]}`} />
-                <span className="text-xs text-zinc-700 dark:text-zinc-300 flex-1 capitalize truncate">
-                  {cat.name}
-                </span>
-                <span className="text-xs text-zinc-500 tabular-nums">
-                  {cat.percent}%
-                </span>
-                <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 font-mono w-20 text-right">
-                  {formatARS(cat.amount)}
-                </span>
-              </div>
-            ))}
-          </div>
+        <div className="space-y-2.5 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+          {topCategories.slice(0, 3).map((cat, i) => (
+            <div key={cat.name} className="flex items-center gap-2.5">
+              <div className={`w-1.5 h-4 rounded-full ${CATEGORY_COLORS[i] || CATEGORY_COLORS[0]}`} />
+              <span className="text-xs text-zinc-600 dark:text-zinc-300 flex-1 capitalize truncate">
+                {cat.name}
+              </span>
+              <span className="text-[10px] text-zinc-400 font-mono">
+                {cat.percent}%
+              </span>
+              <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 font-mono w-20 text-right">
+                {formatARS(cat.amount)}
+              </span>
+            </div>
+          ))}
         </div>
       )}
 
       {/* Subscriptions */}
       {subscriptionsTotal > 0 && (
-        <div className="flex items-center gap-2.5 pt-3 border-t border-zinc-100 dark:border-zinc-700/50">
-          <Repeat className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" />
+        <div className="flex items-center gap-2.5 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+          <Repeat className="w-3.5 h-3.5 text-zinc-400" strokeWidth={1.75} />
           <span className="text-xs text-zinc-500 dark:text-zinc-400 flex-1">
-            Suscripciones fijas
+            Suscripciones
           </span>
           <span className="text-sm font-semibold font-mono text-zinc-700 dark:text-zinc-300">
             {formatARS(subscriptionsTotal)}
           </span>
           {income > 0 && (
-            <span className="text-[10px] text-zinc-400">
-              ({Math.round((subscriptionsTotal / income) * 100)}%)
+            <span className="text-[10px] text-zinc-400 font-mono">
+              {Math.round((subscriptionsTotal / income) * 100)}%
             </span>
           )}
         </div>
@@ -151,10 +134,10 @@ export default function FinancialHealthCard({ income, expenses, topCategories, s
 
       {/* Warning if over budget */}
       {expenseRatio >= 90 && (
-        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-200/50 dark:border-red-800/30">
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200/60 dark:border-red-800/40">
           <AlertCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
-          <span className="text-[11px] text-red-600 dark:text-red-400">
-            Tus gastos consumen el {expenseRatio}% de tus ingresos
+          <span className="text-xs text-red-600 dark:text-red-400">
+            Gastos al {expenseRatio}% de ingresos
           </span>
         </div>
       )}

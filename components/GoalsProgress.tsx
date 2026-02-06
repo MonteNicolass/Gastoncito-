@@ -40,12 +40,12 @@ export default function GoalsProgress({ overview }: GoalsProgressProps) {
 
   return (
     <div className="space-y-2">
-      <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1 flex items-center gap-2">
-        <Target className="w-3 h-3" />
+      <h3 className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest px-1 flex items-center gap-2">
+        <Target className="w-3 h-3" strokeWidth={1.75} />
         Objetivos activos
       </h3>
 
-      <Card className="p-4 space-y-3">
+      <Card className="p-5 space-y-4">
         {overview.goals.map(goal => {
           const cfg = PILLAR_CONFIG[goal.pillar]
           const Icon = cfg.icon
@@ -53,20 +53,18 @@ export default function GoalsProgress({ overview }: GoalsProgressProps) {
 
           return (
             <div key={goal.pillar}>
-              <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${cfg.trackColor}`} />
-                  <span className="text-sm text-zinc-700 dark:text-zinc-300 truncate">
+                  <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${cfg.trackColor}`} strokeWidth={1.75} />
+                  <span className="text-xs text-zinc-600 dark:text-zinc-300 truncate">
                     {goal.title}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className={`text-xs font-medium ${
-                    isOffTrack ? 'text-amber-500' : 'text-zinc-400'
-                  }`}>
-                    {isOffTrack ? STATUS_LABEL['off-track'] : `${goal.progressPercent}%`}
-                  </span>
-                </div>
+                <span className={`text-[10px] font-mono font-semibold ${
+                  isOffTrack ? 'text-amber-500' : 'text-zinc-400'
+                }`}>
+                  {isOffTrack ? STATUS_LABEL['off-track'] : `${goal.progressPercent}%`}
+                </span>
               </div>
 
               <div className="h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">

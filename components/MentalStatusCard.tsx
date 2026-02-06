@@ -53,67 +53,67 @@ export default function MentalStatusCard({ average, count, trend, delta, lowStre
   const barPercent = Math.min(100, (average / 10) * 100)
 
   return (
-    <div className="rounded-2xl bg-white dark:bg-zinc-800/50 border border-zinc-200/60 dark:border-zinc-700/60 p-5 space-y-4">
+    <div className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/50 shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-5 space-y-4">
       {/* Header */}
-      <div className="flex items-center gap-2">
-        <Brain className="w-4 h-4 text-purple-500" />
-        <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-          Estado mental reciente
-        </h3>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Brain className="w-4 h-4 text-purple-500" strokeWidth={1.75} />
+          <h3 className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
+            Estado mental
+          </h3>
+        </div>
+        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+          average >= 7 ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
+          : average >= 5 ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
+          : average >= 3 ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
+          : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+        }`}>
+          {getScoreLabel(average)}
+        </span>
       </div>
 
       {/* Score + Bar */}
       <div className="space-y-3">
-        <div className="flex items-baseline gap-3">
-          <span className={`text-4xl font-bold font-mono tracking-tight ${getTextColor(average)}`}>
+        <div className="flex items-baseline gap-2">
+          <span className={`text-4xl font-display font-bold tracking-tight ${getTextColor(average)}`}>
             {(Math.round(average * 10) / 10).toFixed(1)}
           </span>
-          <span className="text-lg text-zinc-400 dark:text-zinc-500">/10</span>
-          <span className={`text-sm font-medium ${getTextColor(average)}`}>
-            {getScoreLabel(average)}
-          </span>
+          <span className="text-lg text-zinc-300 dark:text-zinc-600 font-display">/10</span>
         </div>
 
         {/* Visual bar */}
-        <div className={`h-3 rounded-full overflow-hidden ${getBarBg(average)}`}>
+        <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-700 ease-out ${getBarColor(average)}`}
             style={{ width: `${barPercent}%` }}
           />
         </div>
-
-        {/* Scale labels */}
-        <div className="flex justify-between">
-          <span className="text-[10px] text-zinc-400">1</span>
-          <span className="text-[10px] text-zinc-400">5</span>
-          <span className="text-[10px] text-zinc-400">10</span>
-        </div>
       </div>
 
       {/* Trend + Meta */}
-      <div className="flex items-center gap-4 pt-1">
+      <div className="flex items-center gap-4">
         {trend && (
           <div className={`flex items-center gap-1.5 ${trendColor}`}>
-            <TrendIcon className="w-4 h-4" />
-            <span className="text-sm font-medium">{trend}</span>
+            <TrendIcon className="w-3.5 h-3.5" />
+            <span className="text-xs font-medium">{trend}</span>
             {delta !== null && delta !== 0 && (
-              <span className="text-xs opacity-70">
+              <span className="text-[10px] opacity-70 font-mono">
                 ({delta > 0 ? '+' : ''}{(Math.round(delta * 10) / 10).toFixed(1)})
               </span>
             )}
           </div>
         )}
-        <span className="text-xs text-zinc-400 dark:text-zinc-500">
-          {count} registro{count !== 1 ? 's' : ''} en 7 días
+        <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+          {count} registro{count !== 1 ? 's' : ''} · 7 días
         </span>
       </div>
 
       {/* Low streak alert */}
       {lowStreak !== null && lowStreak >= 3 && (
         <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200/60 dark:border-red-800/40">
-          <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
-          <span className="text-xs font-semibold text-red-700 dark:text-red-300">
-            Estado bajo sostenido ({lowStreak} días)
+          <AlertTriangle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
+          <span className="text-xs text-red-700 dark:text-red-300">
+            Estado bajo sostenido · {lowStreak} días
           </span>
         </div>
       )}

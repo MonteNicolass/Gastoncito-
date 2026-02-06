@@ -97,34 +97,24 @@ function toPhysicalRecords(entries: LifeEntry[]): PhysicalRecord[] {
 // ── Status Config ────────────────────────────────────────────
 
 const STATUS_CONFIG = {
-  alerta: {
-    gradient: 'from-red-600 via-red-500 to-orange-500',
-    icon: AlertTriangle,
-  },
-  atencion: {
-    gradient: 'from-amber-600 via-amber-500 to-yellow-500',
-    icon: Activity,
-  },
-  estable: {
-    gradient: 'from-emerald-600 via-emerald-500 to-teal-500',
-    icon: Activity,
-  },
+  alerta: { icon: AlertTriangle },
+  atencion: { icon: Activity },
+  estable: { icon: Activity },
 } as const
 
 // ── Skeleton Loaders ─────────────────────────────────────────
 
 function SkeletonState() {
   return (
-    <div className="rounded-2xl p-5 bg-zinc-200 dark:bg-zinc-800 animate-pulse">
-      <div className="flex items-center gap-4">
-        <Skeleton className="w-16 h-16 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-        <div className="flex-1 space-y-2">
-          <Skeleton className="w-full h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-          <Skeleton className="w-full h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-          <Skeleton className="w-full h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-        </div>
+    <Card className="p-6 space-y-4">
+      <Skeleton className="w-24 h-3 rounded" />
+      <Skeleton className="w-20 h-10 rounded" />
+      <div className="space-y-3">
+        <Skeleton className="w-full h-1.5 rounded-full" />
+        <Skeleton className="w-full h-1.5 rounded-full" />
+        <Skeleton className="w-full h-1.5 rounded-full" />
       </div>
-    </div>
+    </Card>
   )
 }
 
@@ -475,49 +465,64 @@ export default function ResumenGeneral() {
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-5">
 
         {/* ── 1. Score + Estado General ── */}
-        <div className={`relative rounded-2xl p-5 overflow-hidden bg-gradient-to-br ${statusCfg.gradient} transition-all duration-300`}>
-          <div className="absolute inset-0 bg-black/10" />
-          <div className="relative">
-            <div className="flex items-center gap-3 mb-4">
-              <StatusIcon className="w-5 h-5 text-white/90" />
-              <h2 className="text-lg font-bold text-white tracking-tight capitalize">
-                {data.state.status === 'estable' ? 'Estable' : data.state.status === 'atencion' ? 'Atenci\u00f3n' : 'Alerta'}
-              </h2>
-              <span className="ml-auto text-2xl font-bold text-white tabular-nums">
-                {data.score.score}
-              </span>
+        <Card className="p-6 space-y-5">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-2">
+                Estado general
+              </p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-5xl font-display font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+                  {data.score.score}
+                </span>
+                <span className="text-lg text-zinc-400 dark:text-zinc-500 font-display">/100</span>
+              </div>
             </div>
-            {/* Mini breakdown */}
-            <div className="flex gap-3">
-              {(['economy', 'mental', 'physical'] as const).map(pillar => {
-                const value = data.score.breakdown[pillar]
-                const label = pillar === 'economy' ? 'Money' : pillar === 'mental' ? 'Mental' : 'F\u00edsico'
-                return (
-                  <div key={pillar} className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px] text-white/60">{label}</span>
-                      <span className="text-[10px] text-white/80 tabular-nums">{value}</span>
-                    </div>
-                    <div className="h-1 bg-white/20 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-white/80 rounded-full transition-all duration-700 ease-out"
-                        style={{ width: `${value}%` }}
-                      />
-                    </div>
-                  </div>
-                )
-              })}
+            <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
+              data.state.status === 'estable'
+                ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
+                : data.state.status === 'atencion'
+                  ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
+                  : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+            }`}>
+              {data.state.status === 'estable' ? 'Estable' : data.state.status === 'atencion' ? 'Atenci\u00f3n' : 'Alerta'}
             </div>
-            <p className="text-[11px] text-white/60 mt-3">
-              {data.state.subtitle}
-            </p>
           </div>
-        </div>
+
+          {/* Pillar bars */}
+          <div className="space-y-3">
+            {([
+              { key: 'economy' as const, label: 'Econom\u00eda', color: 'bg-terra-500' },
+              { key: 'mental' as const, label: 'Mental', color: 'bg-purple-500' },
+              { key: 'physical' as const, label: 'F\u00edsico', color: 'bg-amber-500' },
+            ]).map(pillar => {
+              const value = data.score.breakdown[pillar.key]
+              return (
+                <div key={pillar.key}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400">{pillar.label}</span>
+                    <span className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300">{value}</span>
+                  </div>
+                  <div className="h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-700 ease-out ${pillar.color}`}
+                      style={{ width: `${value}%` }}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+            {data.state.subtitle}
+          </p>
+        </Card>
 
         {/* ── 2. Alertas (max 3) ── */}
         <div className="space-y-2">
-          <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1 flex items-center gap-2">
-            <AlertTriangle className="w-3 h-3" />
+          <h3 className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest px-1 flex items-center gap-2">
+            <AlertTriangle className="w-3 h-3" strokeWidth={1.75} />
             Alertas
           </h3>
           {data.alerts.length > 0 ? (
@@ -547,7 +552,7 @@ export default function ResumenGeneral() {
         {data.cartItemCount > 0 && (
           <button
             onClick={() => navigateTo('/cart')}
-            className="w-full py-3 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg shadow-blue-500/20"
+            className="w-full py-3.5 rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-semibold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
           >
             <ShoppingCart className="w-4 h-4" />
             Comparar carrito · {data.cartItemCount} productos
@@ -664,14 +669,14 @@ export default function ResumenGeneral() {
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => navigateTo('/chat')}
-            className="p-3.5 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-semibold text-sm transition-all active:scale-[0.97] flex items-center justify-center gap-2"
+            className="p-3.5 rounded-2xl bg-terra-500 dark:bg-terra-600 text-white font-semibold text-sm transition-all active:scale-[0.97] flex items-center justify-center gap-2"
           >
             Registrar
             <ChevronRight className="w-4 h-4" />
           </button>
           <button
             onClick={() => navigateTo('/historia')}
-            className="p-3.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-semibold text-sm transition-all active:scale-[0.97] flex items-center justify-center gap-2"
+            className="p-3.5 rounded-2xl border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold text-sm transition-all active:scale-[0.97] flex items-center justify-center gap-2"
           >
             Historial
             <ChevronRight className="w-4 h-4" />

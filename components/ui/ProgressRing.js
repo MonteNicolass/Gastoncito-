@@ -81,11 +81,11 @@ export default function ProgressRing({
 
       {showLabel && (
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className={`text-2xl font-bold ${colors.text}`}>
+          <span className={`text-2xl font-display font-bold ${colors.text}`}>
             {label !== null ? label : `${Math.round(progress)}%`}
           </span>
           {sublabel && (
-            <span className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+            <span className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5">
               {sublabel}
             </span>
           )}

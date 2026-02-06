@@ -40,23 +40,19 @@ export default function BottomTabs() {
 
       const alerts = {}
 
-      // Mental: estado bajo sostenido o tendencia negativa
       const mentalOverview = getMentalOverview(lifeEntries)
       if (mentalOverview.trend === 'declining' || (mentalOverview.average7d > 0 && mentalOverview.average7d <= 4)) {
         alerts.mental = true
       }
 
-      // Físico: muchos días sin actividad
       const physicalOverview = getPhysicalOverview(lifeEntries)
       if (physicalOverview.daysSinceLastExercise !== null && physicalOverview.daysSinceLastExercise > 3) {
         alerts.fisico = true
       }
 
-      // Money: presupuesto en riesgo o gasto alto reciente
       const now = new Date()
       const currentMonth = now.toISOString().slice(0, 7)
       const thisMonthMovimientos = movimientos.filter(m => m.fecha.startsWith(currentMonth))
-      const totalGastos = thisMonthMovimientos.filter(m => m.tipo === 'gasto').reduce((sum, m) => sum + m.monto, 0)
 
       let budgetAtRisk = false
       budgets.forEach(budget => {
@@ -77,7 +73,6 @@ export default function BottomTabs() {
         alerts.money = true
       }
 
-      // Objetivos: objetivos en riesgo
       const activeGoals = goals.filter(g => g.status === 'active')
       const atRisk = activeGoals.filter(g => {
         const progress = g.progress || 0
@@ -121,13 +116,13 @@ export default function BottomTabs() {
               className={`relative flex flex-col items-center gap-0.5 py-1.5 px-2.5 rounded-xl transition-all active:scale-95 min-w-[52px] ${
                 isActive
                   ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
-                  : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50'
+                  : 'text-zinc-400 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800/50'
               }`}
             >
               {hasPriority && !isActive && (
-                <span className="absolute top-0.5 right-1.5 w-1.5 h-1.5 bg-orange-500 dark:bg-orange-400 rounded-full" />
+                <span className="absolute top-0.5 right-1.5 w-1.5 h-1.5 bg-terra-500 dark:bg-terra-400 rounded-full" />
               )}
-              <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
+              <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 1.75} />
               <span className={`text-[9px] ${isActive ? 'font-bold' : 'font-medium'}`}>{tab.name}</span>
             </Link>
           )

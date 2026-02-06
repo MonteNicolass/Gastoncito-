@@ -37,19 +37,17 @@ export default function EmptyState({
   }
 
   return (
-    <Card className={compact ? 'p-4 text-center' : 'p-6 text-center'}>
-      <div className={`flex justify-center ${compact ? 'mb-2' : 'mb-3'}`}>
-        <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-          <Icon className="w-5 h-5 text-zinc-400" />
-        </div>
+    <Card className={compact ? 'p-5 text-center' : 'p-8 text-center'}>
+      <div className={`flex justify-center ${compact ? 'mb-3' : 'mb-4'}`}>
+        <Icon className="w-6 h-6 text-zinc-300 dark:text-zinc-600" strokeWidth={1.5} />
       </div>
 
-      <p className={`font-medium text-zinc-700 dark:text-zinc-300 ${compact ? 'text-xs' : 'text-sm'}`}>
+      <p className={`font-display font-medium text-zinc-700 dark:text-zinc-300 ${compact ? 'text-xs' : 'text-sm'}`}>
         {title}
       </p>
 
       {subtitle && (
-        <p className="text-[11px] text-zinc-400 mt-1">
+        <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1.5 leading-relaxed">
           {subtitle}
         </p>
       )}
@@ -57,7 +55,7 @@ export default function EmptyState({
       {ctaLabel && (ctaHref || ctaPrefill) && (
         <button
           onClick={handleCta}
-          className="mt-3 px-4 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 transition-all active:scale-95"
+          className="mt-4 px-5 py-2 rounded-xl text-[10px] font-semibold bg-terra-500 dark:bg-terra-600 text-white transition-all active:scale-95 uppercase tracking-wider"
         >
           {ctaLabel}
         </button>
