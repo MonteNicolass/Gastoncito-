@@ -19,11 +19,15 @@ import {
   Plus,
   Calendar
 } from 'lucide-react'
+import PhysicalStatusCard from '@/components/PhysicalStatusCard'
+import ConsistencyBar from '@/components/ConsistencyBar'
 
 export default function FisicoPage() {
   const router = useRouter()
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [consistency, setConsistency] = useState(null)
+  const [activitiesLast14, setActivitiesLast14] = useState(0)
 
   useEffect(() => {
     loadStats()
@@ -89,6 +93,21 @@ export default function FisicoPage() {
       else if (activeDays < prevActiveDays - 1) trend = 'down'
 
       const weekActivities = weekEntries.length
+
+      // 14-day consistency bar
+      const last14Entries = physicalEntries.filter(e => new Date(e.created_at) >= twoWeeksAgo)
+      const activeDateSet = new Set(
+        last14Entries.map(e => new Date(e.created_at).toDateString())
+      )
+      setActivitiesLast14(activeDateSet.size)
+
+      const consistencyDays = []
+      for (let i = 13; i >= 0; i--) {
+        const d = new Date(today)
+        d.setDate(d.getDate() - i)
+        consistencyDays.push(activeDateSet.has(d.toDateString()))
+      }
+      setConsistency(consistencyDays)
 
       setStats({ activeDays, streak, daysSinceLast, weekActivities, prevActiveDays, trend })
     } finally {
@@ -219,6 +238,17 @@ export default function FisicoPage() {
           </div>
           <ChevronRight className="w-5 h-5 text-white/60" />
         </button>
+
+        {/* Physical Status Card */}
+        <PhysicalStatusCard
+          daysSinceLast={stats?.daysSinceLast ?? null}
+          activitiesLast14={activitiesLast14}
+          trend={stats?.trend || 'stable'}
+          streak={stats?.streak || 0}
+        />
+
+        {/* Consistency Bar */}
+        {consistency && <ConsistencyBar activeDays={consistency} />}
 
         {/* Navigation */}
         <div className="space-y-2">

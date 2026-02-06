@@ -20,11 +20,18 @@ import {
   Frown,
   Meh
 } from 'lucide-react'
+import MentalStatusCard from '@/components/MentalStatusCard'
+import MentalInsightHighlight from '@/components/MentalInsightHighlight'
+import { getAverageMood, getMoodTrend, getMoodStreaks, getMoodVariability } from '@/lib/insights/mentalInsights'
+import { getSpendingByMood, getMoodByExercise } from '@/lib/insights/crossInsights'
+import { getMovimientos } from '@/lib/storage'
 
 export default function MentalPage() {
   const router = useRouter()
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [mentalStatus, setMentalStatus] = useState(null)
+  const [crossInsights, setCrossInsights] = useState([])
 
   useEffect(() => {
     loadStats()
@@ -95,6 +102,45 @@ export default function MentalPage() {
       }
 
       setStats({ weekAvg, streak, daysThisWeek, totalWeekEntries: weekEntries.length, prevWeekAvg, variability, trend })
+
+      // Mental status card data
+      const avg7 = getAverageMood(entries, 7)
+      const moodTrend = getMoodTrend(entries)
+      const streaks = getMoodStreaks(entries, 30)
+      const moodVar = getMoodVariability(entries, 7)
+
+      setMentalStatus({
+        average: avg7?.average || null,
+        count: avg7?.count || 0,
+        trend: moodTrend?.trend || null,
+        delta: moodTrend?.delta || null,
+        lowStreak: streaks?.lowStreak || null,
+        variability: moodVar?.interpretation || null,
+      })
+
+      // Cross insights
+      try {
+        const movimientos = await getMovimientos()
+        const insights = []
+
+        const spendMood = getSpendingByMood(movimientos, entries, 30)
+        if (spendMood && spendMood.deltaPercent > 15) {
+          insights.push({
+            text: `En días con peor estado mental, gastaste ${Math.round(spendMood.deltaPercent)}% más.`,
+            type: 'spending_mood',
+          })
+        }
+
+        const moodExercise = getMoodByExercise(entries, 30)
+        if (moodExercise && moodExercise.delta > 0.5) {
+          insights.push({
+            text: `Los días sin ejercicio coinciden con estados ${(Math.round(moodExercise.delta * 10) / 10).toFixed(1)} puntos más bajos.`,
+            type: 'exercise_mood',
+          })
+        }
+
+        setCrossInsights(insights)
+      } catch { /* silent */ }
     } finally {
       setLoading(false)
     }
@@ -223,6 +269,21 @@ export default function MentalPage() {
           </div>
           <ChevronRight className="w-5 h-5 text-white/60" />
         </button>
+
+        {/* Mental Status Card */}
+        {mentalStatus && (
+          <MentalStatusCard
+            average={mentalStatus.average}
+            count={mentalStatus.count}
+            trend={mentalStatus.trend}
+            delta={mentalStatus.delta}
+            lowStreak={mentalStatus.lowStreak}
+            variability={mentalStatus.variability}
+          />
+        )}
+
+        {/* Cross-domain insights */}
+        <MentalInsightHighlight insights={crossInsights} />
 
         {/* Navigation */}
         <div className="space-y-2">

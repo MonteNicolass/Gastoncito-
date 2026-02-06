@@ -31,6 +31,12 @@ import GoalsProgress from '@/components/GoalsProgress'
 import NotesPreview from '@/components/NotesPreview'
 import EmptyState from '@/components/EmptyState'
 import SavingsHighlight from '@/components/SavingsHighlight'
+import MentalStatusCard from '@/components/MentalStatusCard'
+import PhysicalStatusCard from '@/components/PhysicalStatusCard'
+import MentalInsightHighlight from '@/components/MentalInsightHighlight'
+import ConsistencyBar from '@/components/ConsistencyBar'
+import { getAverageMood, getMoodTrend, getMoodStreaks } from '@/lib/insights/mentalInsights'
+import { getSpendingByMood, getMoodByExercise } from '@/lib/insights/crossInsights'
 import Card from '@/components/ui/Card'
 import TopBar from '@/components/ui/TopBar'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -183,6 +189,17 @@ interface ResumenData {
   hasAnyData: boolean
   savingsAmount: number
   savingsSubtitle: string | null
+  mentalAvg: number | null
+  mentalCount: number
+  mentalTrend: 'Mejorando' | 'Bajando' | 'Estable' | null
+  mentalDelta: number | null
+  mentalLowStreak: number | null
+  physDaysSinceLast: number | null
+  physActivities14: number
+  physTrend: 'up' | 'down' | 'stable'
+  physStreak: number
+  physConsistency: boolean[]
+  crossInsights: { text: string; type: 'spending_mood' | 'exercise_mood' }[]
 }
 
 // ── Component ────────────────────────────────────────────────
@@ -251,6 +268,80 @@ export default function ResumenGeneral() {
         }
       } catch { /* silent */ }
 
+      // Mental status
+      const avg7 = getAverageMood(lifeEntries, 7)
+      const moodTrend = getMoodTrend(lifeEntries)
+      const streaks = getMoodStreaks(lifeEntries, 30)
+
+      // Physical status
+      const physEntries = lifeEntries.filter((e: LifeEntry) => e.domain === 'physical')
+      const now = new Date()
+      const today14 = new Date(now)
+      today14.setHours(0, 0, 0, 0)
+      const twoWeeksAgo = new Date(today14.getTime() - 14 * 24 * 60 * 60 * 1000)
+      const weekAgo = new Date(today14.getTime() - 7 * 24 * 60 * 60 * 1000)
+
+      const last14Phys = physEntries.filter((e: LifeEntry) => new Date(e.created_at) >= twoWeeksAgo)
+      const activeDateSet = new Set(last14Phys.map((e: LifeEntry) => new Date(e.created_at).toDateString()))
+      const physActivities14 = activeDateSet.size
+
+      const thisWeekPhys = new Set(
+        physEntries.filter((e: LifeEntry) => new Date(e.created_at) >= weekAgo).map((e: LifeEntry) => new Date(e.created_at).toDateString())
+      ).size
+      const prevWeekPhys = new Set(
+        physEntries.filter((e: LifeEntry) => {
+          const d = new Date(e.created_at)
+          return d >= twoWeeksAgo && d < weekAgo
+        }).map((e: LifeEntry) => new Date(e.created_at).toDateString())
+      ).size
+
+      let physTrend: 'up' | 'down' | 'stable' = 'stable'
+      if (thisWeekPhys > prevWeekPhys + 1) physTrend = 'up'
+      else if (thisWeekPhys < prevWeekPhys - 1) physTrend = 'down'
+
+      let physDaysSinceLast: number | null = null
+      let physStreak = 0
+      if (physEntries.length > 0) {
+        const sorted = [...physEntries].sort((a: LifeEntry, b: LifeEntry) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        physDaysSinceLast = Math.floor((now.getTime() - new Date(sorted[0].created_at).getTime()) / (1000 * 60 * 60 * 24))
+
+        for (let i = 0; i < 30; i++) {
+          const d = new Date(today14)
+          d.setDate(d.getDate() - i)
+          if (activeDateSet.has(d.toDateString())) {
+            physStreak++
+          } else if (i > 0) {
+            break
+          }
+        }
+      }
+
+      const physConsistency: boolean[] = []
+      for (let i = 13; i >= 0; i--) {
+        const d = new Date(today14)
+        d.setDate(d.getDate() - i)
+        physConsistency.push(activeDateSet.has(d.toDateString()))
+      }
+
+      // Cross insights
+      const crossInsights: { text: string; type: 'spending_mood' | 'exercise_mood' }[] = []
+      try {
+        const spendMood = getSpendingByMood(movimientos, lifeEntries, 30)
+        if (spendMood && spendMood.deltaPercent > 15) {
+          crossInsights.push({
+            text: `En días con peor estado mental, gastaste ${Math.round(spendMood.deltaPercent)}% más.`,
+            type: 'spending_mood',
+          })
+        }
+        const moodExercise = getMoodByExercise(lifeEntries, 30)
+        if (moodExercise && moodExercise.delta > 0.5) {
+          crossInsights.push({
+            text: `Los días sin ejercicio coinciden con estados ${(Math.round(moodExercise.delta * 10) / 10).toFixed(1)} puntos más bajos.`,
+            type: 'exercise_mood',
+          })
+        }
+      } catch { /* silent */ }
+
       setData({
         alerts,
         state,
@@ -266,6 +357,17 @@ export default function ResumenGeneral() {
         hasAnyData,
         savingsAmount,
         savingsSubtitle,
+        mentalAvg: avg7?.average ?? null,
+        mentalCount: avg7?.count ?? 0,
+        mentalTrend: (moodTrend?.trend as 'Mejorando' | 'Bajando' | 'Estable') ?? null,
+        mentalDelta: moodTrend?.delta ?? null,
+        mentalLowStreak: streaks?.lowStreak ?? null,
+        physDaysSinceLast,
+        physActivities14,
+        physTrend,
+        physStreak,
+        physConsistency,
+        crossInsights,
       })
     } catch (error) {
       console.error('Error loading resumen:', error)
@@ -504,6 +606,27 @@ export default function ResumenGeneral() {
             </Card>
           </button>
         </div>
+
+        {/* ── 3b. Mental & Physical status ── */}
+        <MentalStatusCard
+          average={data.mentalAvg}
+          count={data.mentalCount}
+          trend={data.mentalTrend}
+          delta={data.mentalDelta}
+          lowStreak={data.mentalLowStreak}
+          variability={null}
+        />
+
+        <MentalInsightHighlight insights={data.crossInsights} />
+
+        <PhysicalStatusCard
+          daysSinceLast={data.physDaysSinceLast}
+          activitiesLast14={data.physActivities14}
+          trend={data.physTrend}
+          streak={data.physStreak}
+        />
+
+        <ConsistencyBar activeDays={data.physConsistency} />
 
         {/* ── 4. Objetivos ── */}
         {data.goalsOverview.activeCount > 0 ? (
