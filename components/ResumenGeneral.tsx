@@ -33,6 +33,8 @@ import EmptyState from '@/components/EmptyState'
 import SavingsCard from '@/components/SavingsCard'
 import MonthlySpendSnapshot from '@/components/MonthlySpendSnapshot'
 import FinancialHealthCard from '@/components/FinancialHealthCard'
+import FinancialAlertCard from '@/components/FinancialAlertCard'
+import { generateFinancialAlerts, type FinancialAlert } from '@/lib/finance/alerts'
 import MentalStatusCard from '@/components/MentalStatusCard'
 import PhysicalStatusCard from '@/components/PhysicalStatusCard'
 import MentalInsightHighlight from '@/components/MentalInsightHighlight'
@@ -200,6 +202,7 @@ interface ResumenData {
   physConsistency: boolean[]
   crossInsights: { text: string; type: 'spending_mood' | 'exercise_mood' }[]
   cartItemCount: number
+  financialAlerts: FinancialAlert[]
 }
 
 // ── Component ────────────────────────────────────────────────
@@ -402,6 +405,12 @@ export default function ResumenGeneral() {
         physConsistency,
         crossInsights,
         cartItemCount: getCartItemCount(),
+        financialAlerts: (() => {
+          try {
+            const activeSubs = subscriptions.filter((s: any) => s.active !== false)
+            return generateFinancialAlerts(movimientos as any[], activeSubs)
+          } catch { return [] }
+        })(),
       })
     } catch (error) {
       console.error('Error loading resumen:', error)
@@ -539,6 +548,11 @@ export default function ResumenGeneral() {
             <ShoppingCart className="w-4 h-4" />
             Comparar carrito · {data.cartItemCount} productos
           </button>
+        )}
+
+        {/* ── 2d. Financial Alerts ── */}
+        {data.financialAlerts.length > 0 && (
+          <FinancialAlertCard alerts={data.financialAlerts.slice(0, 3)} />
         )}
 
         {/* ── 3. Pilares – bloques grandes tappables ── */}

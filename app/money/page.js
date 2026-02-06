@@ -17,6 +17,16 @@ import SavingsCard from '@/components/SavingsCard'
 import CartOptimizationCompare from '@/components/CartOptimizationCompare'
 import MonthlySpendSnapshot from '@/components/MonthlySpendSnapshot'
 import FinancialHealthCard from '@/components/FinancialHealthCard'
+import ProductPriceComparison from '@/components/ProductPriceComparison'
+import PriceHistorySummary from '@/components/PriceHistorySummary'
+import MonthlySpendingOverview from '@/components/MonthlySpendingOverview'
+import FinancialHealthSnapshot from '@/components/FinancialHealthSnapshot'
+import FinancialAlertCard from '@/components/FinancialAlertCard'
+import { getComparatorSummary } from '@/lib/prices/priceComparator'
+import { getPriceHistoryOverview } from '@/lib/prices/priceHistory'
+import { calculateHealthSnapshot } from '@/lib/finance/healthSnapshot'
+import { getMonthlySpendingSummary } from '@/lib/finance/monthlySpending'
+import { generateFinancialAlerts } from '@/lib/finance/alerts'
 import {
   Wallet,
   CreditCard,
@@ -56,6 +66,11 @@ export default function MoneyPage() {
   const [ratoneando, setRatoneando] = useState(null)
   const [priceRows, setPriceRows] = useState([])
   const [subscriptionsTotal, setSubscriptionsTotal] = useState(0)
+  const [comparatorSummary, setComparatorSummary] = useState(null)
+  const [priceHistoryOverview, setPriceHistoryOverview] = useState(null)
+  const [healthSnapshot, setHealthSnapshot] = useState(null)
+  const [spendingSummary, setSpendingSummary] = useState(null)
+  const [financialAlerts, setFinancialAlerts] = useState([])
 
   useEffect(() => {
     initDB().then(() => {
@@ -108,11 +123,33 @@ export default function MoneyPage() {
       } catch { /* silent */ }
 
       // Subscriptions total
+      let activeSubs = []
       try {
         const subs = await getSubscriptions()
-        const activeSubs = subs.filter(s => s.active !== false)
+        activeSubs = subs.filter(s => s.active !== false)
         const total = activeSubs.reduce((sum, s) => sum + (s.monto || s.amount || 0), 0)
         setSubscriptionsTotal(total)
+      } catch { /* silent */ }
+
+      // Price comparator + history
+      try {
+        setComparatorSummary(getComparatorSummary())
+        setPriceHistoryOverview(getPriceHistoryOverview())
+      } catch { /* silent */ }
+
+      // Monthly spending summary
+      try {
+        setSpendingSummary(getMonthlySpendingSummary(movimientos))
+      } catch { /* silent */ }
+
+      // Health snapshot
+      try {
+        setHealthSnapshot(calculateHealthSnapshot(movimientos, activeSubs))
+      } catch { /* silent */ }
+
+      // Financial alerts
+      try {
+        setFinancialAlerts(generateFinancialAlerts(movimientos, activeSubs))
       } catch { /* silent */ }
 
       const now = new Date()
@@ -388,6 +425,21 @@ export default function MoneyPage() {
           <PriceComparisonTable rows={priceRows} />
         )}
 
+        {/* ── Global Price Comparator (MiráPrecios) ── */}
+        {comparatorSummary?.hasData && (
+          <ProductPriceComparison summary={comparatorSummary} />
+        )}
+
+        {/* ── Price History (MiráPrecios) ── */}
+        {priceHistoryOverview?.hasData && (
+          <PriceHistorySummary overview={priceHistoryOverview} />
+        )}
+
+        {/* ── Financial Alerts ── */}
+        {financialAlerts.length > 0 && (
+          <FinancialAlertCard alerts={financialAlerts} />
+        )}
+
         {/* Spending Awareness */}
         {spendingAwareness && spendingAwareness.recentCount > 0 && (
           <div className="p-4 rounded-2xl bg-white dark:bg-zinc-800/50 border border-zinc-200/60 dark:border-zinc-700/60">
@@ -432,35 +484,19 @@ export default function MoneyPage() {
           </div>
         )}
 
-        {/* ── Monthly Spend Snapshot ── */}
-        {monthComparison && monthComparison.length > 0 && (
-          <MonthlySpendSnapshot
-            currentSpend={stats?.gastosMes || 0}
-            average={monthComparison.reduce((s, m) => s + m.total, 0) / monthComparison.length}
-            deltaPercent={Math.round(stats?.gastoDiff || 0)}
-            trend={stats?.gastoDiff > 10 ? 'up' : stats?.gastoDiff < -10 ? 'down' : 'stable'}
-            months={monthComparison.map((m, i) => ({
-              label: m.month,
-              amount: m.total,
-              percent: m.percentage,
-              isCurrent: i === monthComparison.length - 1,
-            }))}
+        {/* ── Monthly Spending Overview (Gasti mode) ── */}
+        {spendingSummary && spendingSummary.currentSpend > 0 && (
+          <MonthlySpendingOverview
+            summary={spendingSummary}
+            onCategoryClick={(cat) => router.push('/money/movimientos')}
           />
         )}
 
-        {/* ── Financial Health Card ── */}
-        {stats && (stats.ingresosMes > 0 || (topCategories && topCategories.length > 0)) && (
-          <FinancialHealthCard
-            income={stats.ingresosMes}
-            expenses={stats.gastosMes}
-            topCategories={(topCategories || []).slice(0, 3).map(cat => ({
-              name: cat.name,
-              amount: cat.amount,
-              percent: cat.percentage,
-              color: cat.color || 'zinc',
-            }))}
-            subscriptionsTotal={subscriptionsTotal}
-            healthScore={stats.healthScore}
+        {/* ── Financial Health Snapshot (FinanzasArgy) ── */}
+        {healthSnapshot && (
+          <FinancialHealthSnapshot
+            snapshot={healthSnapshot}
+            onIncomeUpdated={() => loadStats()}
           />
         )}
 
