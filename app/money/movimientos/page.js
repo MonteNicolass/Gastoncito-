@@ -487,7 +487,7 @@ export default function MovimientosPage() {
         {hasActiveFilters && (
           <button
             onClick={clearFilters}
-            className="text-xs text-blue-600 dark:text-blue-400 font-medium"
+            className="text-xs text-terra-600 dark:text-terra-400 font-medium"
           >
             Limpiar filtros
           </button>
@@ -547,12 +547,12 @@ export default function MovimientosPage() {
                         : mov.metodo}
                     </span>
                     {(getCategoryName(mov.category_id) || mov.categoria) && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
                         {getCategoryName(mov.category_id) || mov.categoria}
                       </span>
                     )}
                     {mov.recurrent && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
                         Recurrente
                       </span>
                     )}
@@ -699,7 +699,7 @@ export default function MovimientosPage() {
                   type="checkbox"
                   checked={editForm.recurrent}
                   onChange={(e) => setEditForm({ ...editForm, recurrent: e.target.checked })}
-                  className="w-4 h-4 text-blue-600 bg-zinc-100 border-zinc-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-zinc-800 focus:ring-2 dark:bg-zinc-700 dark:border-zinc-600"
+                  className="w-4 h-4 text-terra-600 bg-zinc-100 border-zinc-300 rounded focus:ring-terra-500 dark:focus:ring-terra-600 dark:ring-offset-zinc-800 focus:ring-2 dark:bg-zinc-700 dark:border-zinc-600"
                 />
                 <span className="text-sm text-zinc-700 dark:text-zinc-300">Marcar como recurrente</span>
               </label>
@@ -845,7 +845,7 @@ export default function MovimientosPage() {
                       key={suggestion}
                       type="button"
                       onClick={() => setAddForm({ ...addForm, motivo: suggestion })}
-                      className="text-xs px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+                      className="text-xs px-2 py-1 rounded-full bg-terra-100 dark:bg-terra-900/30 text-terra-700 dark:text-terra-300 hover:bg-terra-200 dark:hover:bg-terra-900/50 transition-colors"
                     >
                       {suggestion}
                     </button>
@@ -857,7 +857,7 @@ export default function MovimientosPage() {
                   type="checkbox"
                   checked={addForm.recurrent}
                   onChange={(e) => setAddForm({ ...addForm, recurrent: e.target.checked })}
-                  className="w-4 h-4 text-blue-600 bg-zinc-100 border-zinc-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-zinc-800 focus:ring-2 dark:bg-zinc-700 dark:border-zinc-600"
+                  className="w-4 h-4 text-terra-600 bg-zinc-100 border-zinc-300 rounded focus:ring-terra-500 dark:focus:ring-terra-600 dark:ring-offset-zinc-800 focus:ring-2 dark:bg-zinc-700 dark:border-zinc-600"
                 />
                 <span className="text-sm text-zinc-700 dark:text-zinc-300">Marcar como recurrente</span>
               </label>

@@ -301,7 +301,7 @@ export default function ResumenGeneral() {
           <div className="space-y-3">
             {([
               { key: 'economy' as const, label: 'Economía', color: 'bg-terra-500' },
-              { key: 'mental' as const, label: 'Mental', color: 'bg-purple-500' },
+              { key: 'mental' as const, label: 'Mental', color: 'bg-zinc-500' },
               { key: 'physical' as const, label: 'Físico', color: 'bg-amber-500' },
             ]).map(pillar => {
               const value = data.score.breakdown[pillar.key]
@@ -392,7 +392,7 @@ export default function ResumenGeneral() {
               {/* Mental */}
               <div className="space-y-2">
                 <div className="flex items-center gap-1.5">
-                  <Brain className="w-3.5 h-3.5 text-purple-500" strokeWidth={1.75} />
+                  <Brain className="w-3.5 h-3.5 text-zinc-500" strokeWidth={1.75} />
                   <span className="text-[10px] text-zinc-400 dark:text-zinc-500">Mental</span>
                 </div>
                 <div className="flex items-baseline gap-1.5">

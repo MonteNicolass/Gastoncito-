@@ -86,7 +86,7 @@ export default function ComidaPage() {
       desayuno: 'text-amber-500 bg-amber-100 dark:bg-amber-900/30',
       almuerzo: 'text-yellow-500 bg-yellow-100 dark:bg-yellow-900/30',
       merienda: 'text-orange-600 bg-orange-100 dark:bg-orange-900/30',
-      cena: 'text-indigo-500 bg-indigo-100 dark:bg-indigo-900/30',
+      cena: 'text-zinc-500 bg-zinc-100 dark:bg-zinc-800',
       snack: 'text-green-500 bg-green-100 dark:bg-green-900/30'
     }
     return colors[type] || 'text-zinc-500 bg-zinc-100 dark:bg-zinc-800'

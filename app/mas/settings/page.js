@@ -138,7 +138,7 @@ export default function SettingsPage() {
             <div className="flex justify-between items-center min-h-[44px]">
               <div className="flex items-center gap-3">
                 {theme === 'dark' ? (
-                  <Moon className="w-5 h-5 text-indigo-500" />
+                  <Moon className="w-5 h-5 text-zinc-500" />
                 ) : (
                   <Sun className="w-5 h-5 text-amber-500" />
                 )}
@@ -173,7 +173,7 @@ export default function SettingsPage() {
               ) : exportStatus === 'done' ? (
                 <CheckCircle className="w-5 h-5 text-emerald-500" />
               ) : (
-                <Download className="w-5 h-5 text-blue-500" />
+                <Download className="w-5 h-5 text-terra-500" />
               )}
               <div className="flex-1 text-left">
                 <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
@@ -198,7 +198,7 @@ export default function SettingsPage() {
               ) : importStatus === 'error' ? (
                 <AlertTriangle className="w-5 h-5 text-red-500" />
               ) : (
-                <Upload className="w-5 h-5 text-purple-500" />
+                <Upload className="w-5 h-5 text-zinc-500" />
               )}
               <div className="flex-1 text-left">
                 <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">

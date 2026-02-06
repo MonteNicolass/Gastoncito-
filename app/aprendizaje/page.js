@@ -115,30 +115,30 @@ export default function AprendizajePage() {
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {/* Stats Card */}
         {sessions.length > 0 && (
-          <Card className="p-4 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 border-indigo-200 dark:border-indigo-800">
+          <Card className="p-4 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800">
             <div className="flex items-center gap-2 mb-3">
-              <BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              <BookOpen className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Resumen</h3>
             </div>
 
             <div className="grid grid-cols-3 gap-3">
               <div>
                 <div className="text-xs text-zinc-600 dark:text-zinc-400">Total</div>
-                <div className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
+                <div className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
                   {totalHours.toFixed(1)}h
                 </div>
               </div>
 
               <div>
                 <div className="text-xs text-zinc-600 dark:text-zinc-400">Esta semana</div>
-                <div className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
+                <div className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
                   {hoursLast7Days.toFixed(1)}h
                 </div>
               </div>
 
               <div>
                 <div className="text-xs text-zinc-600 dark:text-zinc-400">Racha</div>
-                <div className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
+                <div className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
                   {currentStreak} días
                 </div>
               </div>
@@ -147,9 +147,9 @@ export default function AprendizajePage() {
         )}
 
         {/* Info Card */}
-        <Card className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 border-blue-200 dark:border-blue-800">
+        <Card className="p-4 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800">
           <div className="flex items-center gap-2 mb-2">
-            <GraduationCap className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <GraduationCap className="w-5 h-5 text-terra-600 dark:text-terra-400" />
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Seguimiento de Estudio</h3>
           </div>
           <p className="text-xs text-zinc-600 dark:text-zinc-400">
@@ -160,7 +160,7 @@ export default function AprendizajePage() {
         {/* Add Button */}
         <button
           onClick={() => setShowAddModal(true)}
-          className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm transition-colors"
+          className="w-full py-3 px-4 rounded-xl bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-semibold text-sm transition-colors"
         >
           + Registrar sesión
         </button>
@@ -185,7 +185,7 @@ export default function AprendizajePage() {
             {sessions.map((session) => (
               <Card key={session.id} className="p-3">
                 <div className="flex items-start gap-3">
-                  <BookOpen className="w-5 h-5 text-indigo-500 dark:text-indigo-400 mt-0.5 flex-shrink-0" />
+                  <BookOpen className="w-5 h-5 text-zinc-500 dark:text-zinc-400 mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                       {session.meta?.topic || 'Sin tema'}
@@ -265,7 +265,7 @@ export default function AprendizajePage() {
               <button
                 onClick={handleAddSession}
                 disabled={!newSession.topic.trim() || !newSession.hours}
-                className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:bg-zinc-300 dark:disabled:bg-zinc-700 disabled:cursor-not-allowed text-white font-semibold text-sm transition-colors"
+                className="w-full py-3 px-4 rounded-xl bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:bg-zinc-300 dark:disabled:bg-zinc-700 disabled:cursor-not-allowed text-white dark:text-zinc-900 font-semibold text-sm transition-colors"
               >
                 Guardar
               </button>

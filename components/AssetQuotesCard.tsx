@@ -32,12 +32,12 @@ function sortQuotes(quotes: Quote[]): Quote[] {
 }
 
 const DOT_COLORS: Record<string, string> = {
-  blue: 'bg-blue-500',
+  blue: 'bg-terra-500',
   oficial: 'bg-emerald-500',
-  tarjeta: 'bg-purple-500',
+  tarjeta: 'bg-zinc-500',
   mep: 'bg-amber-500',
   ccl: 'bg-orange-500',
-  cripto: 'bg-cyan-500',
+  cripto: 'bg-zinc-400',
 }
 
 export default function AssetQuotesCard() {
@@ -126,7 +126,7 @@ export default function AssetQuotesCard() {
     <div className="space-y-2">
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
-          <DollarSign className="w-4 h-4 text-blue-500" />
+          <DollarSign className="w-4 h-4 text-terra-500" />
           <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
             Cotizaciones
           </h3>

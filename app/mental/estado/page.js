@@ -81,7 +81,7 @@ export default function EstadoPage() {
               </h3>
 
               {/* Card unificado de tendencias */}
-              <Card className="p-5 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200/50 dark:border-purple-800/50">
+              <Card className="p-5 bg-zinc-100 dark:bg-zinc-800 border-zinc-200/50 dark:border-zinc-700/50">
                 <div className="space-y-4">
                   {/* Promedios */}
                   {(trends.avg7 || trends.avg30) && (
@@ -92,10 +92,10 @@ export default function EstadoPage() {
                             Últimos 7 días
                           </span>
                           <div className="flex items-baseline gap-1">
-                            <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                            <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
                               {trends.avg7.average}
                             </span>
-                            <span className="text-sm text-purple-400 dark:text-purple-500">/10</span>
+                            <span className="text-sm text-zinc-400 dark:text-zinc-500">/10</span>
                           </div>
                         </div>
                       )}
@@ -116,11 +116,11 @@ export default function EstadoPage() {
                   )}
 
                   {/* Variabilidad y Tendencia */}
-                  <div className="flex items-center gap-3 pt-3 border-t border-purple-200/50 dark:border-purple-700/50">
+                  <div className="flex items-center gap-3 pt-3 border-t border-zinc-200/50 dark:border-zinc-700/50">
                     {trends.variability && (
                       <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/60 dark:bg-zinc-800/60">
                         <span className="text-xs text-zinc-600 dark:text-zinc-400">Estabilidad:</span>
-                        <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">
+                        <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                           {trends.variability.interpretation}
                         </span>
                       </div>
@@ -182,7 +182,7 @@ export default function EstadoPage() {
                   className={`
                     h-14 rounded-2xl font-bold text-lg transition-all active:scale-95
                     ${mood === score
-                      ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white scale-105 shadow-lg shadow-purple-500/30'
+                      ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 scale-105 shadow-lg'
                       : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                     }
                   `}
@@ -209,7 +209,7 @@ export default function EstadoPage() {
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={3}
-              className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all resize-none text-sm"
+              className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-terra-500/50 focus:border-terra-500 transition-all resize-none text-sm"
             />
           </div>
 
@@ -218,7 +218,7 @@ export default function EstadoPage() {
             data-testid="mood-submit-btn"
             onClick={handleSubmit}
             disabled={!mood || isSubmitting}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+            className="w-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200"
             size="lg"
           >
             {isSubmitting ? 'Guardando...' : 'Guardar estado'}

@@ -20,20 +20,20 @@ function formatDate(dateString: string): string {
 const TYPE_CONFIG = {
   cuotas_vs_contado: {
     Icon: Calculator,
-    color: 'text-purple-500',
-    bg: 'bg-purple-50 dark:bg-purple-900/20',
+    color: 'text-zinc-600 dark:text-zinc-400',
+    bg: 'bg-zinc-100 dark:bg-zinc-800',
     label: 'Cuotas vs Contado',
   },
   carrito_optimizado: {
     Icon: ShoppingCart,
-    color: 'text-emerald-500',
+    color: 'text-emerald-600 dark:text-emerald-400',
     bg: 'bg-emerald-50 dark:bg-emerald-900/20',
     label: 'Carrito',
   },
   comparacion_producto: {
     Icon: BarChart3,
-    color: 'text-blue-500',
-    bg: 'bg-blue-50 dark:bg-blue-900/20',
+    color: 'text-terra-500 dark:text-terra-400',
+    bg: 'bg-terra-50 dark:bg-terra-900/20',
     label: 'Comparación',
   },
 } as const

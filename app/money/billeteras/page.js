@@ -317,7 +317,7 @@ export default function BilleterasPage() {
                   id="isPrimary"
                   checked={formData.isPrimary}
                   onChange={(e) => setFormData({ ...formData, isPrimary: e.target.checked })}
-                  className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-blue-600 focus:ring-blue-500"
+                  className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-terra-600 focus:ring-terra-500"
                 />
                 <label htmlFor="isPrimary" className="text-sm text-zinc-700 dark:text-zinc-300">
                   Marcar como principal

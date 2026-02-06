@@ -12,28 +12,28 @@ export default function RecommendationCard({
 }) {
   const variants = {
     default: {
-      bg: 'bg-gradient-to-br from-purple-500/10 to-pink-500/10 dark:from-purple-500/20 dark:to-pink-500/20',
-      border: 'border-purple-200/50 dark:border-purple-500/30',
-      glow: 'shadow-purple-500/10 dark:shadow-purple-500/20',
-      button: 'bg-purple-500 hover:bg-purple-600 text-white'
+      bg: 'bg-zinc-50 dark:bg-zinc-800/50',
+      border: 'border-zinc-200/50 dark:border-zinc-700/50',
+      glow: '',
+      button: 'bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900'
     },
     success: {
-      bg: 'bg-gradient-to-br from-emerald-500/10 to-teal-500/10 dark:from-emerald-500/20 dark:to-teal-500/20',
-      border: 'border-emerald-200/50 dark:border-emerald-500/30',
-      glow: 'shadow-emerald-500/10 dark:shadow-emerald-500/20',
-      button: 'bg-emerald-500 hover:bg-emerald-600 text-white'
+      bg: 'bg-emerald-50/50 dark:bg-emerald-950/20',
+      border: 'border-emerald-200/50 dark:border-emerald-800/30',
+      glow: '',
+      button: 'bg-emerald-600 hover:bg-emerald-700 text-white'
     },
     warning: {
-      bg: 'bg-gradient-to-br from-orange-500/10 to-amber-500/10 dark:from-orange-500/20 dark:to-amber-500/20',
-      border: 'border-orange-200/50 dark:border-orange-500/30',
-      glow: 'shadow-orange-500/10 dark:shadow-orange-500/20',
-      button: 'bg-orange-500 hover:bg-orange-600 text-white'
+      bg: 'bg-amber-50/50 dark:bg-amber-950/20',
+      border: 'border-amber-200/50 dark:border-amber-800/30',
+      glow: '',
+      button: 'bg-amber-600 hover:bg-amber-700 text-white'
     },
     info: {
-      bg: 'bg-gradient-to-br from-blue-500/10 to-cyan-500/10 dark:from-blue-500/20 dark:to-cyan-500/20',
-      border: 'border-blue-200/50 dark:border-blue-500/30',
-      glow: 'shadow-blue-500/10 dark:shadow-blue-500/20',
-      button: 'bg-blue-500 hover:bg-blue-600 text-white'
+      bg: 'bg-zinc-50 dark:bg-zinc-800/50',
+      border: 'border-zinc-200/50 dark:border-zinc-700/50',
+      glow: '',
+      button: 'bg-terra-500 hover:bg-terra-600 text-white'
     }
   }
 

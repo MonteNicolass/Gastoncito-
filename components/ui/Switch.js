@@ -13,7 +13,7 @@ export default function Switch({ checked, onChange, label }) {
           onChange={onChange}
           className="sr-only peer"
         />
-        <div className="w-12 h-7 bg-zinc-300 dark:bg-zinc-700 rounded-full peer-checked:bg-blue-600 transition-colors"></div>
+        <div className="w-12 h-7 bg-zinc-300 dark:bg-zinc-700 rounded-full peer-checked:bg-terra-500 transition-colors"></div>
         <div className="absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-sm transition-transform peer-checked:translate-x-5"></div>
       </div>
     </label>

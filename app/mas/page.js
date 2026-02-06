@@ -49,8 +49,8 @@ export default function MasPage() {
           </h3>
           <Card className="overflow-hidden divide-y divide-zinc-100 dark:divide-zinc-800">
             <NavRow icon={Dumbbell} label="Físico" href="/fisico" iconColor="text-orange-500 dark:text-orange-400" />
-            <NavRow icon={StickyNote} label="Notas" href="/notas" iconColor="text-blue-500 dark:text-blue-400" />
-            <NavRow icon={Target} label="Objetivos" href="/objetivos" iconColor="text-indigo-500 dark:text-indigo-400" />
+            <NavRow icon={StickyNote} label="Notas" href="/notas" iconColor="text-terra-500 dark:text-terra-400" />
+            <NavRow icon={Target} label="Objetivos" href="/objetivos" iconColor="text-zinc-500 dark:text-zinc-400" />
             <NavRow icon={Wrench} label="Herramientas" href="/herramientas" iconColor="text-zinc-500 dark:text-zinc-400" />
           </Card>
         </div>

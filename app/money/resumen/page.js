@@ -85,7 +85,7 @@ export default function ResumenMensualPage() {
           </div>
 
           {/* Balance card */}
-          <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-2xl border border-blue-200 dark:border-blue-800">
+          <div className="p-4 bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800">
             <Skeleton className="w-24 h-4 mb-4" />
             <div className="space-y-3">
               <div className="flex justify-between">
@@ -96,7 +96,7 @@ export default function ResumenMensualPage() {
                 <Skeleton className="w-16 h-4" />
                 <Skeleton className="w-28 h-7" />
               </div>
-              <div className="h-px bg-blue-200 dark:bg-blue-800" />
+              <div className="h-px bg-zinc-200 dark:bg-zinc-800" />
               <div className="flex justify-between">
                 <Skeleton className="w-16 h-4" />
                 <Skeleton className="w-32 h-9" />
@@ -207,7 +207,7 @@ export default function ResumenMensualPage() {
         )}
 
         {/* Resumen general */}
-        <Card className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-blue-200 dark:border-blue-800">
+        <Card className="p-4 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800">
           <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">
             Balance del mes
           </h3>
@@ -238,13 +238,13 @@ export default function ResumenMensualPage() {
                 )}
               </div>
             </div>
-            <div className="h-px bg-blue-200 dark:bg-blue-800" />
+            <div className="h-px bg-zinc-200 dark:bg-zinc-800" />
             <div className="flex justify-between items-baseline">
               <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Balance</span>
               <span
                 className={`text-3xl font-bold ${
                   summary.balance >= 0
-                    ? 'text-blue-600 dark:text-blue-400'
+                    ? 'text-terra-600 dark:text-terra-400'
                     : 'text-red-600 dark:text-red-400'
                 }`}
               >
@@ -254,7 +254,7 @@ export default function ResumenMensualPage() {
           </div>
           {/* USD rate context */}
           {rates && (
-            <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-blue-200 dark:border-blue-800 text-xs text-zinc-400 dark:text-zinc-500">
+            <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-800 text-xs text-zinc-400 dark:text-zinc-500">
               <DollarSign className="w-3 h-3" />
               <span>Blue ${rates.blue?.sell?.toLocaleString('es-AR')}</span>
               {getRatesLastUpdated() && (
@@ -316,7 +316,7 @@ export default function ResumenMensualPage() {
 
         {/* Predicción fin de mes */}
         {prediction && (
-          <Card className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20 border-purple-200 dark:border-purple-800">
+          <Card className="p-4 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800">
             <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
               Proyección de cierre
             </h3>
@@ -337,12 +337,12 @@ export default function ResumenMensualPage() {
                   Proyectado: {formatAmount(prediction.projectedRemaining)}
                 </span>
               </div>
-              <div className="h-px bg-purple-200 dark:bg-purple-800 my-2" />
+              <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-2" />
               <div className="flex justify-between items-baseline">
                 <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
                   Total proyectado
                 </span>
-                <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
                   {formatAmount(prediction.projectedTotal)}
                 </span>
               </div>
@@ -362,8 +362,8 @@ export default function ResumenMensualPage() {
             <div className="space-y-2">
               {topCategories.map((cat, index) => (
                 <div key={index} className="flex items-center gap-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                    <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                    <span className="text-xs font-bold text-zinc-600 dark:text-zinc-400">
                       {index + 1}
                     </span>
                   </div>

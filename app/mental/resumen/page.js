@@ -156,12 +156,12 @@ export default function ResumenMentalPage() {
         </div>
 
         {/* Promedio mensual */}
-        <Card className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20 border-purple-200 dark:border-purple-800">
+        <Card className="p-4 bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700">
           <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">
             Promedio del mes
           </h3>
           <div className="text-center">
-            <div className="text-5xl font-bold text-purple-600 dark:text-purple-400 mb-2">
+            <div className="text-5xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
               {data.avgCurrent}/10
             </div>
             <div className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -240,15 +240,15 @@ export default function ResumenMentalPage() {
           <div className="space-y-2">
             {data.weekAverages.map((week) => (
               <div key={week.week} className="flex items-center gap-3">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                  <span className="text-xs font-bold text-purple-600 dark:text-purple-400">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
+                  <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
                     S{week.week}
                   </span>
                 </div>
                 <div className="flex-1">
                   <div className="h-2 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-purple-600 dark:bg-purple-400 rounded-full"
+                      className="h-full bg-zinc-600 dark:bg-zinc-400 rounded-full"
                       style={{ width: `${(week.avg / 10) * 100}%` }}
                     />
                   </div>

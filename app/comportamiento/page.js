@@ -156,12 +156,12 @@ export default function ComportamientoPage() {
 
         {/* Racha estado bajo */}
         {insights?.lowMoodStreak?.detected && (
-          <Card className="p-4 border-l-4 border-purple-500">
+          <Card className="p-4 border-l-4 border-zinc-500">
             <div className="space-y-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-sm font-semibold text-purple-800 dark:text-purple-300 flex items-center gap-1.5">
+                    <h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-300 flex items-center gap-1.5">
                       <CloudRain className="w-4 h-4" /> Racha de estado bajo
                     </h3>
                     {getIntensityBadge(insights.lowMoodStreak.intensity)}
@@ -190,12 +190,12 @@ export default function ComportamientoPage() {
 
         {/* Inactividad */}
         {insights?.inactivity?.detected && (
-          <Card className="p-4 border-l-4 border-blue-500">
+          <Card className="p-4 border-l-4 border-terra-500">
             <div className="space-y-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-sm font-semibold text-blue-800 dark:text-blue-300 flex items-center gap-1.5">
+                    <h3 className="text-sm font-semibold text-terra-800 dark:text-terra-300 flex items-center gap-1.5">
                       <ActivityIcon className="w-4 h-4" /> Caída de actividad física
                     </h3>
                     {getIntensityBadge(insights.inactivity.intensity)}
@@ -272,12 +272,12 @@ export default function ComportamientoPage() {
         )}
 
         {/* Explicación */}
-        <Card className="p-4 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+        <Card className="p-4 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800">
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-blue-900 dark:text-blue-300">
+            <h4 className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
               ¿Cómo funcionan las alertas tempranas?
             </h4>
-            <p className="text-xs text-blue-800 dark:text-blue-400 leading-relaxed">
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
               Estas alertas se disparan automáticamente cuando se detectan patrones basados en
               umbrales simples. La intensidad (baja/media/alta) indica qué tan fuerte es el patrón.
               No son diagnósticos ni recomendaciones, solo información para tu conocimiento.

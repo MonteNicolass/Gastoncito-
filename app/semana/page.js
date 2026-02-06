@@ -75,10 +75,10 @@ export default function SemanaPage() {
       <div className="flex flex-col min-h-screen">
         <TopBar title="Esta Semana" />
         <div className="flex-1 overflow-y-auto px-4 py-4 pb-24">
-          <Card className="p-8 text-center bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200/50 dark:border-purple-800/50">
+          <Card className="p-8 text-center bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
             <div className="flex justify-center mb-4">
-              <div className="w-14 h-14 rounded-2xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                <Calendar className="w-7 h-7 text-purple-500" />
+              <div className="w-14 h-14 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                <Calendar className="w-7 h-7 text-zinc-500" />
               </div>
             </div>
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
@@ -89,7 +89,7 @@ export default function SemanaPage() {
             </p>
             <a
               href="/chat"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-semibold rounded-xl shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 transition-all active:scale-95"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-sm font-semibold rounded-xl shadow-lg transition-all active:scale-95"
             >
               Empezar a registrar
             </a>
@@ -133,14 +133,14 @@ export default function SemanaPage() {
                   key={i}
                   className={`w-3 h-3 rounded-full transition-colors ${
                     i < weeklyActive
-                      ? 'bg-gradient-to-br from-purple-500 to-pink-500'
+                      ? 'bg-zinc-900 dark:bg-zinc-100'
                       : 'bg-zinc-200 dark:bg-zinc-700'
                   }`}
                 />
               ))}
             </div>
             {getWeekMessage() && (
-              <span className="text-xs font-medium text-purple-600 dark:text-purple-400">
+              <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
                 {getWeekMessage()}
               </span>
             )}
@@ -189,11 +189,11 @@ export default function SemanaPage() {
             <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 px-1">
               Mental
             </h3>
-            <Card className="p-5 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200/50 dark:border-purple-800/50">
+            <Card className="p-5 bg-zinc-50 dark:bg-zinc-900 border-zinc-200/50 dark:border-zinc-700/50">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">Promedio semanal</div>
-                  <div className="text-4xl font-bold bg-gradient-to-br from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  <div className="text-4xl font-bold text-zinc-900 dark:text-zinc-100">
                     {weekData.mental.thisWeek}
                   </div>
                   <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">de 10</div>
@@ -212,9 +212,9 @@ export default function SemanaPage() {
               </div>
               {/* Visual progress bar */}
               <div className="mt-4">
-                <div className="h-2 bg-purple-100 dark:bg-purple-900/40 rounded-full overflow-hidden">
+                <div className="h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all"
+                    className="h-full bg-zinc-900 dark:bg-zinc-100 rounded-full transition-all"
                     style={{ width: `${weekData.mental.thisWeek * 10}%` }}
                   />
                 </div>
@@ -267,11 +267,11 @@ export default function SemanaPage() {
             <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 px-1">
               Objetivos
             </h3>
-            <Card className="p-5 bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-950/20 dark:to-violet-950/20 border-indigo-200/50 dark:border-indigo-800/50">
+            <Card className="p-5 bg-zinc-50 dark:bg-zinc-900 border-zinc-200/50 dark:border-zinc-700/50">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">Activos</div>
-                  <div className="text-4xl font-bold text-indigo-600 dark:text-indigo-400">
+                  <div className="text-4xl font-bold text-zinc-900 dark:text-zinc-100">
                     {weekData.goals.active}
                   </div>
                   <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">objetivos</div>

@@ -13,14 +13,14 @@ interface Props {
 
 function getBarColor(score: number): string {
   if (score >= 7) return 'bg-emerald-500'
-  if (score >= 5) return 'bg-purple-500'
+  if (score >= 5) return 'bg-zinc-500'
   if (score >= 3) return 'bg-amber-500'
   return 'bg-red-500'
 }
 
 function getBarBg(score: number): string {
   if (score >= 7) return 'bg-emerald-100 dark:bg-emerald-900/30'
-  if (score >= 5) return 'bg-purple-100 dark:bg-purple-900/30'
+  if (score >= 5) return 'bg-zinc-100 dark:bg-zinc-800'
   if (score >= 3) return 'bg-amber-100 dark:bg-amber-900/30'
   return 'bg-red-100 dark:bg-red-900/30'
 }
@@ -35,7 +35,7 @@ function getScoreLabel(score: number): string {
 
 function getTextColor(score: number): string {
   if (score >= 7) return 'text-emerald-600 dark:text-emerald-400'
-  if (score >= 5) return 'text-purple-600 dark:text-purple-400'
+  if (score >= 5) return 'text-zinc-600 dark:text-zinc-400'
   if (score >= 3) return 'text-amber-600 dark:text-amber-400'
   return 'text-red-600 dark:text-red-400'
 }
@@ -57,14 +57,14 @@ export default function MentalStatusCard({ average, count, trend, delta, lowStre
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Brain className="w-4 h-4 text-purple-500" strokeWidth={1.75} />
+          <Brain className="w-4 h-4 text-zinc-500" strokeWidth={1.75} />
           <h3 className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
             Estado mental
           </h3>
         </div>
         <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
           average >= 7 ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
-          : average >= 5 ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
+          : average >= 5 ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
           : average >= 3 ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
           : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
         }`}>

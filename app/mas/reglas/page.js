@@ -222,7 +222,7 @@ export default function ReglasPage() {
                 checked={form.enabled}
                 onChange={(e) => setForm({ ...form, enabled: e.target.checked })}
                 data-testid="rule-enabled-checkbox"
-                className="w-5 h-5 rounded text-blue-600 focus:ring-2 focus:ring-blue-500"
+                className="w-5 h-5 rounded text-terra-600 focus:ring-2 focus:ring-terra-500"
               />
             </div>
 
@@ -302,7 +302,7 @@ export default function ReglasPage() {
                         {rule.pattern}
                       </span>
                       <span className="text-xs text-zinc-500 dark:text-zinc-400">→</span>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-terra-100 dark:bg-terra-900/30 text-terra-800 dark:text-terra-300">
                         {getCategoryName(rule.category_id)}
                       </span>
                     </div>

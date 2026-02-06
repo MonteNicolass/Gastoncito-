@@ -83,7 +83,7 @@ export default function NotasPage() {
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="Escribí tu nota acá..."
-              className="w-full px-4 py-2.5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all resize-none"
+              className="w-full px-4 py-2.5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-terra-500/50 focus:border-terra-500 transition-all resize-none"
               rows={4}
             />
             <Select
@@ -145,8 +145,8 @@ export default function NotasPage() {
           </div>
           {filteredNotes.length === 0 ? (
             <Card className="p-8 text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <StickyNote className="w-6 h-6 text-blue-500 dark:text-blue-400" />
+              <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                <StickyNote className="w-6 h-6 text-zinc-500 dark:text-zinc-400" />
               </div>
               <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                 {filterType === 'all' ? 'Sin notas aún' : 'Sin notas con este filtro'}
@@ -162,7 +162,7 @@ export default function NotasPage() {
                   <div className="flex-1 min-w-0">
                     {note.type && (
                       <div className="mb-2">
-                        <span className="inline-block px-2 py-1 text-xs font-semibold rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 capitalize">
+                        <span className="inline-block px-2 py-1 text-xs font-semibold rounded-lg bg-terra-100 dark:bg-terra-900/30 text-terra-700 dark:text-terra-300 capitalize">
                           {note.type}
                         </span>
                       </div>

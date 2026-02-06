@@ -47,7 +47,7 @@ export default function DiarioMentalPage() {
 
   const getMoodColor = (score) => {
     if (score >= 8) return 'bg-green-500'
-    if (score >= 6) return 'bg-blue-500'
+    if (score >= 6) return 'bg-zinc-500'
     if (score >= 4) return 'bg-yellow-500'
     return 'bg-red-500'
   }
@@ -59,18 +59,18 @@ export default function DiarioMentalPage() {
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-5">
         {/* Nueva entrada - Acción destacada */}
         <a href="/mental/estado" className="block">
-          <Card className="p-5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition-colors">
+          <Card className="p-5 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
-                  <Pencil className="w-6 h-6 text-white" />
+                <div className="w-12 h-12 rounded-2xl bg-white/20 dark:bg-zinc-900/20 flex items-center justify-center">
+                  <Pencil className="w-6 h-6 text-white dark:text-zinc-900" />
                 </div>
                 <div>
-                  <p className="text-white font-semibold">Nueva entrada</p>
-                  <p className="text-purple-200 text-sm">Registrar cómo te sentís</p>
+                  <p className="text-white dark:text-zinc-900 font-semibold">Nueva entrada</p>
+                  <p className="text-zinc-400 dark:text-zinc-500 text-sm">Registrar cómo te sentís</p>
                 </div>
               </div>
-              <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-white/60 dark:text-zinc-900/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </div>
@@ -83,9 +83,9 @@ export default function DiarioMentalPage() {
             Entradas recientes
           </h3>
           {entries.length === 0 ? (
-            <Card className="p-8 text-center bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200/50 dark:border-purple-800/50">
-              <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                <BookOpen className="w-7 h-7 text-purple-500 dark:text-purple-400" />
+            <Card className="p-8 text-center bg-zinc-100 dark:bg-zinc-800 border-zinc-200/50 dark:border-zinc-700/50">
+              <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
+                <BookOpen className="w-7 h-7 text-zinc-500 dark:text-zinc-400" />
               </div>
               <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
                 Tu diario está vacío
@@ -107,7 +107,7 @@ export default function DiarioMentalPage() {
                     {entry.meta?.mood_score && (
                       <div className="flex items-center gap-2 mb-3">
                         <span className={`w-4 h-4 rounded-full ${getMoodColor(entry.meta.mood_score)}`} />
-                        <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                        <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
                           {entry.meta.mood_score}
                         </span>
                         <span className="text-sm text-zinc-400 dark:text-zinc-500">/10</span>

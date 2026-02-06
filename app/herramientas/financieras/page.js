@@ -63,7 +63,7 @@ export default function HerramientasFinancierasPage() {
               onClick={() => router.push('/money/decisiones')}
               className="w-full p-3.5 rounded-2xl text-left bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/50 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all active:scale-[0.98] flex items-center gap-3"
             >
-              <ClipboardList className="w-4 h-4 text-purple-500" strokeWidth={1.75} />
+              <ClipboardList className="w-4 h-4 text-zinc-500" strokeWidth={1.75} />
               <div className="flex-1">
                 <p className="text-sm text-zinc-700 dark:text-zinc-300">
                   Decisiones financieras

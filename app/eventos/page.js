@@ -77,7 +77,7 @@ export default function EventosPage() {
   const getCategoryLabel = (category) => {
     switch (category) {
       case 'anomaly': return { label: 'Anomalía', color: 'red' }
-      case 'rule': return { label: 'Regla', color: 'blue' }
+      case 'rule': return { label: 'Regla', color: 'zinc' }
       case 'milestone': return { label: 'Hito', color: 'green' }
       case 'alert': return { label: 'Alerta', color: 'orange' }
       default: return { label: 'Evento', color: 'zinc' }
@@ -135,8 +135,8 @@ export default function EventosPage() {
             onClick={() => setFilterDomain('mental')}
             className={`px-3 py-1.5 text-sm font-medium rounded-full whitespace-nowrap transition-colors ${
               filterDomain === 'mental'
-                ? 'bg-purple-600 text-white'
-                : 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
+                ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
+                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
             }`}
           >
             <Brain className="w-3.5 h-3.5 inline" /> Mental
@@ -155,8 +155,8 @@ export default function EventosPage() {
             onClick={() => setFilterDomain('goals')}
             className={`px-3 py-1.5 text-sm font-medium rounded-full whitespace-nowrap transition-colors ${
               filterDomain === 'goals'
-                ? 'bg-blue-600 text-white'
-                : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
+                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
             }`}
           >
             <Target className="w-3.5 h-3.5 inline" /> Objetivos

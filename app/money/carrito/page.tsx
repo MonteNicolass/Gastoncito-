@@ -159,7 +159,7 @@ export default function CarritoPage() {
               <div className="flex gap-2 justify-center">
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-500 text-white text-sm font-semibold active:scale-95 transition-transform"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-terra-500 text-white text-sm font-semibold active:scale-95 transition-transform"
                 >
                   <Plus className="w-4 h-4" />
                   Agregar productos
@@ -191,7 +191,7 @@ export default function CarritoPage() {
               </div>
               <button
                 onClick={() => setShowAddModal(true)}
-                className="flex items-center gap-1 text-xs font-medium text-blue-500 active:scale-95 transition-transform"
+                className="flex items-center gap-1 text-xs font-medium text-terra-500 active:scale-95 transition-transform"
               >
                 <Plus className="w-3.5 h-3.5" />
                 Agregar
@@ -230,7 +230,7 @@ export default function CarritoPage() {
             {!showResults && (
               <button
                 onClick={() => setShowResults(true)}
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg shadow-emerald-500/20"
+                className="w-full py-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 font-semibold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
               >
                 <BarChart3 className="w-4 h-4" />
                 Comparar precios
@@ -310,7 +310,7 @@ export default function CarritoPage() {
                   placeholder="Buscar producto..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 outline-none focus:ring-2 ring-blue-500/30"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 outline-none focus:ring-2 ring-terra-500/30"
                   autoFocus
                 />
               </div>
@@ -349,7 +349,7 @@ export default function CarritoPage() {
                       {inCart ? (
                         <span className="text-[10px] text-zinc-400 font-medium">En carrito</span>
                       ) : (
-                        <Plus className="w-4 h-4 text-blue-500" />
+                        <Plus className="w-4 h-4 text-terra-500" />
                       )}
                     </button>
                   )

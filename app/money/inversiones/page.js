@@ -212,7 +212,7 @@ export default function InversionesPage() {
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {/* Portfolio Summary */}
         {investments.length > 0 && (
-          <Card className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
+          <Card className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border-green-200 dark:border-green-800">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/40 flex items-center justify-center">
@@ -314,12 +314,12 @@ export default function InversionesPage() {
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
                       inv.type === 'cripto'
                         ? 'bg-orange-100 dark:bg-orange-900/30'
-                        : 'bg-blue-100 dark:bg-blue-900/30'
+                        : 'bg-zinc-100 dark:bg-zinc-800'
                     }`}>
                       <TypeIcon className={`w-5 h-5 ${
                         inv.type === 'cripto'
                           ? 'text-orange-600 dark:text-orange-400'
-                          : 'text-blue-600 dark:text-blue-400'
+                          : 'text-terra-600 dark:text-terra-400'
                       }`} />
                     </div>
                     <div className="flex-1 min-w-0">

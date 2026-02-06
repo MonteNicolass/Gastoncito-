@@ -98,9 +98,9 @@ export default function ResumenFisicoPage() {
   }
 
   const getConsistencyBg = (consistency) => {
-    if (consistency >= 75) return 'from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800'
-    if (consistency >= 50) return 'from-yellow-50 to-amber-50 dark:from-yellow-950/20 dark:to-amber-950/20 border-yellow-200 dark:border-yellow-800'
-    return 'from-red-50 to-rose-50 dark:from-red-950/20 dark:to-rose-950/20 border-red-200 dark:border-red-800'
+    if (consistency >= 75) return 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800'
+    if (consistency >= 50) return 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800'
+    return 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800'
   }
 
   if (loading) {
@@ -165,11 +165,11 @@ export default function ResumenFisicoPage() {
             </div>
           </Card>
 
-          <Card className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 border-blue-200 dark:border-blue-800">
+          <Card className="p-4 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800">
             <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-2">
               Racha más larga
             </div>
-            <div className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+            <div className="text-4xl font-bold text-zinc-900 dark:text-zinc-100 mb-1">
               {data.longestStreak}
             </div>
             <div className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -179,7 +179,7 @@ export default function ResumenFisicoPage() {
         </div>
 
         {/* Consistencia */}
-        <Card className={`p-4 bg-gradient-to-br ${getConsistencyBg(data.consistency)}`}>
+        <Card className={`p-4 ${getConsistencyBg(data.consistency)}`}>
           <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">
             Consistencia
           </h3>

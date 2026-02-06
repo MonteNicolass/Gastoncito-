@@ -235,7 +235,7 @@ export default function ComparadorPage() {
               className={`w-full py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-all ${
                 inCart
                   ? 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
-                  : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/20'
+                  : 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
               }`}
             >
               {inCart ? (
@@ -289,7 +289,7 @@ export default function ComparadorPage() {
         action={
           <button
             onClick={() => router.push('/money/carrito')}
-            className="flex items-center gap-1 text-xs font-medium text-blue-500 active:scale-95 transition-transform"
+            className="flex items-center gap-1 text-xs font-medium text-terra-500 active:scale-95 transition-transform"
           >
             <ShoppingCart className="w-4 h-4" />
             Carrito
@@ -306,7 +306,7 @@ export default function ComparadorPage() {
             placeholder="Buscar producto..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white dark:bg-zinc-800/50 border border-zinc-200/50 dark:border-zinc-700/50 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 outline-none focus:ring-2 ring-blue-500/30"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white dark:bg-zinc-800/50 border border-zinc-200/50 dark:border-zinc-700/50 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 outline-none focus:ring-2 ring-terra-500/30"
             autoFocus
           />
         </div>

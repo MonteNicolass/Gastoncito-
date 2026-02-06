@@ -16,10 +16,10 @@ export default function ProgressRing({
 
   const colorMap = {
     purple: {
-      stroke: 'stroke-purple-500',
-      glow: 'drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]',
-      text: 'text-purple-500 dark:text-purple-400',
-      bg: 'stroke-purple-500/20'
+      stroke: 'stroke-zinc-700 dark:stroke-zinc-300',
+      glow: 'drop-shadow-[0_0_8px_rgba(63,63,70,0.3)]',
+      text: 'text-zinc-700 dark:text-zinc-300',
+      bg: 'stroke-zinc-300/30 dark:stroke-zinc-600/30'
     },
     green: {
       stroke: 'stroke-emerald-500',
@@ -28,16 +28,16 @@ export default function ProgressRing({
       bg: 'stroke-emerald-500/20'
     },
     orange: {
-      stroke: 'stroke-orange-500',
-      glow: 'drop-shadow-[0_0_8px_rgba(249,115,22,0.5)]',
-      text: 'text-orange-500 dark:text-orange-400',
-      bg: 'stroke-orange-500/20'
+      stroke: 'stroke-amber-500',
+      glow: 'drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]',
+      text: 'text-amber-500 dark:text-amber-400',
+      bg: 'stroke-amber-500/20'
     },
     blue: {
-      stroke: 'stroke-blue-500',
-      glow: 'drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]',
-      text: 'text-blue-500 dark:text-blue-400',
-      bg: 'stroke-blue-500/20'
+      stroke: 'stroke-terra-500',
+      glow: 'drop-shadow-[0_0_8px_rgba(184,92,56,0.4)]',
+      text: 'text-terra-500 dark:text-terra-400',
+      bg: 'stroke-terra-500/20'
     },
     zinc: {
       stroke: 'stroke-zinc-400',

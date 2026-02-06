@@ -67,7 +67,7 @@ export default function FinancialHealthSnapshot({ snapshot, onIncomeUpdated }: P
       {!snapshot.hasIncome && !showIncomeInput && (
         <button
           onClick={() => setShowIncomeInput(true)}
-          className="w-full p-3 rounded-xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 text-center hover:border-blue-400 dark:hover:border-blue-600 transition-colors active:scale-[0.99]"
+          className="w-full p-3 rounded-xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 text-center hover:border-terra-400 dark:hover:border-terra-600 transition-colors active:scale-[0.99]"
         >
           <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
             Configurar ingreso mensual estimado
@@ -89,12 +89,12 @@ export default function FinancialHealthSnapshot({ snapshot, onIncomeUpdated }: P
               value={incomeValue}
               onChange={(e) => setIncomeValue(e.target.value)}
               placeholder="Ej: 500000"
-              className="flex-1 px-3 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 outline-none focus:ring-2 ring-blue-500/30"
+              className="flex-1 px-3 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 outline-none focus:ring-2 ring-terra-500/30"
               autoFocus
             />
             <button
               onClick={handleSaveIncome}
-              className="px-4 py-2 rounded-xl bg-blue-500 text-white text-sm font-semibold active:scale-95 transition-transform"
+              className="px-4 py-2 rounded-xl bg-terra-500 text-white text-sm font-semibold active:scale-95 transition-transform"
             >
               Guardar
             </button>
@@ -132,7 +132,7 @@ export default function FinancialHealthSnapshot({ snapshot, onIncomeUpdated }: P
           <div>
             <div className="h-4 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden flex">
               <div
-                className="h-full bg-blue-500 transition-all"
+                className="h-full bg-terra-500 transition-all"
                 style={{ width: `${Math.min(snapshot.expenseRatio, 100)}%` }}
                 title={`Gastos: ${snapshot.expenseRatio}%`}
               />
@@ -145,7 +145,7 @@ export default function FinancialHealthSnapshot({ snapshot, onIncomeUpdated }: P
               )}
             </div>
             <div className="flex justify-between mt-1.5">
-              <span className="text-[10px] text-blue-500 font-medium">
+              <span className="text-[10px] text-terra-500 font-medium">
                 Gastos {snapshot.expenseRatio}%
               </span>
               {snapshot.remainingRatio > 0 && (

@@ -87,7 +87,7 @@ export default function ProductPriceComparison({ summary, onProductSelect }: Pro
       {summary.products.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center gap-2 px-1">
-            <BarChart3 className="w-4 h-4 text-blue-500" />
+            <BarChart3 className="w-4 h-4 text-terra-500" />
             <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
               Comparar productos
             </h3>

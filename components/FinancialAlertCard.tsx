@@ -10,7 +10,7 @@ interface Props {
 }
 
 const TYPE_CONFIG: Record<FinancialAlert['type'], { Icon: any; color: string }> = {
-  subscription_weight: { Icon: Receipt, color: 'text-purple-500' },
+  subscription_weight: { Icon: Receipt, color: 'text-zinc-600 dark:text-zinc-400' },
   category_spike: { Icon: TrendingUp, color: 'text-red-500' },
   monthly_outlier: { Icon: AlertTriangle, color: 'text-amber-500' },
   price_above_avg: { Icon: Tag, color: 'text-orange-500' },
@@ -20,7 +20,7 @@ const TYPE_CONFIG: Record<FinancialAlert['type'], { Icon: any; color: string }> 
 const SEVERITY_STYLES: Record<FinancialAlert['severity'], string> = {
   high: 'border-l-red-500',
   medium: 'border-l-amber-500',
-  low: 'border-l-blue-400',
+  low: 'border-l-zinc-400',
 }
 
 export default function FinancialAlertCard({ alerts }: Props) {

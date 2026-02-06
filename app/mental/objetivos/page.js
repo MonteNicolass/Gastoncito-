@@ -96,7 +96,7 @@ export default function ObjetivosPage() {
       )
     }
     return (
-      <span className="inline-block px-2 py-1 text-xs font-semibold rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+      <span className="inline-block px-2 py-1 text-xs font-semibold rounded-lg bg-terra-100 dark:bg-terra-900/30 text-terra-700 dark:text-terra-300">
         Activo
       </span>
     )
@@ -165,7 +165,7 @@ export default function ObjetivosPage() {
                             ? 'bg-green-500'
                             : goal.status === 'failed'
                             ? 'bg-red-500'
-                            : 'bg-blue-500'
+                            : 'bg-terra-500'
                         }`}
                         style={{ width: `${getProgressPercent(goal)}%` }}
                       />

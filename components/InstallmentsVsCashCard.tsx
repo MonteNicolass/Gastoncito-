@@ -26,7 +26,7 @@ function formatDate(dateString: string): string {
 
 const LABEL_CONFIG = {
   cuotas_mejor: { text: 'Cuotas (VP) más barato', color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/10', Icon: CheckCircle },
-  contado_mejor: { text: 'Contado más barato', color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/10', Icon: CheckCircle },
+  contado_mejor: { text: 'Contado más barato', color: 'text-terra-600 dark:text-terra-400', bg: 'bg-terra-50 dark:bg-terra-900/10', Icon: CheckCircle },
   similar: { text: 'Similar (diferencia menor al 3%)', color: 'text-zinc-600 dark:text-zinc-400', bg: 'bg-zinc-100 dark:bg-zinc-800', Icon: Equal },
 }
 

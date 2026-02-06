@@ -19,7 +19,7 @@ export default function MentalInsightHighlight({ insights }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2 px-1">
-        <Zap className="w-4 h-4 text-purple-500" />
+        <Zap className="w-4 h-4 text-zinc-500" />
         <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
           Patrón detectado
         </h3>
@@ -29,7 +29,7 @@ export default function MentalInsightHighlight({ insights }: Props) {
         {visibleInsights.map((insight, i) => (
           <div
             key={i}
-            className="rounded-2xl bg-purple-50 dark:bg-purple-900/15 border border-purple-200/60 dark:border-purple-800/40 px-5 py-4"
+            className="rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200/60 dark:border-zinc-700/50 px-5 py-4"
           >
             <p className="text-base font-semibold text-zinc-900 dark:text-zinc-100 leading-snug">
               {insight.text}

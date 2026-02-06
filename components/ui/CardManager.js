@@ -46,7 +46,7 @@ export default function CardManager({ section, cards, preferences, onUpdate }) {
     return (
       <button
         onClick={() => setShowModal(true)}
-        className="fixed bottom-20 right-4 z-40 w-12 h-12 bg-blue-600 dark:bg-blue-500 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
+        className="fixed bottom-20 right-4 z-40 w-12 h-12 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full shadow-lg flex items-center justify-center hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
         aria-label="Personalizar"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -129,7 +129,7 @@ export default function CardManager({ section, cards, preferences, onUpdate }) {
                   onClick={() => handleToggleVisibility(cardId)}
                   className={`flex-shrink-0 w-10 h-6 rounded-full transition-colors ${
                     isVisible
-                      ? 'bg-blue-600 dark:bg-blue-500'
+                      ? 'bg-terra-500'
                       : 'bg-zinc-300 dark:bg-zinc-600'
                   }`}
                 >

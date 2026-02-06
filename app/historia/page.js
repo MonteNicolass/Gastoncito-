@@ -84,14 +84,14 @@ export default function HistoriaPage() {
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {/* Score Global */}
         {globalScore && (
-          <Card className="p-4 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 border-indigo-200 dark:border-indigo-800">
+          <Card className="p-4 bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Estado General</h3>
               <span className="text-xs text-zinc-600 dark:text-zinc-400">Score Global</span>
             </div>
 
             <div className="flex items-end gap-4">
-              <div className="text-4xl font-bold text-indigo-600 dark:text-indigo-400">
+              <div className="text-4xl font-bold text-zinc-900 dark:text-zinc-100">
                 {globalScore.global}
               </div>
               <div className="flex-1">
@@ -108,10 +108,10 @@ export default function HistoriaPage() {
             </div>
 
             {/* Breakdown */}
-            <div className="grid grid-cols-4 gap-2 mt-4 pt-3 border-t border-indigo-200 dark:border-indigo-800">
+            <div className="grid grid-cols-4 gap-2 mt-4 pt-3 border-t border-zinc-200 dark:border-zinc-700">
               <div className="text-center">
                 <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">Mental</div>
-                <div className="text-sm font-bold text-purple-600 dark:text-purple-400">
+                <div className="text-sm font-bold text-zinc-600 dark:text-zinc-400">
                   {globalScore.breakdown.mental}
                 </div>
               </div>
@@ -129,7 +129,7 @@ export default function HistoriaPage() {
               </div>
               <div className="text-center">
                 <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">Objetivos</div>
-                <div className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                <div className="text-sm font-bold text-zinc-600 dark:text-zinc-400">
                   {globalScore.breakdown.goals}
                 </div>
               </div>
@@ -229,10 +229,10 @@ export default function HistoriaPage() {
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => handleExport('week', 'json')}
-              className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-950/30 transition-colors"
+              className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
             >
-              <div className="text-sm font-medium text-blue-900 dark:text-blue-100">Semana (JSON)</div>
-              <div className="text-xs text-blue-700 dark:text-blue-300 mt-0.5">Últimos 7 días</div>
+              <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Semana (JSON)</div>
+              <div className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">Últimos 7 días</div>
             </button>
 
             <button
@@ -245,10 +245,10 @@ export default function HistoriaPage() {
 
             <button
               onClick={() => handleExport('week', 'csv')}
-              className="p-3 rounded-lg bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-950/30 transition-colors"
+              className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
             >
-              <div className="text-sm font-medium text-purple-900 dark:text-purple-100">Semana (CSV)</div>
-              <div className="text-xs text-purple-700 dark:text-purple-300 mt-0.5">Solo movimientos</div>
+              <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Semana (CSV)</div>
+              <div className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">Solo movimientos</div>
             </button>
 
             <button

@@ -212,7 +212,7 @@ export default function BienestarPage() {
             {/* Hero */}
             <Card className="p-6 space-y-5">
               <div className="flex items-center gap-2">
-                <Brain className="w-4 h-4 text-purple-500" strokeWidth={1.75} />
+                <Brain className="w-4 h-4 text-zinc-500" strokeWidth={1.75} />
                 <p className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
                   Esta semana
                 </p>
@@ -250,7 +250,7 @@ export default function BienestarPage() {
                       key={i}
                       className={`flex-1 h-1.5 rounded-full transition-colors ${
                         i < (mentalStats?.daysThisWeek || 0)
-                          ? 'bg-purple-500'
+                          ? 'bg-zinc-500'
                           : 'bg-zinc-200 dark:bg-zinc-700'
                       }`}
                     />
@@ -270,16 +270,16 @@ export default function BienestarPage() {
             {/* Quick action */}
             <button
               onClick={() => router.push('/chat')}
-              className="w-full p-4 rounded-2xl bg-purple-500 dark:bg-purple-600 transition-all active:scale-[0.98] flex items-center justify-between"
+              className="w-full p-4 rounded-2xl bg-zinc-900 dark:bg-zinc-100 transition-all active:scale-[0.98] flex items-center justify-between"
             >
               <div className="flex items-center gap-3">
-                <Plus className="w-5 h-5 text-white" />
+                <Plus className="w-5 h-5 text-white dark:text-zinc-900" />
                 <div className="text-left">
-                  <p className="text-white font-semibold text-sm">¿Cómo te sentís?</p>
-                  <p className="text-purple-200 text-[10px]">Registrar estado</p>
+                  <p className="text-white dark:text-zinc-900 font-semibold text-sm">¿Cómo te sentís?</p>
+                  <p className="text-zinc-400 dark:text-zinc-500 text-[10px]">Registrar estado</p>
                 </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-white/60" />
+              <ChevronRight className="w-4 h-4 text-white/60 dark:text-zinc-900/60" />
             </button>
 
             {/* Navigation */}
@@ -298,7 +298,7 @@ export default function BienestarPage() {
                     onClick={() => router.push(href)}
                     className="w-full p-3.5 rounded-2xl text-left bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/50 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all active:scale-[0.98] flex items-center gap-3"
                   >
-                    <Icon className="w-4 h-4 text-purple-500 dark:text-purple-400" strokeWidth={1.75} />
+                    <Icon className="w-4 h-4 text-zinc-500 dark:text-zinc-400" strokeWidth={1.75} />
                     <span className="text-sm text-zinc-700 dark:text-zinc-300 flex-1">{label}</span>
                     <ChevronRight className="w-4 h-4 text-zinc-300 dark:text-zinc-600" />
                   </button>

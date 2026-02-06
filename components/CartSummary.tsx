@@ -113,7 +113,7 @@ export default function CartSummary({ analysis, cartItemCount }: Props) {
           </div>
 
           <Card className="overflow-hidden">
-            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-800/10 p-4 space-y-3">
+            <div className="bg-emerald-50/50 dark:bg-emerald-950/20 p-4 space-y-3">
               {optimization.decision.allocations.map((alloc: OptimizedAllocation) => (
                 <div key={alloc.supermarket} className="space-y-1.5">
                   <div className="flex items-center justify-between">

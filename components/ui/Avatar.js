@@ -40,15 +40,15 @@ export default function Avatar({
   // State-based styling
   const stateStyles = {
     great: {
-      bgGradient: 'from-emerald-500/20 to-teal-500/20',
+      bgGradient: 'from-emerald-500/15 to-emerald-600/10',
       faceColor: '#10b981',
       eyeY: 0,
       mouthCurve: 4,
       postureY: 0
     },
     good: {
-      bgGradient: 'from-blue-500/20 to-indigo-500/20',
-      faceColor: '#3b82f6',
+      bgGradient: 'from-zinc-300/20 to-zinc-400/15',
+      faceColor: '#71717a',
       eyeY: 0,
       mouthCurve: 2,
       postureY: 0
@@ -61,8 +61,8 @@ export default function Avatar({
       postureY: 2
     },
     low: {
-      bgGradient: 'from-orange-500/20 to-red-500/20',
-      faceColor: '#f97316',
+      bgGradient: 'from-red-500/15 to-red-600/10',
+      faceColor: '#ef4444',
       eyeY: 2,
       mouthCurve: -2,
       postureY: 4
@@ -165,9 +165,9 @@ export default function Avatar({
       <div
         className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white dark:border-zinc-900 ${
           state === 'great' ? 'bg-emerald-500' :
-          state === 'good' ? 'bg-blue-500' :
+          state === 'good' ? 'bg-zinc-400' :
           state === 'neutral' ? 'bg-zinc-400' :
-          'bg-orange-500'
+          'bg-red-400'
         }`}
       />
     </div>

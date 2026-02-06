@@ -108,8 +108,8 @@ export default function QuickActionsInline({ onActionComplete }) {
           className="flex flex-col items-center gap-1 group"
           title="Registrar gasto"
         >
-          <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center group-hover:bg-green-200 dark:group-hover:bg-green-900/50 transition-colors">
-            <Wallet className="w-6 h-6 text-emerald-500" />
+          <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:bg-zinc-200 dark:group-hover:bg-zinc-700 transition-colors">
+            <Wallet className="w-6 h-6 text-zinc-600 dark:text-zinc-400" />
           </div>
           <span className="text-xs text-zinc-600 dark:text-zinc-400">Gasto</span>
         </button>
@@ -119,8 +119,8 @@ export default function QuickActionsInline({ onActionComplete }) {
           className="flex flex-col items-center gap-1 group"
           title="Registrar estado mental"
         >
-          <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center group-hover:bg-purple-200 dark:group-hover:bg-purple-900/50 transition-colors">
-            <Brain className="w-6 h-6 text-purple-500" />
+          <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:bg-zinc-200 dark:group-hover:bg-zinc-700 transition-colors">
+            <Brain className="w-6 h-6 text-zinc-600 dark:text-zinc-400" />
           </div>
           <span className="text-xs text-zinc-600 dark:text-zinc-400">Estado</span>
         </button>
@@ -130,8 +130,8 @@ export default function QuickActionsInline({ onActionComplete }) {
           className="flex flex-col items-center gap-1 group"
           title="Registrar hábito"
         >
-          <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center group-hover:bg-orange-200 dark:group-hover:bg-orange-900/50 transition-colors">
-            <Dumbbell className="w-6 h-6 text-orange-500" />
+          <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:bg-zinc-200 dark:group-hover:bg-zinc-700 transition-colors">
+            <Dumbbell className="w-6 h-6 text-zinc-600 dark:text-zinc-400" />
           </div>
           <span className="text-xs text-zinc-600 dark:text-zinc-400">Hábito</span>
         </button>
@@ -141,8 +141,8 @@ export default function QuickActionsInline({ onActionComplete }) {
           className="flex flex-col items-center gap-1 group"
           title="Guardar nota"
         >
-          <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors">
-            <StickyNote className="w-6 h-6 text-blue-500" />
+          <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:bg-zinc-200 dark:group-hover:bg-zinc-700 transition-colors">
+            <StickyNote className="w-6 h-6 text-zinc-600 dark:text-zinc-400" />
           </div>
           <span className="text-xs text-zinc-600 dark:text-zinc-400">Nota</span>
         </button>

@@ -40,14 +40,14 @@ const TREND_BG = {
 }
 
 const CAT_COLORS = [
-  'bg-blue-500',
+  'bg-terra-500',
   'bg-emerald-500',
   'bg-amber-500',
-  'bg-purple-500',
+  'bg-zinc-500',
   'bg-rose-500',
-  'bg-cyan-500',
-  'bg-orange-500',
-  'bg-indigo-500',
+  'bg-zinc-400',
+  'bg-zinc-600',
+  'bg-zinc-300',
 ]
 
 export default function MonthlySpendingOverview({ summary, onCategoryClick }: Props) {
@@ -58,7 +58,7 @@ export default function MonthlySpendingOverview({ summary, onCategoryClick }: Pr
       {/* Main spend card */}
       <Card className="p-5 space-y-4">
         <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-blue-500" />
+          <Calendar className="w-4 h-4 text-terra-500" />
           <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
             {summary.currentMonth}
           </h3>
@@ -120,7 +120,7 @@ export default function MonthlySpendingOverview({ summary, onCategoryClick }: Pr
           </div>
           <div className="h-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
             <div
-              className="h-full rounded-full bg-blue-500 transition-all"
+              className="h-full rounded-full bg-terra-500 transition-all"
               style={{ width: `${Math.round((summary.daysElapsed / (summary.daysElapsed + summary.daysRemaining)) * 100)}%` }}
             />
           </div>

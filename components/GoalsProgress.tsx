@@ -14,13 +14,13 @@ const PILLAR_CONFIG = {
   },
   mental: {
     icon: Brain,
-    color: 'bg-purple-500',
-    trackColor: 'text-purple-600 dark:text-purple-400',
+    color: 'bg-zinc-600 dark:bg-zinc-400',
+    trackColor: 'text-zinc-600 dark:text-zinc-400',
   },
   physical: {
     icon: Dumbbell,
-    color: 'bg-orange-500',
-    trackColor: 'text-orange-600 dark:text-orange-400',
+    color: 'bg-amber-500',
+    trackColor: 'text-amber-600 dark:text-amber-400',
   },
 } as const
 

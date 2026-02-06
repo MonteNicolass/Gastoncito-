@@ -36,7 +36,7 @@ import {
 // Ejemplos clickeables para el estado inicial
 const EXAMPLE_PROMPTS = [
   { text: 'Gasté 1500 en el almuerzo', icon: Wallet, color: 'emerald' },
-  { text: 'Hoy me sentí con energía, 8/10', icon: Brain, color: 'purple' },
+  { text: 'Hoy me sentí con energía, 8/10', icon: Brain, color: 'zinc' },
   { text: 'Fui al gimnasio', icon: Dumbbell, color: 'orange' },
 ]
 
@@ -589,7 +589,7 @@ export default function ChatPage() {
                       ? 'bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800'
                       : alertContext.severity === 'medium'
                       ? 'bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800'
-                      : 'bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800'
+                      : 'bg-zinc-50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-zinc-800'
                   }`}>
                     <p className="text-sm text-zinc-900 dark:text-zinc-100 leading-relaxed font-medium">
                       {alertContext.title}
@@ -665,8 +665,8 @@ export default function ChatPage() {
                       className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm transition-all hover:scale-[1.02] active:scale-[0.98] ${
                         example.color === 'emerald'
                           ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30'
-                          : example.color === 'purple'
-                          ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30'
+                          : example.color === 'zinc'
+                          ? 'bg-zinc-100 dark:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800'
                           : 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/30'
                       }`}
                     >
@@ -750,8 +750,8 @@ export default function ChatPage() {
             {/* Typing Indicator */}
             {isTyping && (
               <div className="flex gap-3">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-                  <Sparkles className="w-4 h-4 text-white" />
+                <div className="w-9 h-9 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-4 h-4 text-white dark:text-zinc-900" />
                 </div>
                 <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl rounded-tl-md px-4 py-3 inline-block">
                   <div className="flex gap-1">
@@ -794,7 +794,7 @@ export default function ChatPage() {
 
               <button
                 onClick={() => handleQuickAction('Me siento ')}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-full text-xs font-medium hover:border-purple-300 dark:hover:border-purple-700 hover:text-purple-700 dark:hover:text-purple-300 active:scale-95 transition-all whitespace-nowrap"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-full text-xs font-medium hover:border-zinc-400 dark:hover:border-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 active:scale-95 transition-all whitespace-nowrap"
               >
                 <Brain className="w-3 h-3" />
                 <span>Estado</span>
@@ -810,7 +810,7 @@ export default function ChatPage() {
 
               <button
                 onClick={() => handleQuickAction('Nota: ')}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-full text-xs font-medium hover:border-blue-300 dark:hover:border-blue-700 hover:text-blue-700 dark:hover:text-blue-300 active:scale-95 transition-all whitespace-nowrap"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-full text-xs font-medium hover:border-terra-300 dark:hover:border-terra-700 hover:text-terra-700 dark:hover:text-terra-300 active:scale-95 transition-all whitespace-nowrap"
               >
                 <StickyNote className="w-3 h-3" />
                 <span>Nota</span>
@@ -872,10 +872,10 @@ export default function ChatPage() {
         <div className="fixed bottom-28 left-4 right-4 z-[70] animate-slide-up">
           <div className={`px-5 py-4 rounded-2xl shadow-2xl flex items-center gap-3 max-w-md mx-auto ${
             payoffToast.color === 'emerald' ? 'bg-emerald-600' :
-            payoffToast.color === 'purple' ? 'bg-purple-600' :
+            payoffToast.color === 'purple' ? 'bg-zinc-700' :
             payoffToast.color === 'orange' ? 'bg-orange-600' :
-            payoffToast.color === 'indigo' ? 'bg-indigo-600' :
-            payoffToast.color === 'blue' ? 'bg-blue-600' :
+            payoffToast.color === 'indigo' ? 'bg-zinc-700' :
+            payoffToast.color === 'blue' ? 'bg-terra-600' :
             'bg-zinc-800'
           }`}>
             <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${

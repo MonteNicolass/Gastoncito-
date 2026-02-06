@@ -81,7 +81,7 @@ export default function InsightsPage() {
               <div className="flex items-start gap-3">
                 <div className="flex gap-1">
                   <DollarSign className="w-5 h-5 text-green-600 dark:text-green-400" />
-                  <Brain className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  <Brain className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
                 </div>
                 <div className="flex-1">
                   <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
@@ -126,7 +126,7 @@ export default function InsightsPage() {
             <div className="space-y-3">
               <div className="flex items-start gap-3">
                 <div className="flex gap-1">
-                  <Brain className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  <Brain className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
                   <Dumbbell className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div className="flex-1">
@@ -230,12 +230,12 @@ export default function InsightsPage() {
         )}
 
         {/* Explicación */}
-        <Card className="p-4 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+        <Card className="p-4 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800">
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-blue-900 dark:text-blue-300">
+            <h4 className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
               ¿Qué son estos cruces?
             </h4>
-            <p className="text-xs text-blue-800 dark:text-blue-400 leading-relaxed">
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
               Muestran cómo se relacionan tus hábitos, estado y gastos. No son diagnósticos
               ni consejos, solo patrones en tus datos para que tengas más conciencia.
             </p>

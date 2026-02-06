@@ -114,10 +114,10 @@ export default function AlertasPage() {
         }
       case 'low':
         return {
-          bg: 'bg-blue-50 dark:bg-blue-900/20',
-          border: 'border-blue-200 dark:border-blue-800',
-          text: 'text-blue-900 dark:text-blue-100',
-          badge: 'bg-blue-500'
+          bg: 'bg-zinc-50 dark:bg-zinc-800',
+          border: 'border-zinc-200 dark:border-zinc-700',
+          text: 'text-zinc-900 dark:text-zinc-100',
+          badge: 'bg-zinc-500'
         }
       default:
         return {
@@ -262,7 +262,7 @@ export default function AlertasPage() {
                         </div>
                       </div>
                       <div className="flex-shrink-0">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
                           {sub.occurrences}x
                         </span>
                       </div>

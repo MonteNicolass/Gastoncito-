@@ -252,7 +252,7 @@ export default function SuscripcionesPage() {
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {/* Summary Card */}
-        <Card className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-blue-200 dark:border-blue-800">
+        <Card className="p-4 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800">
           <div className="flex items-center justify-between mb-1">
             <div className="text-sm text-zinc-600 dark:text-zinc-400">
               Gasto mensual estimado
@@ -268,7 +268,7 @@ export default function SuscripcionesPage() {
               </button>
             )}
           </div>
-          <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+          <div className="text-3xl font-bold text-terra-600 dark:text-terra-400">
             {formatAmount(realTotalData?.totalArs || totalMonthly)}
           </div>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -370,7 +370,7 @@ export default function SuscripcionesPage() {
                       )}
                     </div>
                     <div className="flex items-baseline gap-2 mt-1">
-                      <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                      <span className="text-xl font-bold text-terra-600 dark:text-terra-400">
                         {formatAmount(isUsdSub && realPrice?.arsPrice ? realPrice.arsPrice : sub.amount)}
                       </span>
                       {comparison && comparison.status !== 'same' && (

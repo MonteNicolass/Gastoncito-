@@ -168,12 +168,12 @@ export default function MentalInsightsPage() {
         )}
 
         {/* Explicación */}
-        <Card className="p-4 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+        <Card className="p-4 bg-terra-50 dark:bg-terra-950/20 border-terra-200 dark:border-terra-900">
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-blue-900 dark:text-blue-300">
+            <h4 className="text-xs font-semibold text-terra-900 dark:text-terra-300">
               ¿Qué son estos datos?
             </h4>
-            <p className="text-xs text-blue-800 dark:text-blue-400 leading-relaxed">
+            <p className="text-xs text-terra-800 dark:text-terra-400 leading-relaxed">
               Muestran patrones entre tu estado, gastos y hábitos. No son consejos,
               solo información para que tengas más conciencia de cómo se relacionan.
             </p>

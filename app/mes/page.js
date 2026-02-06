@@ -294,16 +294,16 @@ export default function MesPage() {
 
         {/* Mental */}
         {monthData.mental && monthData.mental.average30d > 0 && (
-          <Card className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200 dark:border-purple-800">
+          <Card className="p-4 bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
             <div className="flex items-center gap-2 mb-3">
-              <Brain className="w-6 h-6 text-purple-500" />
+              <Brain className="w-6 h-6 text-zinc-500" />
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Mental</h3>
             </div>
 
             <div className="space-y-2">
               <div className="flex items-baseline justify-between">
                 <span className="text-xs text-zinc-600 dark:text-zinc-400">Promedio mensual</span>
-                <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
                   {monthData.mental.average30d}/10
                 </span>
               </div>
@@ -355,29 +355,29 @@ export default function MesPage() {
 
         {/* Objetivos */}
         {monthData.goals && monthData.goals.total > 0 && (
-          <Card className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 border-blue-200 dark:border-blue-800">
+          <Card className="p-4 bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
             <div className="flex items-center gap-2 mb-3">
-              <Target className="w-6 h-6 text-indigo-500" />
+              <Target className="w-6 h-6 text-zinc-500" />
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Objetivos</h3>
             </div>
 
             <div className="space-y-2">
               <div className="flex items-baseline justify-between">
                 <span className="text-xs text-zinc-600 dark:text-zinc-400">Activos</span>
-                <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
                   {monthData.goals.total}
                 </span>
               </div>
 
               <div className="flex items-baseline justify-between">
                 <span className="text-xs text-zinc-600 dark:text-zinc-400">Progreso promedio</span>
-                <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
+                <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                   {monthData.goals.averageProgress}%
                 </span>
               </div>
 
               {monthData.goals.atRisk > 0 && (
-                <div className="text-xs text-orange-600 dark:text-orange-400 border-t border-blue-200 dark:border-blue-700 pt-2 mt-2">
+                <div className="text-xs text-orange-600 dark:text-orange-400 border-t border-zinc-200 dark:border-zinc-700 pt-2 mt-2">
                   {monthData.goals.atRisk} en riesgo
                 </div>
               )}
@@ -397,8 +397,8 @@ export default function MesPage() {
               {retrospective.mental && (
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <Brain className="w-5 h-5 text-purple-500" />
-                    <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">Mental</span>
+                    <Brain className="w-5 h-5 text-zinc-500" />
+                    <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Mental</span>
                   </div>
                   <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">
                     {retrospective.mental.text}
@@ -433,8 +433,8 @@ export default function MesPage() {
               {retrospective.goals && (
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <Target className="w-5 h-5 text-indigo-500" />
-                    <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">Objetivos</span>
+                    <Target className="w-5 h-5 text-zinc-500" />
+                    <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Objetivos</span>
                   </div>
                   <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">
                     {retrospective.goals.text}
@@ -462,7 +462,7 @@ export default function MesPage() {
                     {highlight.type === 'longest_streak' && <Dumbbell className="w-3 h-3 text-orange-500" />}
                     {highlight.type === 'highest_weekly_spending' && <CreditCard className="w-3 h-3 text-red-500" />}
                     {highlight.type === 'category_spike' && <TrendingUp className="w-3 h-3 text-amber-500" />}
-                    {highlight.type === 'mental_trend_change' && <ArrowDownRight className="w-3 h-3 text-purple-500" />}
+                    {highlight.type === 'mental_trend_change' && <ArrowDownRight className="w-3 h-3 text-zinc-500" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-zinc-900 dark:text-zinc-100">

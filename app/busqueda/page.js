@@ -123,7 +123,7 @@ export default function BusquedaPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar en movimientos, notas, estados, objetivos..."
-            className="w-full px-4 py-3 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+            className="w-full px-4 py-3 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-terra-500 dark:focus:ring-terra-400"
           />
           {query && (
             <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-2 px-1">
@@ -135,8 +135,8 @@ export default function BusquedaPage() {
         {/* Resultados */}
         {!query.trim() ? (
           <Card className="p-8 text-center">
-            <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-              <Search className="w-7 h-7 text-blue-500 dark:text-blue-400" />
+            <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+              <Search className="w-7 h-7 text-zinc-500 dark:text-zinc-400" />
             </div>
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
               Buscar en todo
@@ -189,7 +189,7 @@ export default function BusquedaPage() {
             {results.notas.length > 0 && (
               <div className="space-y-2">
                 <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1 flex items-center gap-2">
-                  <StickyNote className="w-4 h-4 text-blue-500" /> Notas ({results.notas.length})
+                  <StickyNote className="w-4 h-4 text-terra-500" /> Notas ({results.notas.length})
                 </h3>
                 {results.notas.map((n) => (
                   <Card key={n.id} className="p-3">
@@ -199,7 +199,7 @@ export default function BusquedaPage() {
                     <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                       {formatDate(n.created_at)}
                       {n.type && (
-                        <span className="ml-2 inline-block px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 capitalize">
+                        <span className="ml-2 inline-block px-2 py-0.5 rounded-full bg-terra-100 dark:bg-terra-900/30 text-terra-700 dark:text-terra-300 capitalize">
                           {n.type}
                         </span>
                       )}
@@ -213,7 +213,7 @@ export default function BusquedaPage() {
             {results.estados.length > 0 && (
               <div className="space-y-2">
                 <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1 flex items-center gap-2">
-                  <Brain className="w-4 h-4 text-purple-500" /> Estados Mentales ({results.estados.length})
+                  <Brain className="w-4 h-4 text-zinc-500" /> Estados Mentales ({results.estados.length})
                 </h3>
                 {results.estados.map((e) => (
                   <Card key={e.id} className="p-3">
@@ -227,7 +227,7 @@ export default function BusquedaPage() {
                         </div>
                       </div>
                       {e.meta?.mood_score && (
-                        <div className="text-lg font-bold text-purple-600 dark:text-purple-400 ml-3">
+                        <div className="text-lg font-bold text-zinc-600 dark:text-zinc-400 ml-3">
                           {e.meta.mood_score}/10
                         </div>
                       )}
@@ -241,7 +241,7 @@ export default function BusquedaPage() {
             {results.objetivos.length > 0 && (
               <div className="space-y-2">
                 <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1 flex items-center gap-2">
-                  <Target className="w-4 h-4 text-indigo-500" /> Objetivos ({results.objetivos.length})
+                  <Target className="w-4 h-4 text-zinc-500" /> Objetivos ({results.objetivos.length})
                 </h3>
                 {results.objetivos.map((g) => (
                   <a key={g.id} href="/objetivos">
@@ -259,7 +259,7 @@ export default function BusquedaPage() {
                         </div>
                         <div className="ml-3">
                           <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
-                            g.status === 'active' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' :
+                            g.status === 'active' ? 'bg-terra-100 dark:bg-terra-900/30 text-terra-700 dark:text-terra-300' :
                             g.status === 'completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' :
                             'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
                           }`}>
