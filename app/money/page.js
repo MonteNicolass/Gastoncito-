@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { initDB, getMovimientos, getWallets, getSubscriptions, addMovimiento, updateSaldo } from '@/lib/storage'
 import { seedPredefinedCategories } from '@/lib/seed-categories'
-import { getSpendingAwareness, getRecentShortcuts, getMonthComparisonData, getTopCategoriesData } from '@/lib/gasti'
+import { getRecentShortcuts } from '@/lib/gasti'
 import { runRatoneandoEngine } from '@/lib/ratoneando'
 import { getTrackedProducts, getPricesForProduct, getAveragePrice } from '@/lib/ratoneando/price-storage'
 import TopBar from '@/components/ui/TopBar'
@@ -14,18 +14,7 @@ import QuickAddModal from '@/components/ui/QuickAddModal'
 import PriceComparisonTable from '@/components/PriceComparisonTable'
 import BestStoreCard from '@/components/BestStoreCard'
 import SavingsCard from '@/components/SavingsCard'
-import CartOptimizationCompare from '@/components/CartOptimizationCompare'
-import MonthlySpendSnapshot from '@/components/MonthlySpendSnapshot'
-import FinancialHealthCard from '@/components/FinancialHealthCard'
-import ProductPriceComparison from '@/components/ProductPriceComparison'
-import PriceHistorySummary from '@/components/PriceHistorySummary'
-import MonthlySpendingOverview from '@/components/MonthlySpendingOverview'
-import FinancialHealthSnapshot from '@/components/FinancialHealthSnapshot'
 import FinancialAlertCard from '@/components/FinancialAlertCard'
-import { getComparatorSummary } from '@/lib/prices/priceComparator'
-import { getPriceHistoryOverview } from '@/lib/prices/priceHistory'
-import { calculateHealthSnapshot } from '@/lib/finance/healthSnapshot'
-import { getMonthlySpendingSummary } from '@/lib/finance/monthlySpending'
 import { generateFinancialAlerts } from '@/lib/finance/alerts'
 import {
   Wallet,
@@ -41,8 +30,6 @@ import {
   CheckCircle,
   LineChart,
   ArrowRightLeft,
-  Plus,
-  Repeat,
   Zap,
   ShoppingCart
 } from 'lucide-react'
@@ -60,16 +47,8 @@ export default function MoneyPage() {
   const [showQuickAdd, setShowQuickAdd] = useState(false)
   const [wallets, setWallets] = useState([])
   const [shortcuts, setShortcuts] = useState([])
-  const [spendingAwareness, setSpendingAwareness] = useState(null)
-  const [monthComparison, setMonthComparison] = useState(null)
-  const [topCategories, setTopCategories] = useState(null)
   const [ratoneando, setRatoneando] = useState(null)
   const [priceRows, setPriceRows] = useState([])
-  const [subscriptionsTotal, setSubscriptionsTotal] = useState(0)
-  const [comparatorSummary, setComparatorSummary] = useState(null)
-  const [priceHistoryOverview, setPriceHistoryOverview] = useState(null)
-  const [healthSnapshot, setHealthSnapshot] = useState(null)
-  const [spendingSummary, setSpendingSummary] = useState(null)
   const [financialAlerts, setFinancialAlerts] = useState([])
 
   useEffect(() => {
@@ -86,18 +65,8 @@ export default function MoneyPage() {
       const walletsData = await getWallets()
       setWallets(walletsData)
 
-      // Load gasti data
       const shortcutsData = getRecentShortcuts(movimientos, 4)
       setShortcuts(shortcutsData)
-
-      const awarenessData = getSpendingAwareness(movimientos)
-      setSpendingAwareness(awarenessData)
-
-      const comparisonData = getMonthComparisonData(movimientos)
-      setMonthComparison(comparisonData)
-
-      const categoriesData = getTopCategoriesData(movimientos, 5)
-      setTopCategories(categoriesData)
 
       // Ratoneando engine
       try {
@@ -122,32 +91,13 @@ export default function MoneyPage() {
         setPriceRows(rows)
       } catch { /* silent */ }
 
-      // Subscriptions total
+      // Financial alerts
       let activeSubs = []
       try {
         const subs = await getSubscriptions()
         activeSubs = subs.filter(s => s.active !== false)
-        const total = activeSubs.reduce((sum, s) => sum + (s.monto || s.amount || 0), 0)
-        setSubscriptionsTotal(total)
       } catch { /* silent */ }
 
-      // Price comparator + history
-      try {
-        setComparatorSummary(getComparatorSummary())
-        setPriceHistoryOverview(getPriceHistoryOverview())
-      } catch { /* silent */ }
-
-      // Monthly spending summary
-      try {
-        setSpendingSummary(getMonthlySpendingSummary(movimientos))
-      } catch { /* silent */ }
-
-      // Health snapshot
-      try {
-        setHealthSnapshot(calculateHealthSnapshot(movimientos, activeSubs))
-      } catch { /* silent */ }
-
-      // Financial alerts
       try {
         setFinancialAlerts(generateFinancialAlerts(movimientos, activeSubs))
       } catch { /* silent */ }
@@ -282,7 +232,7 @@ export default function MoneyPage() {
       <TopBar title="Money" />
 
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-5">
-        {/* Hero Section - Editorial */}
+        {/* Hero Section */}
         <Card className="p-6 space-y-5">
           <div className="flex items-center gap-2">
             <Wallet className="w-4 h-4 text-terra-500" strokeWidth={1.75} />
@@ -328,7 +278,6 @@ export default function MoneyPage() {
             />
           </div>
 
-          {/* Bottom indicators */}
           {(stats?.controlStreak > 0 || stats?.budgetUsage) && (
             <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
               {stats?.controlStreak > 0 && (
@@ -370,130 +319,7 @@ export default function MoneyPage() {
           <ChevronRight className="w-4 h-4 text-white/60" />
         </button>
 
-        {/* ── Savings Card (Ahorro potencial) ── */}
-        {ratoneando?.hasData && ratoneando.totalPotentialSavings >= 500 && (
-          <SavingsCard
-            totalSavings={ratoneando.totalPotentialSavings}
-            items={(ratoneando.recommendations || []).slice(0, 2).map(r => ({
-              message: r.message,
-              amount: r.monthlySavings || 0,
-            }))}
-            subtitle="Sin cambiar tus hábitos"
-          />
-        )}
-
-        {/* ── Best Store Card (Dónde comprás) ── */}
-        {ratoneando?.hasData && ratoneando.patterns?.preferredSupermarkets?.length > 0 && (
-          <BestStoreCard
-            stores={ratoneando.patterns.preferredSupermarkets.slice(0, 3).map(s => ({
-              name: s.name || s.normalized,
-              totalSpent: s.totalSpent,
-              visits: s.count,
-              avgBasket: s.avgSpend,
-            }))}
-          />
-        )}
-
-        {/* ── Cart Optimization Compare ── */}
-        {ratoneando?.hasData && ratoneando.cartOptimization?.alternative && (
-          <CartOptimizationCompare
-            single={{
-              store: ratoneando.cartOptimization.alternative.store,
-              cost: ratoneando.cartOptimization.alternative.estimatedCost,
-              items: ratoneando.cartOptimization.basketSize,
-              coverage: 80,
-            }}
-            optimized={{
-              store: ratoneando.cartOptimization.recommendation.store,
-              cost: ratoneando.cartOptimization.recommendation.estimatedCost,
-              items: ratoneando.cartOptimization.recommendation.itemsFound || ratoneando.cartOptimization.basketSize,
-              coverage: ratoneando.cartOptimization.recommendation.coverage,
-            }}
-            basketSize={ratoneando.cartOptimization.basketSize}
-          />
-        )}
-
-        {/* ── Price Comparison Table ── */}
-        {priceRows.length > 0 && (
-          <PriceComparisonTable rows={priceRows} />
-        )}
-
-        {/* ── Global Price Comparator (MiráPrecios) ── */}
-        {comparatorSummary?.hasData && (
-          <ProductPriceComparison summary={comparatorSummary} />
-        )}
-
-        {/* ── Price History (MiráPrecios) ── */}
-        {priceHistoryOverview?.hasData && (
-          <PriceHistorySummary overview={priceHistoryOverview} />
-        )}
-
-        {/* ── Financial Alerts ── */}
-        {financialAlerts.length > 0 && (
-          <FinancialAlertCard alerts={financialAlerts} />
-        )}
-
-        {/* Spending Awareness */}
-        {spendingAwareness && spendingAwareness.recentCount > 0 && (
-          <Card className="p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <BarChart3 className="w-4 h-4 text-terra-500" strokeWidth={1.75} />
-              <span className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
-                Últimos 30 días
-              </span>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center">
-                <p className="text-2xl font-display font-bold text-zinc-900 dark:text-zinc-100">
-                  {spendingAwareness.recentCount}
-                </p>
-                <p className="text-[10px] text-zinc-400">gastos</p>
-              </div>
-              <div className="text-center">
-                <p className="text-lg font-display font-bold text-zinc-900 dark:text-zinc-100">
-                  {formatAmount(spendingAwareness.dailyAvg)}
-                </p>
-                <p className="text-[10px] text-zinc-400">prom/día</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-display font-bold text-zinc-900 dark:text-zinc-100">
-                  {spendingAwareness.peakDayName}
-                </p>
-                <p className="text-[10px] text-zinc-400">día pico</p>
-              </div>
-            </div>
-            {/* Mini bar chart by day of week */}
-            <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-end gap-1 h-8">
-              {spendingAwareness.byDayOfWeek.map((d, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                  <div
-                    className={`w-full rounded-sm transition-all ${d.isMax ? 'bg-terra-500' : 'bg-zinc-200 dark:bg-zinc-700'}`}
-                    style={{ height: `${Math.max(4, (d.count / Math.max(...spendingAwareness.byDayOfWeek.map(x => x.count))) * 32)}px` }}
-                  />
-                  <span className="text-[9px] font-mono text-zinc-400">{d.day}</span>
-                </div>
-              ))}
-            </div>
-          </Card>
-        )}
-
-        {/* ── Monthly Spending Overview (Gasti mode) ── */}
-        {spendingSummary && spendingSummary.currentSpend > 0 && (
-          <MonthlySpendingOverview
-            summary={spendingSummary}
-            onCategoryClick={(cat) => router.push('/money/movimientos')}
-          />
-        )}
-
-        {/* ── Financial Health Snapshot (FinanzasArgy) ── */}
-        {healthSnapshot && (
-          <FinancialHealthSnapshot
-            snapshot={healthSnapshot}
-            onIncomeUpdated={() => loadStats()}
-          />
-        )}
-
-        {/* Navigation - Gestión */}
+        {/* Navigation - Gestión (ABOVE cards) */}
         <div className="space-y-2">
           <h3 className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest px-1">
             Gestión
@@ -543,6 +369,40 @@ export default function MoneyPage() {
             ))}
           </div>
         </div>
+
+        {/* Financial Alerts (max 2) */}
+        {financialAlerts.length > 0 && (
+          <FinancialAlertCard alerts={financialAlerts.slice(0, 2)} />
+        )}
+
+        {/* Savings Card */}
+        {ratoneando?.hasData && ratoneando.totalPotentialSavings >= 500 && (
+          <SavingsCard
+            totalSavings={ratoneando.totalPotentialSavings}
+            items={(ratoneando.recommendations || []).slice(0, 2).map(r => ({
+              message: r.message,
+              amount: r.monthlySavings || 0,
+            }))}
+            subtitle="Sin cambiar tus hábitos"
+          />
+        )}
+
+        {/* Best Store Card */}
+        {ratoneando?.hasData && ratoneando.patterns?.preferredSupermarkets?.length > 0 && (
+          <BestStoreCard
+            stores={ratoneando.patterns.preferredSupermarkets.slice(0, 3).map(s => ({
+              name: s.name || s.normalized,
+              totalSpent: s.totalSpent,
+              visits: s.count,
+              avgBasket: s.avgSpend,
+            }))}
+          />
+        )}
+
+        {/* Price Comparison Table */}
+        {priceRows.length > 0 && (
+          <PriceComparisonTable rows={priceRows} />
+        )}
       </div>
 
       {/* Quick Add Modal */}

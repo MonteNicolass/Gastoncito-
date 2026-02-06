@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { initDB, getLifeEntries } from '@/lib/storage'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
-import ProgressRing from '@/components/ui/ProgressRing'
 import {
   Dumbbell,
   TrendingUp,
@@ -19,15 +18,11 @@ import {
   Plus,
   Calendar
 } from 'lucide-react'
-import PhysicalStatusCard from '@/components/PhysicalStatusCard'
-import ConsistencyBar from '@/components/ConsistencyBar'
 
 export default function FisicoPage() {
   const router = useRouter()
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [consistency, setConsistency] = useState(null)
-  const [activitiesLast14, setActivitiesLast14] = useState(0)
 
   useEffect(() => {
     loadStats()
@@ -94,32 +89,10 @@ export default function FisicoPage() {
 
       const weekActivities = weekEntries.length
 
-      // 14-day consistency bar
-      const last14Entries = physicalEntries.filter(e => new Date(e.created_at) >= twoWeeksAgo)
-      const activeDateSet = new Set(
-        last14Entries.map(e => new Date(e.created_at).toDateString())
-      )
-      setActivitiesLast14(activeDateSet.size)
-
-      const consistencyDays = []
-      for (let i = 13; i >= 0; i--) {
-        const d = new Date(today)
-        d.setDate(d.getDate() - i)
-        consistencyDays.push(activeDateSet.has(d.toDateString()))
-      }
-      setConsistency(consistencyDays)
-
       setStats({ activeDays, streak, daysSinceLast, weekActivities, prevActiveDays, trend })
     } finally {
       setLoading(false)
     }
-  }
-
-  const getScoreColor = (days) => {
-    if (days >= 5) return 'green'
-    if (days >= 3) return 'orange'
-    if (days >= 1) return 'blue'
-    return 'zinc'
   }
 
   if (loading) {
@@ -140,7 +113,7 @@ export default function FisicoPage() {
       <TopBar title="Físico" />
 
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
-        {/* Hero Section - Editorial */}
+        {/* Hero Section */}
         <div className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/50 shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-6 space-y-5">
           <div className="flex items-center gap-2">
             <Dumbbell className="w-4 h-4 text-amber-500" strokeWidth={1.75} />
@@ -149,38 +122,28 @@ export default function FisicoPage() {
             </p>
           </div>
 
-          <div className="flex items-end justify-between">
-            <div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-5xl font-display font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-                  {stats?.activeDays || 0}
-                </span>
-                <span className="text-xl text-zinc-300 dark:text-zinc-600 font-display">días</span>
-              </div>
-              <div className="flex items-center gap-3 mt-2">
-                <span className="text-xs text-zinc-400 dark:text-zinc-500">
-                  {stats?.weekActivities || 0} actividades
-                </span>
-                {stats?.trend && stats.trend !== 'stable' && (
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 ${
-                    stats.trend === 'up'
-                      ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
-                      : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                  }`}>
-                    {stats.trend === 'up' ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                    {stats.trend === 'up' ? 'Más activo' : 'Menos activo'}
-                  </span>
-                )}
-              </div>
+          <div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-5xl font-display font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+                {stats?.activeDays || 0}
+              </span>
+              <span className="text-xl text-zinc-300 dark:text-zinc-600 font-display">días</span>
             </div>
-
-            <ProgressRing
-              progress={stats?.activeDays ? (stats.activeDays / 7) * 100 : 0}
-              size={80}
-              strokeWidth={6}
-              color={getScoreColor(stats?.activeDays || 0)}
-              showLabel={false}
-            />
+            <div className="flex items-center gap-3 mt-2">
+              <span className="text-xs text-zinc-400 dark:text-zinc-500">
+                {stats?.weekActivities || 0} actividades
+              </span>
+              {stats?.trend && stats.trend !== 'stable' && (
+                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                  stats.trend === 'up'
+                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
+                    : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                }`}>
+                  {stats.trend === 'up' ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                  {stats.trend === 'up' ? 'Más activo' : 'Menos activo'}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Weekly progress dots */}
@@ -230,17 +193,6 @@ export default function FisicoPage() {
           </div>
           <ChevronRight className="w-4 h-4 text-white/60" />
         </button>
-
-        {/* Physical Status Card */}
-        <PhysicalStatusCard
-          daysSinceLast={stats?.daysSinceLast ?? null}
-          activitiesLast14={activitiesLast14}
-          trend={stats?.trend || 'stable'}
-          streak={stats?.streak || 0}
-        />
-
-        {/* Consistency Bar */}
-        {consistency && <ConsistencyBar activeDays={consistency} />}
 
         {/* Navigation */}
         <div className="space-y-2">

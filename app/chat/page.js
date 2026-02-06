@@ -556,8 +556,8 @@ export default function ChatPage() {
 
             {/* Welcome Message (always shown first) */}
             <div className="flex gap-3">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/20">
-                <Sparkles className="w-4 h-4 text-white" />
+              <div className="w-9 h-9 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-4 h-4 text-white dark:text-zinc-900" />
               </div>
               <div className="flex-1">
                 <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl rounded-tl-md px-4 py-3 inline-block max-w-[280px]">
@@ -574,13 +574,13 @@ export default function ChatPage() {
             {/* Alert Context Message (when there's an active alert) */}
             {alertContext && !hasMessages && (
               <div className="flex gap-3 mt-2">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/20">
+                <div className="w-9 h-9 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
                   {alertContext.severity === 'high' ? (
-                    <AlertTriangle className="w-4 h-4 text-white" />
+                    <AlertTriangle className="w-4 h-4 text-white dark:text-zinc-900" />
                   ) : alertContext.type === 'wellness' ? (
-                    <Heart className="w-4 h-4 text-white" />
+                    <Heart className="w-4 h-4 text-white dark:text-zinc-900" />
                   ) : (
-                    <Bell className="w-4 h-4 text-white" />
+                    <Bell className="w-4 h-4 text-white dark:text-zinc-900" />
                   )}
                 </div>
                 <div className="flex-1">
@@ -620,8 +620,8 @@ export default function ChatPage() {
             {/* Ratoneando Context Message (savings opportunity) */}
             {ratoneandoContext && !alertContext && !hasMessages && (
               <div className="flex gap-3 mt-2">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-500/20">
-                  <PiggyBank className="w-4 h-4 text-white" />
+                <div className="w-9 h-9 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                  <PiggyBank className="w-4 h-4 text-white dark:text-zinc-900" />
                 </div>
                 <div className="flex-1">
                   <div className="rounded-2xl rounded-tl-md px-4 py-3 inline-block max-w-[280px] bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800">
@@ -640,7 +640,7 @@ export default function ChatPage() {
                           }
                           setRatoneandoContext(null)
                         }}
-                        className="mt-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 dark:bg-emerald-500 text-white transition-all active:scale-95"
+                        className="mt-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 transition-all active:scale-95"
                       >
                         {ratoneandoContext.action.label}
                       </button>
@@ -689,14 +689,14 @@ export default function ChatPage() {
                   </div>
                 ) : (
                   <div className="flex gap-3">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/20">
-                      <Sparkles className="w-4 h-4 text-white" />
+                    <div className="w-9 h-9 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                      <Sparkles className="w-4 h-4 text-white dark:text-zinc-900" />
                     </div>
                     <div className="flex-1">
                       <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl rounded-tl-md px-4 py-3 inline-block max-w-[280px]">
                         <p className="text-sm text-zinc-900 dark:text-zinc-100 leading-relaxed">{m.text}</p>
                         {m.hint && (
-                          <p className="text-xs text-purple-600 dark:text-purple-400 mt-1.5 font-medium">
+                          <p className="text-xs text-terra-600 dark:text-terra-400 mt-1.5 font-medium">
                             {m.hint}
                           </p>
                         )}
@@ -775,7 +775,7 @@ export default function ChatPage() {
                   <button
                     key={i}
                     onClick={() => handleSuggestionClick(s)}
-                    className="px-3 py-1.5 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium hover:bg-purple-100 dark:hover:bg-purple-900/30 active:scale-95 transition-all whitespace-nowrap"
+                    className="px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-full text-xs font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 active:scale-95 transition-all whitespace-nowrap"
                   >
                     {s.label}
                   </button>
@@ -821,7 +821,7 @@ export default function ChatPage() {
             <div className="relative">
               <input
                 ref={inputRef}
-                className="w-full px-4 py-3.5 pr-12 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50 transition-all text-[15px]"
+                className="w-full px-4 py-3.5 pr-12 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-terra-500/30 focus:border-terra-500/50 transition-all text-[15px]"
                 placeholder="Escribí lo que quieras registrar..."
                 value={input}
                 onChange={e => setInput(e.target.value)}
@@ -836,7 +836,7 @@ export default function ChatPage() {
               <button
                 onClick={handleSend}
                 disabled={!input.trim()}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:from-purple-600 hover:to-pink-600 active:scale-95 transition-all shadow-lg shadow-purple-500/20 disabled:shadow-none"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:bg-zinc-800 dark:hover:bg-zinc-200 active:scale-95 transition-all"
                 data-testid="chat-send-btn"
               >
                 <Send className="w-4 h-4" />

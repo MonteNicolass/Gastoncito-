@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { initDB, getLifeEntries } from '@/lib/storage'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
-import ProgressRing from '@/components/ui/ProgressRing'
 import {
   Brain,
   TrendingUp,
@@ -16,22 +15,13 @@ import {
   BookOpen,
   LineChart,
   Plus,
-  Smile,
-  Frown,
   Meh
 } from 'lucide-react'
-import MentalStatusCard from '@/components/MentalStatusCard'
-import MentalInsightHighlight from '@/components/MentalInsightHighlight'
-import { getAverageMood, getMoodTrend, getMoodStreaks, getMoodVariability } from '@/lib/insights/mentalInsights'
-import { getSpendingByMood, getMoodByExercise } from '@/lib/insights/crossInsights'
-import { getMovimientos } from '@/lib/storage'
 
 export default function MentalPage() {
   const router = useRouter()
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [mentalStatus, setMentalStatus] = useState(null)
-  const [crossInsights, setCrossInsights] = useState([])
 
   useEffect(() => {
     loadStats()
@@ -102,61 +92,9 @@ export default function MentalPage() {
       }
 
       setStats({ weekAvg, streak, daysThisWeek, totalWeekEntries: weekEntries.length, prevWeekAvg, variability, trend })
-
-      // Mental status card data
-      const avg7 = getAverageMood(entries, 7)
-      const moodTrend = getMoodTrend(entries)
-      const streaks = getMoodStreaks(entries, 30)
-      const moodVar = getMoodVariability(entries, 7)
-
-      setMentalStatus({
-        average: avg7?.average || null,
-        count: avg7?.count || 0,
-        trend: moodTrend?.trend || null,
-        delta: moodTrend?.delta || null,
-        lowStreak: streaks?.lowStreak || null,
-        variability: moodVar?.interpretation || null,
-      })
-
-      // Cross insights
-      try {
-        const movimientos = await getMovimientos()
-        const insights = []
-
-        const spendMood = getSpendingByMood(movimientos, entries, 30)
-        if (spendMood && spendMood.deltaPercent > 15) {
-          insights.push({
-            text: `En días con peor estado mental, gastaste ${Math.round(spendMood.deltaPercent)}% más.`,
-            type: 'spending_mood',
-          })
-        }
-
-        const moodExercise = getMoodByExercise(entries, 30)
-        if (moodExercise && moodExercise.delta > 0.5) {
-          insights.push({
-            text: `Los días sin ejercicio coinciden con estados ${(Math.round(moodExercise.delta * 10) / 10).toFixed(1)} puntos más bajos.`,
-            type: 'exercise_mood',
-          })
-        }
-
-        setCrossInsights(insights)
-      } catch { /* silent */ }
     } finally {
       setLoading(false)
     }
-  }
-
-  const getScoreColor = (score) => {
-    if (score >= 7) return 'green'
-    if (score >= 5) return 'purple'
-    if (score >= 3) return 'orange'
-    return 'zinc'
-  }
-
-  const getMoodIcon = (score) => {
-    if (score >= 7) return Smile
-    if (score >= 4) return Meh
-    return Frown
   }
 
   if (loading) {
@@ -172,14 +110,12 @@ export default function MentalPage() {
     )
   }
 
-  const MoodIcon = stats?.weekAvg ? getMoodIcon(stats.weekAvg) : Meh
-
   return (
     <div className="flex flex-col min-h-screen pb-24 bg-zinc-50 dark:bg-zinc-950">
       <TopBar title="Mental" />
 
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
-        {/* Hero Section - Editorial */}
+        {/* Hero Section */}
         <div className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/50 shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-6 space-y-5">
           <div className="flex items-center gap-2">
             <Brain className="w-4 h-4 text-purple-500" strokeWidth={1.75} />
@@ -188,38 +124,28 @@ export default function MentalPage() {
             </p>
           </div>
 
-          <div className="flex items-end justify-between">
-            <div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-5xl font-display font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-                  {stats?.weekAvg ? (Math.round(stats.weekAvg * 10) / 10) : '–'}
-                </span>
-                <span className="text-xl text-zinc-300 dark:text-zinc-600 font-display">/10</span>
-              </div>
-              <div className="flex items-center gap-3 mt-2">
-                <span className="text-xs text-zinc-400 dark:text-zinc-500">
-                  {stats?.daysThisWeek || 0}/7 días
-                </span>
-                {stats?.trend && stats.trend !== 'stable' && (
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 ${
-                    stats.trend === 'up'
-                      ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
-                      : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                  }`}>
-                    {stats.trend === 'up' ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                    {stats.trend === 'up' ? 'Mejorando' : 'Bajando'}
-                  </span>
-                )}
-              </div>
+          <div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-5xl font-display font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+                {stats?.weekAvg ? (Math.round(stats.weekAvg * 10) / 10) : '–'}
+              </span>
+              <span className="text-xl text-zinc-300 dark:text-zinc-600 font-display">/10</span>
             </div>
-
-            <ProgressRing
-              progress={stats?.weekAvg ? stats.weekAvg * 10 : 0}
-              size={80}
-              strokeWidth={6}
-              color={stats?.weekAvg ? getScoreColor(stats.weekAvg) : 'zinc'}
-              showLabel={false}
-            />
+            <div className="flex items-center gap-3 mt-2">
+              <span className="text-xs text-zinc-400 dark:text-zinc-500">
+                {stats?.daysThisWeek || 0}/7 días
+              </span>
+              {stats?.trend && stats.trend !== 'stable' && (
+                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                  stats.trend === 'up'
+                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
+                    : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                }`}>
+                  {stats.trend === 'up' ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                  {stats.trend === 'up' ? 'Mejorando' : 'Bajando'}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Weekly progress dots */}
@@ -261,21 +187,6 @@ export default function MentalPage() {
           </div>
           <ChevronRight className="w-4 h-4 text-white/60" />
         </button>
-
-        {/* Mental Status Card */}
-        {mentalStatus && (
-          <MentalStatusCard
-            average={mentalStatus.average}
-            count={mentalStatus.count}
-            trend={mentalStatus.trend}
-            delta={mentalStatus.delta}
-            lowStreak={mentalStatus.lowStreak}
-            variability={mentalStatus.variability}
-          />
-        )}
-
-        {/* Cross-domain insights */}
-        <MentalInsightHighlight insights={crossInsights} />
 
         {/* Navigation */}
         <div className="space-y-2">

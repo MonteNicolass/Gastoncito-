@@ -97,14 +97,15 @@ test.describe('Home - Elementos clave', () => {
     expect(hasAlertas || hasEmpty, 'Ni alertas ni empty state visible').toBe(true)
   })
 
-  test('snapshots de Economía, Mental y Físico presentes', async ({ page }) => {
+  test('resumen muestra contenido o empty state', async ({ page }) => {
     await page.goto('/vision')
     await page.waitForTimeout(3000)
 
-    // 3-column grid con los pilares
-    await expect(page.getByText('Money').first()).toBeVisible()
-    await expect(page.getByText('Mental').first()).toBeVisible()
-    await expect(page.getByText('Físico').first()).toBeVisible()
+    // With data: Economy + Bienestar blocks. Without data: EmptyState
+    const hasEconomy = await page.getByText('Este mes').first().isVisible().catch(() => false)
+    const hasEmpty = await page.getByText('Sin registros todavía').first().isVisible().catch(() => false)
+
+    expect(hasEconomy || hasEmpty, 'Ni contenido ni empty state visible').toBe(true)
   })
 
   test('chat input accesible desde /chat', async ({ page }) => {
