@@ -24,11 +24,14 @@ import type { Movimiento } from '@/lib/economic-alerts-engine'
 import type { MentalRecord } from '@/lib/mental-engine'
 import type { PhysicalRecord } from '@/lib/physical-engine'
 import { runRatoneandoEngine } from '@/lib/ratoneando'
+import { getMonthComparisonData, getTopCategoriesData } from '@/lib/gasti'
 import AlertCard from '@/components/AlertCard'
 import GoalsProgress from '@/components/GoalsProgress'
 import NotesPreview from '@/components/NotesPreview'
 import EmptyState from '@/components/EmptyState'
-import SavingsHighlight from '@/components/SavingsHighlight'
+import SavingsCard from '@/components/SavingsCard'
+import MonthlySpendSnapshot from '@/components/MonthlySpendSnapshot'
+import FinancialHealthCard from '@/components/FinancialHealthCard'
 import MentalStatusCard from '@/components/MentalStatusCard'
 import PhysicalStatusCard from '@/components/PhysicalStatusCard'
 import MentalInsightHighlight from '@/components/MentalInsightHighlight'
@@ -38,9 +41,6 @@ import Card from '@/components/ui/Card'
 import TopBar from '@/components/ui/TopBar'
 import { Skeleton } from '@/components/ui/Skeleton'
 import {
-  Wallet,
-  TrendingUp,
-  TrendingDown,
   AlertTriangle,
   ChevronRight,
   Activity,
@@ -180,6 +180,12 @@ interface ResumenData {
   hasAnyData: boolean
   savingsAmount: number
   savingsSubtitle: string | null
+  savingsItems: { message: string; amount: number }[]
+  monthlyIncome: number
+  monthlyExpenses: number
+  topCategories: { name: string; amount: number; percent: number; color: string }[]
+  subscriptionsTotal: number
+  monthComparison: { label: string; amount: number; percent: number; isCurrent: boolean }[]
   mentalAvg: number | null
   mentalCount: number
   mentalTrend: 'Mejorando' | 'Bajando' | 'Estable' | null
@@ -249,13 +255,44 @@ export default function ResumenGeneral() {
 
       let savingsAmount = 0
       let savingsSubtitle: string | null = null
+      let savingsItems: { message: string; amount: number }[] = []
       try {
         const rat = await runRatoneandoEngine(movimientos)
         if (rat?.hasData) {
           savingsAmount = rat.totalPotentialSavings || 0
           savingsSubtitle = rat.recommendations?.[0]?.message || null
+          savingsItems = (rat.recommendations || []).slice(0, 2).map((r: any) => ({
+            message: r.message,
+            amount: r.monthlySavings || 0,
+          }))
         }
       } catch { /* silent */ }
+
+      // Monthly comparison + top categories for financial health
+      const monthCompRaw = getMonthComparisonData(movimientos as any[])
+      const monthComparison = (monthCompRaw || []).map((m: any, i: number) => ({
+        label: m.month,
+        amount: m.total,
+        percent: m.percentage,
+        isCurrent: i === (monthCompRaw || []).length - 1,
+      }))
+
+      const topCatsRaw = getTopCategoriesData(movimientos as any[], 3)
+      const topCategories = (topCatsRaw || []).map((c: any) => ({
+        name: c.name,
+        amount: c.amount,
+        percent: c.percentage,
+        color: c.color || 'zinc',
+      }))
+
+      const now0 = new Date()
+      const currentMonthStr = now0.toISOString().slice(0, 7)
+      const thisMonthMov = movimientos.filter((m: Movimiento) => m.fecha.startsWith(currentMonthStr))
+      const monthlyIncome = thisMonthMov.filter((m: Movimiento) => m.tipo === 'ingreso').reduce((s: number, m: Movimiento) => s + m.monto, 0)
+      const monthlyExpenses = thisMonthMov.filter((m: Movimiento) => m.tipo === 'gasto').reduce((s: number, m: Movimiento) => s + m.monto, 0)
+
+      const activeSubs = (subscriptions || []).filter((s: any) => s.active !== false)
+      const subscriptionsTotal = activeSubs.reduce((s: number, sub: any) => s + (sub.monto || sub.amount || 0), 0)
 
       // Mental status
       const avg7 = getAverageMood(lifeEntries, 7)
@@ -344,6 +381,12 @@ export default function ResumenGeneral() {
         hasAnyData,
         savingsAmount,
         savingsSubtitle,
+        savingsItems,
+        monthlyIncome,
+        monthlyExpenses,
+        topCategories,
+        subscriptionsTotal,
+        monthComparison,
         mentalAvg: avg7?.average ?? null,
         mentalCount: avg7?.count ?? 0,
         mentalTrend: (moodTrend?.trend as 'Mejorando' | 'Bajando' | 'Estable') ?? null,
@@ -476,53 +519,47 @@ export default function ResumenGeneral() {
 
         {/* ── 2b. Ahorro potencial ── */}
         {data.savingsAmount >= 500 && (
-          <SavingsHighlight
-            amount={data.savingsAmount}
-            subtitle={data.savingsSubtitle || undefined}
-            href="/money/insights"
+          <SavingsCard
+            totalSavings={data.savingsAmount}
+            items={data.savingsItems}
+            subtitle="Sin cambiar tus hábitos"
           />
         )}
 
         {/* ── 3. Pilares – bloques grandes tappables ── */}
 
-        {/* Economy */}
+        {/* Economy - Monthly Spend Snapshot */}
         <button
           onClick={() => navigateTo('/money')}
           className="w-full text-left transition-transform active:scale-[0.98]"
         >
-          <div className="rounded-2xl bg-white dark:bg-zinc-800/50 border border-zinc-200/60 dark:border-zinc-700/60 p-5">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Wallet className="w-4 h-4 text-emerald-500" />
-                <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  Economía este mes
-                </h3>
-              </div>
-              <ChevronRight className="w-4 h-4 text-zinc-400" />
-            </div>
-            <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100">
-                {formatARS(data.econSnap.monthlySpend)}
-              </span>
-              {data.econSnap.deltaVsAvgPercent !== 0 && (
-                <span className={`flex items-center gap-1 text-sm font-medium ${
-                  data.econSnap.deltaVsAvgPercent > 10 ? 'text-red-500' :
-                  data.econSnap.deltaVsAvgPercent < -10 ? 'text-emerald-500' :
-                  'text-zinc-400'
-                }`}>
-                  {data.econSnap.deltaVsAvgPercent > 10 && <TrendingUp className="w-4 h-4" />}
-                  {data.econSnap.deltaVsAvgPercent < -10 && <TrendingDown className="w-4 h-4" />}
-                  {data.econSnap.deltaVsAvgPercent > 0 ? '+' : ''}{data.econSnap.deltaVsAvgPercent}% vs 3m
-                </span>
-              )}
-            </div>
-            {data.econHistory.trend !== 'stable' && (
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2">
-                {data.econHistory.text}
-              </p>
-            )}
-          </div>
+          <MonthlySpendSnapshot
+            currentSpend={data.econSnap.monthlySpend}
+            average={data.monthComparison.length > 0
+              ? data.monthComparison.reduce((s, m) => s + m.amount, 0) / data.monthComparison.length
+              : data.econSnap.monthlySpend
+            }
+            deltaPercent={data.econSnap.deltaVsAvgPercent}
+            trend={data.econSnap.deltaVsAvgPercent > 10 ? 'up' : data.econSnap.deltaVsAvgPercent < -10 ? 'down' : 'stable'}
+            months={data.monthComparison}
+          />
         </button>
+
+        {/* Financial Health */}
+        {(data.monthlyIncome > 0 || data.topCategories.length > 0) && (
+          <button
+            onClick={() => navigateTo('/money')}
+            className="w-full text-left transition-transform active:scale-[0.98]"
+          >
+            <FinancialHealthCard
+              income={data.monthlyIncome}
+              expenses={data.monthlyExpenses}
+              topCategories={data.topCategories}
+              subscriptionsTotal={data.subscriptionsTotal}
+              healthScore={data.score.breakdown.economy}
+            />
+          </button>
+        )}
 
         {/* Mental */}
         <button

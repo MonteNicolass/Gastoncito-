@@ -2,17 +2,21 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { initDB, getMovimientos, getWallets, addMovimiento, updateSaldo } from '@/lib/storage'
+import { initDB, getMovimientos, getWallets, getSubscriptions, addMovimiento, updateSaldo } from '@/lib/storage'
 import { seedPredefinedCategories } from '@/lib/seed-categories'
 import { getSpendingAwareness, getRecentShortcuts, getMonthComparisonData, getTopCategoriesData } from '@/lib/gasti'
 import { runRatoneandoEngine } from '@/lib/ratoneando'
+import { getTrackedProducts, getPricesForProduct, getAveragePrice } from '@/lib/ratoneando/price-storage'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import ProgressRing from '@/components/ui/ProgressRing'
 import QuickAddModal from '@/components/ui/QuickAddModal'
-import SavingsHighlight from '@/components/SavingsHighlight'
-import DecisionCard from '@/components/DecisionCard'
-import CartComparison from '@/components/CartComparison'
+import PriceComparisonTable from '@/components/PriceComparisonTable'
+import BestStoreCard from '@/components/BestStoreCard'
+import SavingsCard from '@/components/SavingsCard'
+import CartOptimizationCompare from '@/components/CartOptimizationCompare'
+import MonthlySpendSnapshot from '@/components/MonthlySpendSnapshot'
+import FinancialHealthCard from '@/components/FinancialHealthCard'
 import {
   Wallet,
   CreditCard,
@@ -49,6 +53,8 @@ export default function MoneyPage() {
   const [monthComparison, setMonthComparison] = useState(null)
   const [topCategories, setTopCategories] = useState(null)
   const [ratoneando, setRatoneando] = useState(null)
+  const [priceRows, setPriceRows] = useState([])
+  const [subscriptionsTotal, setSubscriptionsTotal] = useState(0)
 
   useEffect(() => {
     initDB().then(() => {
@@ -81,6 +87,31 @@ export default function MoneyPage() {
       try {
         const ratoneandoResult = await runRatoneandoEngine(movimientos)
         setRatoneando(ratoneandoResult)
+      } catch { /* silent */ }
+
+      // Price comparison table
+      try {
+        const tracked = getTrackedProducts()
+        const rows = tracked.slice(0, 8).map(p => {
+          const entries = getPricesForProduct(p.product_name).map(e => ({
+            store: e.supermarket,
+            price: e.price,
+          }))
+          const avg = getAveragePrice(p.product_name) || 0
+          const cheapest = entries.length > 0
+            ? entries.reduce((min, e) => e.price < min.price ? e : min, entries[0]).store
+            : ''
+          return { product: p.product_name, entries, cheapestStore: cheapest, avgPrice: avg }
+        }).filter(r => r.entries.length > 0)
+        setPriceRows(rows)
+      } catch { /* silent */ }
+
+      // Subscriptions total
+      try {
+        const subs = await getSubscriptions()
+        const activeSubs = subs.filter(s => s.active !== false)
+        const total = activeSubs.reduce((sum, s) => sum + (s.monto || s.amount || 0), 0)
+        setSubscriptionsTotal(total)
       } catch { /* silent */ }
 
       const now = new Date()
@@ -308,56 +339,52 @@ export default function MoneyPage() {
           <ChevronRight className="w-5 h-5 text-white/60" />
         </button>
 
-        {/* ── Savings Highlight (Ahorro potencial) ── */}
+        {/* ── Savings Card (Ahorro potencial) ── */}
         {ratoneando?.hasData && ratoneando.totalPotentialSavings >= 500 && (
-          <SavingsHighlight
-            amount={ratoneando.totalPotentialSavings}
-            subtitle={ratoneando.recommendations?.[0]?.message}
-            href="/money/insights"
+          <SavingsCard
+            totalSavings={ratoneando.totalPotentialSavings}
+            items={(ratoneando.recommendations || []).slice(0, 2).map(r => ({
+              message: r.message,
+              amount: r.monthlySavings || 0,
+            }))}
+            subtitle="Sin cambiar tus hábitos"
           />
         )}
 
-        {/* ── Decision Card (Dónde comprar) ── */}
-        {ratoneando?.hasData && ratoneando.cartOptimization && (() => {
-          const { recommendation, alternative } = ratoneando.cartOptimization
-          const stores = [
-            {
-              store: recommendation.store,
-              estimatedCost: recommendation.estimatedCost,
-              coverage: recommendation.coverage,
-              badge: 'cheapest',
-            }
-          ]
-          if (alternative) {
-            stores.push({
-              store: alternative.store,
-              estimatedCost: alternative.estimatedCost,
-              coverage: Math.round((recommendation.coverage * recommendation.estimatedCost) / (alternative.estimatedCost || 1)),
-              badge: alternative.percentMore >= 15 ? 'expensive' : 'normal',
-              difference: alternative.difference,
-              percentMore: alternative.percentMore,
-            })
-          }
-          return <DecisionCard stores={stores} />
-        })()}
+        {/* ── Best Store Card (Dónde comprás) ── */}
+        {ratoneando?.hasData && ratoneando.patterns?.preferredSupermarkets?.length > 0 && (
+          <BestStoreCard
+            stores={ratoneando.patterns.preferredSupermarkets.slice(0, 3).map(s => ({
+              name: s.name || s.normalized,
+              totalSpent: s.totalSpent,
+              visits: s.count,
+              avgBasket: s.avgSpend,
+            }))}
+          />
+        )}
 
-        {/* ── Cart Comparison (Changuito) ── */}
+        {/* ── Cart Optimization Compare ── */}
         {ratoneando?.hasData && ratoneando.cartOptimization?.alternative && (
-          <CartComparison
+          <CartOptimizationCompare
             single={{
               store: ratoneando.cartOptimization.alternative.store,
-              estimatedCost: ratoneando.cartOptimization.alternative.estimatedCost,
+              cost: ratoneando.cartOptimization.alternative.estimatedCost,
+              items: ratoneando.cartOptimization.basketSize,
               coverage: 80,
-              itemsFound: ratoneando.cartOptimization.basketSize,
             }}
             optimized={{
               store: ratoneando.cartOptimization.recommendation.store,
-              estimatedCost: ratoneando.cartOptimization.recommendation.estimatedCost,
+              cost: ratoneando.cartOptimization.recommendation.estimatedCost,
+              items: ratoneando.cartOptimization.recommendation.itemsFound || ratoneando.cartOptimization.basketSize,
               coverage: ratoneando.cartOptimization.recommendation.coverage,
-              itemsFound: ratoneando.cartOptimization.recommendation.itemsFound,
             }}
             basketSize={ratoneando.cartOptimization.basketSize}
           />
+        )}
+
+        {/* ── Price Comparison Table ── */}
+        {priceRows.length > 0 && (
+          <PriceComparisonTable rows={priceRows} />
         )}
 
         {/* Spending Awareness */}
@@ -404,70 +431,36 @@ export default function MoneyPage() {
           </div>
         )}
 
-        {/* Month Comparison Bars */}
+        {/* ── Monthly Spend Snapshot ── */}
         {monthComparison && monthComparison.length > 0 && (
-          <div className="p-4 rounded-2xl bg-white dark:bg-zinc-800/50 border border-zinc-200/60 dark:border-zinc-700/60">
-            <div className="flex items-center gap-2 mb-3">
-              <TrendingUp className="w-4 h-4 text-zinc-500" />
-              <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                Comparación mensual
-              </span>
-            </div>
-            <div className="space-y-3">
-              {monthComparison.map((month, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <span className="text-xs text-zinc-500 w-10">{month.month}</span>
-                  <div className="flex-1 h-6 bg-zinc-100 dark:bg-zinc-700 rounded-lg overflow-hidden">
-                    <div
-                      className={`h-full rounded-lg transition-all ${
-                        i === monthComparison.length - 1 ? 'bg-emerald-500' : 'bg-zinc-300 dark:bg-zinc-600'
-                      }`}
-                      style={{ width: `${month.percentage}%` }}
-                    />
-                  </div>
-                  <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 w-16 text-right">
-                    {formatAmount(month.total)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+          <MonthlySpendSnapshot
+            currentSpend={stats?.gastosMes || 0}
+            average={monthComparison.reduce((s, m) => s + m.total, 0) / monthComparison.length}
+            deltaPercent={Math.round(stats?.gastoDiff || 0)}
+            trend={stats?.gastoDiff > 10 ? 'up' : stats?.gastoDiff < -10 ? 'down' : 'stable'}
+            months={monthComparison.map((m, i) => ({
+              label: m.month,
+              amount: m.total,
+              percent: m.percentage,
+              isCurrent: i === monthComparison.length - 1,
+            }))}
+          />
         )}
 
-        {/* Top Categories */}
-        {topCategories && topCategories.length > 0 && (
-          <div className="p-4 rounded-2xl bg-white dark:bg-zinc-800/50 border border-zinc-200/60 dark:border-zinc-700/60">
-            <div className="flex items-center gap-2 mb-3">
-              <Receipt className="w-4 h-4 text-zinc-500" />
-              <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                Top categorías del mes
-              </span>
-            </div>
-            <div className="space-y-2">
-              {topCategories.map((cat, i) => (
-                <div key={cat.id} className="flex items-center gap-3">
-                  <span className="text-xs text-zinc-400 w-4">{i + 1}</span>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 capitalize">
-                        {cat.name}
-                      </span>
-                      <span className="text-xs text-zinc-500">{cat.percentage}%</span>
-                    </div>
-                    <div className="h-1.5 bg-zinc-100 dark:bg-zinc-700 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-emerald-500 rounded-full transition-all"
-                        style={{ width: `${cat.barWidth}%` }}
-                      />
-                    </div>
-                  </div>
-                  <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 w-20 text-right">
-                    {formatAmount(cat.amount)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* ── Financial Health Card ── */}
+        {stats && (stats.ingresosMes > 0 || (topCategories && topCategories.length > 0)) && (
+          <FinancialHealthCard
+            income={stats.ingresosMes}
+            expenses={stats.gastosMes}
+            topCategories={(topCategories || []).slice(0, 3).map(cat => ({
+              name: cat.name,
+              amount: cat.amount,
+              percent: cat.percentage,
+              color: cat.color || 'zinc',
+            }))}
+            subscriptionsTotal={subscriptionsTotal}
+            healthScore={stats.healthScore}
+          />
         )}
 
         {/* Navigation - Gestión */}
