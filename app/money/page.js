@@ -33,7 +33,8 @@ import {
   ArrowRightLeft,
   Plus,
   Repeat,
-  Zap
+  Zap,
+  ShoppingCart
 } from 'lucide-react'
 
 function getBudgetsFromLocalStorage() {
@@ -473,7 +474,8 @@ export default function MoneyPage() {
               { icon: BarChart3, label: 'Resumen mensual', href: '/money/resumen' },
               { icon: ArrowRightLeft, label: 'Movimientos', href: '/money/movimientos' },
               { icon: CreditCard, label: 'Billeteras', href: '/money/billeteras' },
-              { icon: PiggyBank, label: 'Presupuestos', href: '/money/presupuestos' }
+              { icon: PiggyBank, label: 'Presupuestos', href: '/money/presupuestos' },
+              { icon: ShoppingCart, label: 'Carrito de compras', href: '/cart' }
             ].map(({ icon: Icon, label, href }) => (
               <button
                 key={href}

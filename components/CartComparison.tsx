@@ -1,23 +1,11 @@
 'use client'
 
 import Card from '@/components/ui/Card'
-import { ShoppingCart, ArrowRight, CheckCircle } from 'lucide-react'
-
-interface CartOption {
-  store: string
-  estimatedCost: number
-  coverage: number
-  itemsFound: number
-}
+import { Store, Shuffle, CheckCircle } from 'lucide-react'
+import type { OptimizationResult } from '@/lib/cart/cartOptimizer'
 
 interface Props {
-  single: CartOption
-  optimized: CartOption
-  basketSize: number
-}
-
-function capitalize(s: string) {
-  return s.charAt(0).toUpperCase() + s.slice(1)
+  optimization: OptimizationResult
 }
 
 function formatARS(amount: number) {
@@ -28,79 +16,98 @@ function formatARS(amount: number) {
   }).format(amount)
 }
 
-export default function CartComparison({ single, optimized, basketSize }: Props) {
-  if (!single || !optimized) return null
+function capitalize(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
 
-  const savings = single.estimatedCost - optimized.estimatedCost
-  if (savings < 1000) return null
-
-  const savingsPercent = Math.round((savings / single.estimatedCost) * 100)
-  const bestIsOptimized = optimized.estimatedCost < single.estimatedCost
+export default function CartComparison({ optimization }: Props) {
+  const { optionA, optionB, savings, savingsPercent, bestStrategy } = optimization
+  const singleWins = bestStrategy === 'single_store'
+  const multiWins = bestStrategy === 'multi_store'
 
   return (
-    <div className="space-y-2.5">
-      <div className="flex items-center gap-2 px-1">
-        <ShoppingCart className="w-4 h-4 text-zinc-500" />
-        <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-          Tu changuito ({basketSize} productos)
-        </h3>
-      </div>
+    <div className="space-y-3">
+      <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider px-1">
+        Opciones de compra
+      </h3>
 
       <div className="grid grid-cols-2 gap-3">
         {/* Option A: Single store */}
-        <Card className={`p-4 ${!bestIsOptimized ? 'ring-1 ring-emerald-500/20' : 'opacity-75'}`}>
-          <div className="space-y-2.5">
+        <Card className={`p-4 relative overflow-hidden ${singleWins ? 'ring-1 ring-emerald-500/20' : 'opacity-80'}`}>
+          <div className="space-y-3">
             <div className="flex items-center gap-1.5">
-              <div className={`w-2 h-2 rounded-full ${!bestIsOptimized ? 'bg-emerald-500' : 'bg-zinc-300 dark:bg-zinc-600'}`} />
-              <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase">
+              <Store className="w-3.5 h-3.5 text-zinc-400" />
+              <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                 Todo en uno
               </span>
             </div>
+
             <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              {capitalize(single.store)}
+              {capitalize(optionA.store)}
             </p>
-            <p className={`text-xl font-bold font-mono ${
-              !bestIsOptimized ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-700 dark:text-zinc-300'
-            }`}>
-              {formatARS(single.estimatedCost)}
-            </p>
-            <p className="text-[10px] text-zinc-500">
-              {single.coverage}% de tu lista
-            </p>
+
+            <div>
+              <p className={`text-2xl font-bold font-mono tracking-tight ${
+                singleWins ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-600 dark:text-zinc-400'
+              }`}>
+                {formatARS(optionA.total)}
+              </p>
+              <p className="text-[10px] text-zinc-500 mt-1">
+                {optionA.coverage}% de tu lista
+              </p>
+            </div>
+
+            {singleWins && (
+              <div className="absolute top-3 right-3">
+                <CheckCircle className="w-4 h-4 text-emerald-500" />
+              </div>
+            )}
           </div>
         </Card>
 
-        {/* Option B: Optimized */}
-        <Card className={`p-4 ${bestIsOptimized ? 'ring-1 ring-emerald-500/20' : 'opacity-75'}`}>
-          <div className="space-y-2.5">
+        {/* Option B: Multi-store */}
+        <Card className={`p-4 relative overflow-hidden ${multiWins ? 'ring-1 ring-emerald-500/20' : 'opacity-80'}`}>
+          <div className="space-y-3">
             <div className="flex items-center gap-1.5">
-              <div className={`w-2 h-2 rounded-full ${bestIsOptimized ? 'bg-emerald-500' : 'bg-zinc-300 dark:bg-zinc-600'}`} />
-              <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase">
-                Más barato
+              <Shuffle className="w-3.5 h-3.5 text-emerald-500" />
+              <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                Optimizado
               </span>
             </div>
+
             <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              {capitalize(optimized.store)}
+              {optionB.storeCount} supermercados
             </p>
-            <p className={`text-xl font-bold font-mono ${
-              bestIsOptimized ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-700 dark:text-zinc-300'
-            }`}>
-              {formatARS(optimized.estimatedCost)}
-            </p>
-            <p className="text-[10px] text-zinc-500">
-              {optimized.coverage}% de tu lista
-            </p>
+
+            <div>
+              <p className={`text-2xl font-bold font-mono tracking-tight ${
+                multiWins ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-600 dark:text-zinc-400'
+              }`}>
+                {formatARS(optionB.total)}
+              </p>
+              <p className="text-[10px] text-zinc-500 mt-1">
+                Cada uno donde sea más barato
+              </p>
+            </div>
+
+            {multiWins && (
+              <div className="absolute top-3 right-3">
+                <CheckCircle className="w-4 h-4 text-emerald-500" />
+              </div>
+            )}
           </div>
         </Card>
       </div>
 
       {/* Savings row */}
-      <div className="flex items-center justify-center gap-2 py-2">
-        <CheckCircle className="w-4 h-4 text-emerald-500" />
-        <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
-          Ahorrás {formatARS(savings)} ({savingsPercent}%)
-        </span>
-      </div>
+      {savings > 0 && (
+        <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200/50 dark:border-emerald-800/30">
+          <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+          <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+            Ahorrás {formatARS(savings)} ({savingsPercent}%) eligiendo la mejor opción
+          </span>
+        </div>
+      )}
     </div>
   )
 }

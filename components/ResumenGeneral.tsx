@@ -24,6 +24,7 @@ import type { Movimiento } from '@/lib/economic-alerts-engine'
 import type { MentalRecord } from '@/lib/mental-engine'
 import type { PhysicalRecord } from '@/lib/physical-engine'
 import { runRatoneandoEngine } from '@/lib/ratoneando'
+import { getCartItemCount } from '@/lib/cart/cartStore'
 import { getMonthComparisonData, getTopCategoriesData } from '@/lib/gasti'
 import AlertCard from '@/components/AlertCard'
 import GoalsProgress from '@/components/GoalsProgress'
@@ -47,6 +48,7 @@ import {
   Layers,
   Target,
   CheckCircle,
+  ShoppingCart,
 } from 'lucide-react'
 
 // ── Helpers ──────────────────────────────────────────────────
@@ -197,6 +199,7 @@ interface ResumenData {
   physStreak: number
   physConsistency: boolean[]
   crossInsights: { text: string; type: 'spending_mood' | 'exercise_mood' }[]
+  cartItemCount: number
 }
 
 // ── Component ────────────────────────────────────────────────
@@ -398,6 +401,7 @@ export default function ResumenGeneral() {
         physStreak,
         physConsistency,
         crossInsights,
+        cartItemCount: getCartItemCount(),
       })
     } catch (error) {
       console.error('Error loading resumen:', error)
@@ -524,6 +528,17 @@ export default function ResumenGeneral() {
             items={data.savingsItems}
             subtitle="Sin cambiar tus hábitos"
           />
+        )}
+
+        {/* ── 2c. Cart CTA ── */}
+        {data.cartItemCount > 0 && (
+          <button
+            onClick={() => navigateTo('/cart')}
+            className="w-full py-3 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg shadow-blue-500/20"
+          >
+            <ShoppingCart className="w-4 h-4" />
+            Comparar carrito · {data.cartItemCount} productos
+          </button>
         )}
 
         {/* ── 3. Pilares – bloques grandes tappables ── */}
