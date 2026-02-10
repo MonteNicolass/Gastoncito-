@@ -15,7 +15,7 @@ import {
   BookOpen,
   Dumbbell,
   CheckSquare,
-  Heart,
+  Apple,
   MoreHorizontal,
   type LucideIcon,
 } from 'lucide-react'
@@ -74,8 +74,7 @@ export default function TabNav() {
       icon: Dumbbell,
       subs: [
         { name: 'H\u00e1bitos', path: '/fisico/habitos', icon: CheckSquare },
-        { name: 'Salud', path: '/fisico/salud', icon: Heart },
-        { name: 'Entrenos', path: '/fisico/entrenos', icon: Dumbbell },
+        { name: 'Comida', path: '/fisico/comida', icon: Apple },
       ],
     },
     {

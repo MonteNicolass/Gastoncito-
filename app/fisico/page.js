@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { initDB, getLifeEntries } from '@/lib/storage'
+import { initDB, getLifeEntriesByDomain } from '@/lib/storage'
 import TopBar from '@/components/ui/TopBar'
 import Card from '@/components/ui/Card'
 import {
@@ -14,99 +14,156 @@ import {
   BarChart3,
   Activity,
   Apple,
-  Pill,
   Plus,
-  Calendar
+  Calendar,
+  Timer
 } from 'lucide-react'
+
+const DAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
+
+function getWeekDays() {
+  const now = new Date()
+  const dayOfWeek = now.getDay()
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+  const monday = new Date(now)
+  monday.setDate(now.getDate() + mondayOffset)
+  monday.setHours(0, 0, 0, 0)
+
+  const days = []
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday)
+    d.setDate(monday.getDate() + i)
+    days.push(d)
+  }
+  return days
+}
+
+function isSameDay(d1, d2) {
+  return d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate()
+}
+
+const INTENSITY_LABELS = { baja: 'Baja', media: 'Media', alta: 'Alta' }
+const TYPE_LABELS = { cardio: 'Cardio', fuerza: 'Fuerza', flexibilidad: 'Flex', otro: 'Otro' }
 
 export default function FisicoPage() {
   const router = useRouter()
-  const [stats, setStats] = useState(null)
+  const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    loadStats()
+    loadEntries()
   }, [])
 
-  async function loadStats() {
+  async function loadEntries() {
     try {
       await initDB()
-      const entries = await getLifeEntries()
-      const physicalEntries = entries.filter(e => e.domain === 'physical')
-
-      const now = new Date()
-      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-      const weekEntries = physicalEntries.filter(e => new Date(e.created_at) >= weekAgo)
-
-      const activeDays = new Set(
-        weekEntries.map(e => new Date(e.created_at).toDateString())
-      ).size
-
-      const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
-      const prevWeekEntries = physicalEntries.filter(e => {
-        const d = new Date(e.created_at)
-        return d >= twoWeeksAgo && d < weekAgo
-      })
-      const prevActiveDays = new Set(
-        prevWeekEntries.map(e => new Date(e.created_at).toDateString())
-      ).size
-
-      let streak = 0
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-
-      for (let i = 0; i < 30; i++) {
-        const checkDate = new Date(today)
-        checkDate.setDate(checkDate.getDate() - i)
-        const dayStart = new Date(checkDate)
-        const dayEnd = new Date(checkDate)
-        dayEnd.setHours(23, 59, 59, 999)
-
-        const hasActivity = physicalEntries.some(e => {
-          const entryDate = new Date(e.created_at)
-          return entryDate >= dayStart && entryDate <= dayEnd
-        })
-
-        if (hasActivity) {
-          streak++
-        } else if (i > 0) {
-          break
-        }
-      }
-
-      let daysSinceLast = null
-      if (physicalEntries.length > 0) {
-        const sorted = [...physicalEntries].sort((a, b) =>
-          new Date(b.created_at) - new Date(a.created_at)
-        )
-        const lastDate = new Date(sorted[0].created_at)
-        daysSinceLast = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24))
-      }
-
-      let trend = 'stable'
-      if (activeDays > prevActiveDays + 1) trend = 'up'
-      else if (activeDays < prevActiveDays - 1) trend = 'down'
-
-      const weekActivities = weekEntries.length
-
-      setStats({ activeDays, streak, daysSinceLast, weekActivities, prevActiveDays, trend })
+      const data = await getLifeEntriesByDomain('physical')
+      setEntries(data)
     } finally {
       setLoading(false)
     }
   }
 
+  const stats = useMemo(() => {
+    if (!entries.length) return null
+
+    const now = new Date()
+    const weekDays = getWeekDays()
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    const parsed = entries.map(e => ({ ...e, _date: new Date(e.created_at) }))
+
+    // Today's entries
+    const todayEntries = parsed
+      .filter(e => isSameDay(e._date, today))
+      .sort((a, b) => b._date - a._date)
+
+    // Week activity map
+    const weekActive = weekDays.map(day =>
+      parsed.some(e => isSameDay(e._date, day))
+    )
+    const activeDays = weekActive.filter(Boolean).length
+
+    // Previous week for trend
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+    const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
+    const prevWeekDays = new Set(
+      parsed
+        .filter(e => e._date >= twoWeeksAgo && e._date < weekAgo)
+        .map(e => e._date.toDateString())
+    ).size
+
+    // Streak
+    let streak = 0
+    const checkDay = new Date(today)
+    for (let i = 0; i < 60; i++) {
+      const hasActivity = parsed.some(e => isSameDay(e._date, checkDay))
+      if (hasActivity) {
+        streak++
+      } else if (i > 0) {
+        break
+      }
+      checkDay.setDate(checkDay.getDate() - 1)
+    }
+
+    // Days since last
+    let daysSinceLast = null
+    if (parsed.length > 0) {
+      const sorted = [...parsed].sort((a, b) => b._date - a._date)
+      daysSinceLast = Math.floor((now - sorted[0]._date) / (1000 * 60 * 60 * 24))
+    }
+
+    // Trend
+    let trend = 'stable'
+    if (activeDays > prevWeekDays + 1) trend = 'up'
+    else if (activeDays < prevWeekDays - 1) trend = 'down'
+
+    // Week activity count
+    const weekStart = weekDays[0]
+    const weekEnd = new Date(weekDays[6])
+    weekEnd.setHours(23, 59, 59, 999)
+    const weekActivities = parsed.filter(e => e._date >= weekStart && e._date <= weekEnd).length
+
+    return {
+      activeDays,
+      weekActive,
+      streak,
+      daysSinceLast,
+      weekActivities,
+      trend,
+      todayEntries
+    }
+  }, [entries])
+
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen bg-zinc-50 dark:bg-zinc-950">
         <TopBar title="Físico" />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-pulse">
-            <div className="w-20 h-20 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+        <div className="flex-1 px-4 py-6 space-y-5">
+          <div className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/50 p-6 animate-pulse">
+            <div className="h-3 w-24 bg-zinc-200 dark:bg-zinc-800 rounded mb-5" />
+            <div className="h-12 w-20 bg-zinc-200 dark:bg-zinc-800 rounded mb-4" />
+            <div className="flex gap-1.5 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+              {[...Array(7)].map((_, i) => (
+                <div key={i} className="flex-1 h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-700" />
+              ))}
+            </div>
+          </div>
+          <div className="h-14 rounded-2xl bg-zinc-200 dark:bg-zinc-800 animate-pulse" />
+          <div className="space-y-1.5">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-14 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/50 animate-pulse" />
+            ))}
           </div>
         </div>
       </div>
     )
   }
+
+  const hasTodayEntries = stats?.todayEntries?.length > 0
 
   return (
     <div className="flex flex-col min-h-screen pb-24 bg-zinc-50 dark:bg-zinc-950">
@@ -146,18 +203,25 @@ export default function FisicoPage() {
             </div>
           </div>
 
-          {/* Weekly progress dots */}
+          {/* Weekly progress dots — real days Lun-Dom */}
           <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
-            <div className="flex gap-1.5 mb-2">
-              {[...Array(7)].map((_, i) => (
+            <div className="flex gap-1.5 mb-1.5">
+              {(stats?.weekActive || Array(7).fill(false)).map((active, i) => (
                 <div
                   key={i}
                   className={`flex-1 h-1.5 rounded-full transition-colors ${
-                    i < (stats?.activeDays || 0)
+                    active
                       ? 'bg-amber-500'
                       : 'bg-zinc-200 dark:bg-zinc-700'
                   }`}
                 />
+              ))}
+            </div>
+            <div className="flex gap-1.5 mb-3">
+              {DAY_LABELS.map((label, i) => (
+                <span key={i} className="flex-1 text-center text-[9px] text-zinc-400 dark:text-zinc-600 font-medium">
+                  {label}
+                </span>
               ))}
             </div>
             <div className="flex items-center justify-between">
@@ -172,27 +236,81 @@ export default function FisicoPage() {
                 <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
                   {stats?.daysSinceLast === 0 ? 'Activo hoy' :
                    stats?.daysSinceLast === 1 ? 'Último: ayer' :
-                   stats?.daysSinceLast ? `Hace ${stats.daysSinceLast} días` : 'Sin registros'}
+                   stats?.daysSinceLast != null ? `Hace ${stats.daysSinceLast} días` : 'Sin registros'}
                 </span>
               )}
             </div>
           </div>
         </div>
 
-        {/* Quick action */}
-        <button
-          onClick={() => router.push('/chat')}
-          className="w-full p-4 rounded-2xl bg-amber-500 dark:bg-amber-600 transition-all active:scale-[0.98] flex items-center justify-between"
-        >
-          <div className="flex items-center gap-3">
-            <Plus className="w-5 h-5 text-white" />
-            <div className="text-left">
-              <p className="text-white font-semibold text-sm">¿Hiciste ejercicio?</p>
-              <p className="text-amber-100 text-[10px]">Registrar actividad</p>
+        {/* Today section */}
+        {hasTodayEntries ? (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between px-1">
+              <h3 className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
+                Hoy
+              </h3>
+              <button
+                onClick={() => router.push('/fisico/habitos')}
+                className="text-[10px] font-semibold text-amber-600 dark:text-amber-400"
+              >
+                + Agregar otra
+              </button>
+            </div>
+            <div className="space-y-1.5">
+              {stats.todayEntries.map(entry => (
+                <Card key={entry.id} className="p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
+                      <Dumbbell className="w-4 h-4 text-amber-600 dark:text-amber-400" strokeWidth={1.75} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                        {entry.text}
+                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        {entry.meta?.activity_type && (
+                          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                            {TYPE_LABELS[entry.meta.activity_type] || entry.meta.activity_type}
+                          </span>
+                        )}
+                        {entry.meta?.duration_min && (
+                          <span className="text-[10px] text-zinc-400 dark:text-zinc-500 flex items-center gap-0.5">
+                            <Timer className="w-2.5 h-2.5" />
+                            {entry.meta.duration_min} min
+                          </span>
+                        )}
+                        {entry.meta?.intensity && (
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                            entry.meta.intensity === 'alta' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
+                            entry.meta.intensity === 'media' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400' :
+                            'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
+                          }`}>
+                            {INTENSITY_LABELS[entry.meta.intensity]}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-white/60" />
-        </button>
+        ) : (
+          <button
+            onClick={() => router.push('/fisico/habitos')}
+            className="w-full p-4 rounded-2xl bg-amber-500 dark:bg-amber-600 transition-all active:scale-[0.98] flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3">
+              <Plus className="w-5 h-5 text-white" />
+              <div className="text-left">
+                <p className="text-white font-semibold text-sm">Registrar actividad</p>
+                <p className="text-amber-100 text-[10px]">Todavía no registraste nada hoy</p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-white/60" />
+          </button>
+        )}
 
         {/* Navigation */}
         <div className="space-y-2">
@@ -202,10 +320,8 @@ export default function FisicoPage() {
           <div className="space-y-1.5">
             {[
               { icon: BarChart3, label: 'Resumen mensual', href: '/fisico/resumen' },
-              { icon: Activity, label: 'Hábitos', href: '/fisico/habitos' },
-              { icon: Apple, label: 'Comida', href: '/fisico/comida' },
-              { icon: Pill, label: 'Salud', href: '/fisico/salud' },
-              { icon: Dumbbell, label: 'Entrenos', href: '/fisico/entrenos' }
+              { icon: Activity, label: 'Actividad física', href: '/fisico/habitos' },
+              { icon: Apple, label: 'Comida', href: '/fisico/comida' }
             ].map(({ icon: Icon, label, href }) => (
               <button
                 key={href}
@@ -221,7 +337,7 @@ export default function FisicoPage() {
         </div>
 
         {/* Inactivity warning */}
-        {stats?.daysSinceLast !== null && stats.daysSinceLast >= 3 && (
+        {stats?.daysSinceLast != null && stats.daysSinceLast >= 3 && (
           <Card className="p-4">
             <div className="flex items-start gap-3">
               <Calendar className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" strokeWidth={1.75} />

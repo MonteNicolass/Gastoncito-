@@ -20,7 +20,6 @@ import {
   LineChart,
   Activity,
   Apple,
-  Pill,
   Plus,
   Calendar,
   Meh
@@ -416,9 +415,7 @@ export default function BienestarPage() {
                 {[
                   { icon: BarChart3, label: 'Resumen mensual', href: '/fisico/resumen' },
                   { icon: Activity, label: 'Hábitos', href: '/fisico/habitos' },
-                  { icon: Apple, label: 'Comida', href: '/fisico/comida' },
-                  { icon: Pill, label: 'Salud', href: '/fisico/salud' },
-                  { icon: Dumbbell, label: 'Entrenos', href: '/fisico/entrenos' }
+                  { icon: Apple, label: 'Comida', href: '/fisico/comida' }
                 ].map(({ icon: Icon, label, href }) => (
                   <button
                     key={href}
